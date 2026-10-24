@@ -196,7 +196,7 @@ On mobile, opening navigation moves focus to the current section and makes the m
 
 ### Dialogs and Feedback
 
-Opportunity details use a native modal dialog with a close control and a dimmed backdrop. Closing returns focus to the initiating control. Toasts use a dark green surface, a short entrance transition, and a polite live region. These are implemented interaction behaviors, not a claim of a completed accessibility certification.
+Opportunity details use a native modal dialog with a close control and a dimmed backdrop. Closing returns focus to the initiating control. Toasts use a dark green surface, a short entrance transition, and a polite live region.
 
 ## Do's and Don'ts
 
