@@ -317,3 +317,10 @@ Use the native dialog for details, forms, and project plans. The sticky top bar 
 - **Don't** turn peach, avatar lavender, or avatar sand into competing primary-action colors.
 - **Don't** hide keyboard focus, remove small-text contrast refinements, or depend on color alone to communicate state.
 - **Don't** treat generated tonal preview strips as additional production colors or assume unimplemented component states exist.
+
+
+## Overview timeline extension
+
+The front-page Overview uses a horizontal milestone timeline matching the user-provided reference: a thin neutral baseline, small outlined date markers, a filled forest Today marker, and alternating labels above/below. Funding deadlines, community events, and giving campaigns are separate timeline views. Estimated dates display confirmation text. The timeline scrolls inside its own region on narrow screens.
+
+The main workspace and footer are capped at 1120px and centered. Monthly attendance and fundraising analytics sit below the timeline; the report month is independent of the planning date range. Data, milestone edits, and activity records are illustrative and stored locally.
