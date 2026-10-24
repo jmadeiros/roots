@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#234c3c">
+  <meta name="description" content="Roots connects your volunteers, community projects, and next opportunity. An interactive illustrative demo.">
+  <title>Roots — Your community, growing</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script src="data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <aside class="sidebar" aria-label="Workspace">
+    <a class="brand" href="#overview" aria-label="Roots overview"><span class="brand-icon" data-icon="sprout"></span><span>roots<span class="brand-dot">.</span></span></a>
+    <div class="workspace"><span class="workspace-symbol" data-icon="sun"></span><div><strong>Greenfield Farm</strong><small>Community workspace</small></div></div>
+    <nav aria-label="Main navigation" id="navigation"></nav>
+    <div class="sidebar-bottom"><div class="growing-note"><span data-icon="sprout"></span><p>Small actions.<br>Deeper roots.</p><small>A little momentum goes a long way.</small></div><button class="profile" data-action="about"><span class="avatar sage">JL</span><span><strong>Jamie Lee</strong><small>Workspace coordinator</small></span><span data-icon="chevron-right"></span></button></div>
+  </aside>
+  <div class="app-shell">
+    <header class="topbar"><div class="breadcrumb"><span>Workspace</span><span class="slash">/</span><strong id="page-label">Overview</strong></div><div class="top-actions"><span class="demo-label"><span></span>Illustrative demo</span><button class="icon-button" aria-label="Open activity" data-action="activity"><span data-icon="bell"></span><i></i></button><span class="avatar small sage" aria-label="Jamie Lee">JL</span></div></header>
+    <main id="main" tabindex="-1"></main>
+    <footer class="page-footer"><span>Made for the people making a difference.</span><span>Fictional data · Your changes stay in this browser</span></footer>
+  </div>
+  <dialog id="detail-dialog" aria-labelledby="dialog-title"><div id="dialog-content"></div></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
