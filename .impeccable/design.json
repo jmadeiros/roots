@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-24T23:29:53.612531+00:00",
+  "title": "Design System: Roots",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "selected-interface",
+        "value": "0 1px 3px #162a1b12",
+        "purpose": "White selected segment in the interface switch."
+      },
+      {
+        "name": "toast",
+        "value": "0 5px 20px #132b1720",
+        "purpose": "Transient feedback above content."
+      },
+      {
+        "name": "dialog",
+        "value": "0 20px 80px #14281933",
+        "purpose": "Modal detail surface above its backdrop."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "150ms ease",
+        "purpose": "Navigation background/color and button background/border-color."
+      },
+      {
+        "name": "drawer-feedback",
+        "value": "180ms ease",
+        "purpose": "Mobile drawer transform and toast opacity/transform."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "transition:none!important; animation:none!important; scroll-behavior:auto!important",
+        "purpose": "Applied globally when prefers-reduced-motion is reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-min",
+        "value": "1450px"
+      },
+      {
+        "name": "compact-max",
+        "value": "1120px"
+      },
+      {
+        "name": "stacked-max",
+        "value": "950px"
+      },
+      {
+        "name": "drawer-max",
+        "value": "700px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Filled action outside record rows.",
+      "html": "<button class=\"ds-primary\">Open project plan</button>",
+      "css": ".ds-primary{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:12px;font-weight:500;line-height:1.4;display:inline-flex;align-items:center;justify-content:center;min-height:37px;padding:8px 13px;border:1px solid #dce1d8;border-radius:7px;cursor:pointer;transition:background 150ms ease,border-color 150ms ease;background:var(--green,#315744);color:var(--canvas,#fff);border-color:var(--green,#315744)}.ds-primary:hover{background:#254733;border-color:#254733}.ds-primary:active{filter:brightness(.97)}.ds-primary:focus-visible{outline:2px solid var(--green,#315744);outline-offset:4px;}.ds-primary:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Quiet bordered action.",
+      "html": "<button class=\"ds-secondary\">Preview invitation</button>",
+      "css": ".ds-secondary{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:12px;font-weight:500;line-height:1.4;display:inline-flex;align-items:center;justify-content:center;min-height:37px;padding:8px 13px;border:1px solid #dce1d8;border-radius:7px;cursor:pointer;transition:background 150ms ease,border-color 150ms ease;background:var(--canvas,#fff);color:var(--ink,#242824)}.ds-secondary:hover{background:var(--hover,#f3f5f1);border-color:#c8d2c2}.ds-secondary:active{filter:brightness(.97)}.ds-secondary:focus-visible{outline:2px solid var(--green,#315744);outline-offset:4px;}@media(prefers-reduced-motion:reduce){.ds-secondary{transition:none}}"
+    },
+    {
+      "name": "Text action",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "Inline supporting action.",
+      "html": "<button class=\"ds-text\">View community</button>",
+      "css": ".ds-text{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:12px;border:0;background:transparent;color:var(--green,#315744);padding:7px 0;min-height:31px;text-align:left;cursor:pointer}.ds-text:hover{color:#1f3c2a;text-decoration:underline}.ds-text:focus-visible{outline:2px solid var(--green,#315744);outline-offset:4px;}"
+    },
+    {
+      "name": "Text input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labeled field with visible keyboard focus.",
+      "html": "<label class=\"ds-field\">Project name<input class=\"ds-input\" value=\"Neighborhood regeneration skills series\"></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:8px;font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:12px;color:var(--ink,#242824)}.ds-input{font:inherit;font-size:13px;min-height:39px;padding:10px 11px;border:1px solid #dce1d8;border-radius:7px;background:var(--canvas,#fff);color:var(--ink,#242824);caret-color:var(--green,#315744)}.ds-input:focus-visible{outline:2px solid var(--green,#315744);outline-offset:4px;}"
+    },
+    {
+      "name": "Section navigation",
+      "kind": "nav",
+      "refersTo": "navigation-active",
+      "description": "Current section uses pale green fill and aria-current.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Workspace\"><a class=\"ds-nav-link\" href=\"#/workspace/opportunities\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8.5\"/><path d=\"m15.5 8.5-2 5-5 2 2-5 5-2Z\"/></svg>Opportunities</a><a class=\"ds-nav-link\" href=\"#/workspace/project\">Project plan</a></nav>",
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:4px;padding:10px;background:var(--sidebar,#f8f9f6)}.ds-nav-link{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:8px;color:#5b655d;text-decoration:none;font-size:13px;transition:background 150ms ease,color 150ms ease}.ds-nav-link:hover{background:#edf0e9}.ds-nav-link[aria-current=page]{background:#e9eee4;color:#294935;font-weight:550}.ds-nav-link:active{filter:brightness(.97)}.ds-nav-link:focus-visible{outline:2px solid var(--green,#315744);outline-offset:4px;}@media(prefers-reduced-motion:reduce){.ds-nav-link{transition:none}}"
+    },
+    {
+      "name": "Green status",
+      "kind": "chip",
+      "refersTo": "status-green",
+      "description": "Descriptive status label, not a button.",
+      "html": "<span class=\"ds-green-status\">Sponsorship</span>",
+      "css": ".ds-green-status{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;display:inline-flex;align-items:center;border-radius:5px;padding:4px 7px;font-size:10px;line-height:1.3;font-weight:450;background:var(--green-soft,#edf3ec);color:var(--green,#315744)}"
+    },
+    {
+      "name": "Warm status",
+      "kind": "chip",
+      "refersTo": "status-warm",
+      "description": "Conditional or proposed status label.",
+      "html": "<span class=\"ds-warm-status\">Proposed partnership</span>",
+      "css": ".ds-warm-status{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;display:inline-flex;align-items:center;border-radius:5px;padding:4px 7px;font-size:10px;line-height:1.3;font-weight:450;background:var(--warm,#f7f4eb);color:var(--warm-ink,#7c632e)}"
+    },
+    {
+      "name": "Featured opportunity",
+      "kind": "card",
+      "refersTo": "feature",
+      "description": "One highlighted opportunity on the overview.",
+      "html": "<section class=\"ds-feature\"><div><span class=\"ds-feature-status\">Ava Community Energy</span><h2>A little support for a good idea.</h2><p>Explore the sponsorship criteria for your community project.</p></div><div class=\"ds-feature-side\"><strong>Up to $2,500</strong><small>Subject to eligibility and approval</small></div></section>",
+      "css": ".ds-feature{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;background:#f2f5ee;color:var(--ink,#242824);padding:25px 28px;border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:32px}.ds-feature h2{font-size:21px;font-weight:600;line-height:1.4;letter-spacing:-.025em;margin:8px 0}.ds-feature p{font-size:13px;line-height:1.6;color:#5f6b5a;margin:0 0 12px;max-width:510px}.ds-feature-status{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;display:inline-flex;align-items:center;border-radius:5px;padding:4px 7px;font-size:10px;line-height:1.3;font-weight:450;background:#e5ecdf;color:#546447}.ds-feature-side{text-align:right;flex:none}.ds-feature-side strong{font-size:30px;font-weight:550;letter-spacing:-.035em;font-variant-numeric:tabular-nums}.ds-feature-side small{display:block;font-size:11px;color:var(--muted,#687069);margin-top:5px}@media(max-width:700px){.ds-feature{display:block;padding:21px}.ds-feature-side{text-align:left;margin-top:18px}.ds-feature-side strong{font-size:26px}}"
+    },
+    {
+      "name": "Record action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Contextual primary button treatment inside a record row.",
+      "html": "<button class=\"ds-record-action\" aria-pressed=\"false\">Add to plan</button>",
+      "css": ".ds-record-action{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;font-size:12px;font-weight:500;line-height:1.4;display:inline-flex;align-items:center;justify-content:center;min-height:37px;padding:8px 13px;border:1px solid #dce1d8;border-radius:7px;cursor:pointer;transition:background 150ms ease,border-color 150ms ease;background:white;color:var(--green,#315744);border-color:#d9e1d4}.ds-record-action:hover{background:var(--green-soft,#edf3ec)}.ds-record-action:active{filter:brightness(.97)}.ds-record-action:focus-visible{outline:2px solid var(--green,#315744);outline-offset:4px;}@media(prefers-reduced-motion:reduce){.ds-record-action{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "overview": "Preserve Roots' warm green identity with the user-confirmed subtle accents and ChatGPT-like sans typography. Both Workspace and Dashboard share a compact navigation rail, clear headings, open content areas, and divided records. No new visual metaphor is assigned.",
+    "keyCharacteristics": [
+      "White content canvas and a pale warm sidebar.",
+      "Green for primary actions, active states, and useful emphasis.",
+      "Flat lists with quiet dividers and compact supporting text.",
+      "A shared system across both Roots interfaces."
+    ],
+    "rules": [],
+    "dos": [
+      "Do preserve the subtle green accent and system sans typography across both interfaces.",
+      "Do keep record descriptions, eligibility notes, and amounts visually distinct.",
+      "Do retain visible keyboard focus, the skip link, and the mobile drawer focus behavior.",
+      "Do use the actual component overrides when extending the interface."
+    ],
+    "donts": [
+      "Don't reintroduce the removed top metric-card grid into these Roots screens.",
+      "Don't turn every record into a raised card or saturate whole screens with green.",
+      "Don't describe conditional benefits with the same visual certainty as received funding.",
+      "Don't add Trail to either Roots navigation."
+    ]
+  }
+}
