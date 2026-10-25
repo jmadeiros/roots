@@ -8,7 +8,7 @@
   function checkLocalRecords(force = false) {
     const state = api.getState();
     const people = state.people.map(p => ({...p, ...window.RootsPeople.profileData(p)}));
-    const nextFingerprint = JSON.stringify({people,events:state.events,projects:window.RootsOpportunities.projects()});
+    const nextFingerprint = JSON.stringify({people,events:state.events,programmes:window.RootsOpportunities.list(),projects:window.RootsOpportunities.projects()});
     if (!force && nextFingerprint === fingerprint) return;
     fingerprint = nextFingerprint;
     checkedLocally = new Date().toISOString();
