@@ -149,7 +149,7 @@
     return {lastBack,firstBack,share:Math.round(100*lastBack/(lastBack+lastFirst))};
   }
   function trendMarkup() {
-    const half=layout==='a', narrow=layout==='e', wide=!narrow&&!half, W=narrow?340:half?420:wide?820:600, H=layout==='b'?108:wide?128:150, top=10, base=H-22, right=78, bw=narrow?28:half?30:wide?44:32, step=(W-right-bw)/(HISTORY.length-1);
+    const half=layout==='a', narrow=layout==='e', wide=!narrow&&!half, W=narrow?340:half?320:wide?820:600, H=layout==='b'?108:wide?128:150, top=10, base=H-22, right=78, bw=narrow?28:half?26:wide?44:32, step=(W-right-bw)/(HISTORY.length-1);
     const max=Math.max(...HISTORY.map(([,first,back])=>first+back)), scale=v=>v/max*(base-top-14);
     const bars=HISTORY.map(([month,first,back],i)=>{
       const x=i*step, hb=scale(back), hf=scale(first);

@@ -9,6 +9,7 @@ body[data-view="briefing"] main { padding-bottom: 0; }
   .today-page { display: flex; flex-direction: column; min-height: calc(100dvh - 52px - 30px); }
   .today-dock { margin-top: auto; }
 }
+.today-page[data-layout="a"] { max-width: 640px; }
 .today-page summary { list-style: none; cursor: pointer; }
 .today-page summary::-webkit-details-marker { display: none; }
 .today-chev { flex: none; width: 16px; height: 16px; color: var(--muted); transition: transform .2s ease; }
@@ -235,7 +236,11 @@ main:has(.today-page[data-layout="a"][data-rail="open"]) { padding-right: calc(v
 .today-coming-both { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--t7); align-items: start; }
 .today-mini-label { margin: 0 0 var(--t4); font-size: 12px; color: var(--muted); }
 .today-coming-both .trend-interests { gap: var(--t3); }
-.today-coming-both .trend-interests button { grid-template-columns: 150px minmax(0, 1fr) 44px; }
+.today-coming-both { gap: var(--t6); }
+.today-coming-both .trend-interests button { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name value" "track track"; gap: 6px var(--t2); }
+.today-coming-both .trend-interest-name { grid-area: name; }
+.today-coming-both .trend-interest-value { grid-area: value; }
+.today-coming-both .trend-interest-track { grid-area: track; height: 6px; }
 .trend-head { display: flex; align-items: center; gap: var(--t3); margin-bottom: var(--t2); }
 .trend-head strong { font-size: 30px; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
 .trend-head span { font-size: 13.5px; }
@@ -274,13 +279,6 @@ main:has(.today-page[data-layout="a"][data-rail="open"]) { padding-right: calc(v
   .today-live i, .feed-item.is-new > summary, .today-tab-visual.is-new, .today-rail-count.is-new { animation: none; }
   main, .today-rail { transition: none; }
   .today-chev { transition: none; }
-}
-/* With the feed open there is less room, so the boxes go two by two on smaller screens. */
-@media (max-width: 1360px) {
-  .today-page[data-layout="a"][data-rail="open"] .today-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 1100px) {
-  .today-page[data-layout="a"] .today-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 1100px) {
   .today-split { grid-template-columns: 1fr; gap: var(--t6); }
