@@ -39,7 +39,7 @@
       insight: {
         noun: ['agriculture student', 'agriculture students'],
         could: 'could log FFA placement hours here',
-        sms: 'Hi {first_name}, good news: your shifts at the garden can count as FFA placement hours toward your awards and degree. Want us to set it up with your agriculture teacher? Reply STOP to opt out.',
+        sms: 'Hi {first_name}, good news: your shifts at the garden can count as FFA placement hours toward your awards and degree. Want us to set it up with your agriculture teacher?',
         short: 'students could log FFA hours',
         chip: 'FFA hours',
         meta: '10 to 50 hours a year · advisor-approved',
@@ -87,7 +87,7 @@
       insight: {
         noun: ['volunteer', 'volunteers'],
         could: 'could count their hours toward keeping CalFresh',
-        sms: 'Hi {first_name}, your volunteer hours here can count toward the 80 hours a month for CalFresh, and we can sign the form each month. Want to set up regular shifts? Reply STOP to opt out.',
+        sms: 'Hi {first_name}, your volunteer hours here can count toward the 80 hours a month for CalFresh, and we can sign the form each month. Want to set up regular shifts?',
         short: 'volunteers could keep CalFresh',
         chip: 'CalFresh hours',
         meta: '80 hours a month · in force since 1 June',
@@ -134,7 +134,7 @@
       insight: {
         noun: ['college student', 'college students'],
         could: 'could earn course credit for their hours here',
-        sms: 'Hi {first_name}, your garden hours could earn college credit: 1 unit for every 60 hours. Want us to talk to your college about it? Reply STOP to opt out.',
+        sms: 'Hi {first_name}, your garden hours could earn college credit: 1 unit for every 60 hours. Want us to talk to your college about it?',
         short: 'students could earn college credit',
         chip: 'college credit',
         meta: '1 unit per 60 hours · up to 4 a semester',
@@ -181,7 +181,7 @@
       insight: {
         noun: ['high-school student', 'high-school students'],
         could: 'could earn a diploma seal through a project here',
-        sms: 'Hi {first_name}, a small food-access project at the garden could earn you the State Seal of Civic Engagement on your diploma. Interested? Reply STOP to opt out.',
+        sms: 'Hi {first_name}, a small food-access project at the garden could earn you the State Seal of Civic Engagement on your diploma. Interested?',
         short: 'students could earn a diploma seal',
         chip: 'diploma seal',
         meta: 'Hours plus a civic project',

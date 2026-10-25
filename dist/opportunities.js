@@ -149,7 +149,7 @@
     const p=item.program;
     api.closeDialog?.();
     // A benefit is something to tell the matched volunteers about, so this opens the Tell the people window.
-    if(p.category==='benefits'){tell({heading:`Tell them about ${p.title}.`,personIds:item.personIds,message:p.insight?.sms||`Hi {first_name}, ${benefit(item)}. Reply STOP to opt out.`});return;}
+    if(p.category==='benefits'){tell({heading:`Tell them about ${p.title}.`,personIds:item.personIds,message:p.insight?.sms||`Hi {first_name}, ${benefit(item)}.`});return;}
     window.RootsChat.setPrompt(`Prepare a practical application or partnership plan for ${p.title}. Published benefit: ${benefit(item)}. Current source status: ${displayedStatus(p)}. Our community fit: ${item.summary} Evidence: ${item.facts.map(f=>`${f.label}: ${f.value}`).join('; ')}. Gaps: ${item.gaps.join('; ')}. Next step: ${p.action}. Use the programme sources saved in this dashboard, researched 24 October 2026. Clearly label the ages, student needs and capacity as fictional demo assumptions. Do not imply a new web search, guaranteed eligibility, funding or attendance. Draft only; do not submit applications or send messages.`);
   }
   function updateResults(){const target=document.getElementById('opp-results');if(target)target.innerHTML=results();}
