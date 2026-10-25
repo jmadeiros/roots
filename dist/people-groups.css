@@ -59,7 +59,7 @@
 /* Shared with Opportunities: visible initials, individual profile controls. */
 .people-cluster { display:flex; flex-wrap:wrap; align-items:center; gap:4px 0; isolation:isolate; }
 .people-cluster > button { display:flex; position:relative; align-items:center; justify-content:center; flex:0 0 44px; width:44px; height:44px; min-height:44px; padding:0; border-radius:50%; background:transparent; color:var(--ink); }
-.people-cluster > button + button { margin-inline-start:-6px; }
+.people-cluster > button + button { margin-inline-start:-12px; }
 .people-cluster > button .avatar { display:flex; align-items:center; justify-content:center; flex:none; width:40px; height:40px; min-width:40px; border:2px solid var(--paper); border-radius:50%; font-size:12px; font-weight:500; }
 .people-cluster > button.people-cluster-more { border:4px solid var(--paper); background:var(--selected-surface); font-size:12px; font-weight:500; font-variant-numeric:tabular-nums; }
 .people-cluster > button:hover, .people-cluster > button:focus-visible { z-index:1; }

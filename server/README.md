@@ -14,7 +14,7 @@ Open **http://127.0.0.1:4175**. This is separate from the published static demo.
 
 ## Configure Gemini
 
-Copy `server/.env.example` to `server/.env` and set `GEMINI_API_KEY` using your local editor. Never put secrets in the browser, `dist/`, source control, or chat. The optional env loader accepts only the five documented settings; it does not execute shell expressions. Existing environment variables take precedence over the file.
+Copy `server/.env.example` to `server/.env` and set `GEMINI_API_KEY` using your local editor. Never put provider secrets in the browser, `dist/`, source control, or chat. The optional env loader accepts only the six documented settings (including `GOOGLE_API_KEY` as a fallback); it does not execute shell expressions. Existing environment variables take precedence over the file.
 
 ```sh
 python3 server/bridge.py --env-file server/.env
@@ -43,7 +43,7 @@ The response keeps `insights`, `source`, `checkedAt`, `snapshotVersion`, `asOf`,
 - `coverage`: current counts for people, events, opportunities, and projects, plus `asOf`, `factCatalogSize`, and `recordsRepresented` counts. These describe the bounded catalog, not a claim that every field was reviewed. `briefingCoverage` preserves the coverage of a successful model review.
 - Each model-reviewed item includes `factIds`, `sourceIds`, reconstructed `evidence`, a short `suggestion` labeled `Suggested next step`, and an optional server-selected navigation `action`. Actions only open the cited people or opportunity; they do not send messages.
 
-Gemini receives a bounded catalog of derived cross-record observations, without raw phone numbers, email fields, coordinator notes, or conversation history. The catalog covers event capacity and first-visit interest matches, service-hours interests, project availability coordination, opportunity matches, missing contact details, and pending hours. Gemini selects, combines, and prioritizes observations, and suggests a next step using [structured JSON output](https://ai.google.dev/api/generate-content). The server rejects unknown/repeated fact IDs and extra fields, reconstructs source IDs and all evidence from the exact snapshot catalog, and inserts factual summaries itself. Model-written titles and suggestions may not introduce numeric quantities. Suggestions remain proposed actions, not verified facts or promised outcomes. This is not external research, a full audit of every record field, or verification of funding, eligibility, RSVPs, or availability.
+Gemini receives a bounded catalog of derived cross-record observations, without raw phone numbers, email fields, coordinator notes, or conversation history. Programme observations use the synchronized criteria-based capacity review and current person IDs, with recorded benefits, benefit recipients, gaps, and source-check dates. School-service observations require explicit student status, secondary education, and a positive service-hour target; an interest alone does not qualify. Funded programme fit, school needs, and first-visit follow-up take priority. The catalog also covers event capacity, project coordination, missing contact details, and pending hours. Gemini selects, combines, and prioritizes observations, and suggests a next step using [structured JSON output](https://ai.google.dev/api/generate-content). The server rejects unknown/repeated fact IDs and extra fields, reconstructs source IDs and all evidence from the exact snapshot catalog, and inserts factual summaries itself. Model-written titles and suggestions may not introduce numeric quantities. Suggestions remain proposed actions, not verified facts or promised outcomes. This is not external research, a full audit of every record field, or verification of funding, eligibility, RSVPs, or availability.
 
 Only a successful validated response receives `source: "gemini-synthesis"`. Missing credentials, provider errors, or invalid output retain the previous briefing or `snapshot-rules` fallback, with an honest failure status. An empty snapshot reports `SNAPSHOT_UNAVAILABLE`; a snapshot without reviewable observations returns `ready` with reason `NO_REVIEWABLE_FACTS` and no model call. Interrupted jobs are marked failed on restart.
 
@@ -51,15 +51,15 @@ The cache uses relevant record content, not version numbers; identical saves and
 
 ## Test Telegram
 
-Create or use a test bot through [BotFather](https://t.me/BotFather). Add `TELEGRAM_BOT_TOKEN` and your numeric `TELEGRAM_ALLOWED_USER_ID` to the local env file, then explicitly enable polling:
+Create a **separate Roots bot** through [BotFather](https://t.me/BotFather). Add its `TELEGRAM_BOT_TOKEN` and your numeric `TELEGRAM_ALLOWED_USER_ID` to the local env file, and set `ROOTS_TELEGRAM_DEDICATED=true`. The verified identity must not be a Padel bot. Stop any previous Roots bridge process before starting this one; no existing bot settings are changed. Explicitly enable polling:
 
 ```sh
 python3 server/bridge.py --env-file server/.env --telegram
 ```
 
-Open your bot in Telegram and send `/roots` or `/start`. Then send `/roots Who has only visited once?` or ask naturally, “Draft an invitation to Maya.” `/help` explains Roots. Other slash commands, including PadelWatch's `/status`, `/slots`, `/pause`, `/resume`, and `/book`, are ignored. Outbound PadelWatch alerts can continue using the same bot.
+Open the dedicated bot and tap **Start** once. Then just chat: “What needs attention today?” or “Draft an invitation to Maya.” No `/roots` prefix is needed. `/start` and `/help` explain the assistant; `/roots` remains accepted for older links. Unknown commands are ignored. Roots and Padel use separate bot identities.
 
-The bridge verifies the bot with `getMe` and refuses to start if a webhook already exists. It does not replace a webhook, rename the bot, broadcast on startup, or reply to anyone except the configured user's private chat. A Telegram 409 conflict immediately stops Roots polling; `/api/status` then reports `polling: false` and `telegramErrorCode: "TELEGRAM_POLLING_CONFLICT"`. It never retries against a competing consumer. Duplicate update IDs are stored before processing to prevent repeated drafts and replies. Failed replies are not automatically resent.
+The bridge verifies the bot with `getMe` and refuses to start if a webhook already exists. It does not replace a webhook, rename the bot, broadcast on startup, or reply to anyone except the configured user's private chat. A Telegram 409 conflict immediately stops Roots polling; `/api/status` then reports `polling: false` and `telegramErrorCode: "TELEGRAM_POLLING_CONFLICT"`. It never retries against a competing consumer. Duplicate update IDs are stored before processing to prevent repeated drafts and replies. Update IDs, polling offsets, and conversation owners are namespaced by the verified bot ID, so replacing a shared bot cannot skip the new bot's incoming messages. Existing shared-bot history and drafts remain stored. Failed replies are not automatically resent.
 
 The dashboard must have synchronized once before Telegram can answer questions about its records. Keep the server running during the test; Ctrl+C stops it. Long polling needs no public URL. A production deployment would need account authentication, hosted storage, managed secrets, per-user authorization, and a secured Telegram webhook.
 
@@ -69,11 +69,21 @@ The dashboard must have synchronized once before Telegram can answer questions a
 - Save an email or SMS **draft** associated with an existing person.
 - Show draft and assistant activity through the shared API.
 
-Email/SMS delivery and automated workflows are **not connected**. There is no tool capable of sending those messages, modifying people, executing code, fetching arbitrary URLs, or running arbitrary actions. Drafts always remain marked unsent. Treat the included dashboard records as fictional demo data. Messages, bounded conversation context, and synchronized record fields returned by an assistant tool are sent to Gemini.
+Email/SMS delivery and automated workflows are **not connected**. The only outbound test action is an explicitly requested Telegram preview to the configured owner, described below. There is no tool capable of sending those messages, modifying people, executing code, fetching arbitrary URLs, or running arbitrary actions. Drafts always remain marked unsent. Treat the included dashboard records as fictional demo data. Messages, bounded conversation context, and synchronized record fields returned by an assistant tool are sent to Gemini.
 
 Each draft includes a display-name string in `recipient`, plus `personId`, `personName`, `channel`, `body`, `subject`, `phone`, `email`, `consent`, and `readiness`. `readiness` contains `ready: false`, `canSend: false`, and concrete `blockers` with codes and messages. Phone absence, invalid phone format, missing channel-specific consent, and missing delivery integration are distinguished. Readiness is recalculated against current profile records when drafts are listed or edited. It is never inferred from the model's prose.
 
 The dashboard can edit the `body` and optional `subject` of a shared unsent draft, including one created through Telegram. Recipient, channel, status, and sent flag cannot be changed through this endpoint. Sent records are rejected. No edit sends a message.
+
+## Owner-only Telegram preview
+
+The dashboard can send selected saved drafts to **your own Telegram chat** through the dedicated Roots bot. Each message is headed `ROOTS · TEST PREVIEW` and states that it was not sent to the volunteer. This tests the outbound route without turning fictional contact data into a delivery target. Email/SMS draft `sent` remains false; neither the model nor this endpoint can deliver to a volunteer.
+
+`GET /api/status` supplies `testPreview` with `available`, `channel: "telegram"`, `recipient: "Your Telegram chat"`, `botUsername`, `reason`, and a session-bound `csrfToken`. This is a local anti-CSRF token, not a provider secret. Availability requires a successfully verified dedicated identity, including `ROOTS_TELEGRAM_DEDICATED=true`; a Padel identity is refused even with that setting.
+
+Send `POST /api/outreach/test` with `{draftIds: ["existing draft ID"], requestId: "32-character hex ID"}` and header `X-Roots-Test-Token` from the status response, using the same session cookie. Only one to ten existing unsent drafts may be selected. Destinations, arbitrary message bodies, phone numbers, and channel overrides are rejected. The browser session and token expire after 24 hours; reconnect to obtain a current token. Origin/Host checks still apply.
+
+The response is `{testPreview: {id, status, channel, recipient, botUsername, draftIds, messageIds, sentAt, deliveredToVolunteers: false, duplicate}}`. Status is `sending`, `sent`, `partial`, or `failed`. Provider-confirmed Telegram message IDs are retained in local activity. A unique request claim is stored before sending; both repeated IDs and identical draft contents for the same bot/owner reuse the prior receipt. A conflicting reused request ID returns 409. Failures and interrupted sends never auto-retry; inspect Telegram before preparing a changed preview. Long drafts split into clearly labelled parts. These receipts confirm Telegram accepted the owner preview, not SMS delivery or that it was read.
 
 ## API contract
 
@@ -81,13 +91,14 @@ All endpoints are same-origin, local-only JSON. Cross-origin requests and unreco
 
 | Endpoint | Behavior |
 | --- | --- |
-| `GET /api/status` | Configuration flags, polling state, and optional verified bot username; no secrets. |
+| `GET /api/status` | Configuration flags, polling state, verified bot username, and session-bound owner-preview capability; no provider secrets. |
 | `GET /api/state` | `{version, updatedAt, state}`. Version 0 means no snapshot yet. |
 | `PUT /api/state` | `{state, baseVersion?}`. Returns the snapshot envelope; stale explicit versions return 409. |
 | `POST /api/chat` | `{message, conversationId?}` → `{reply, drafts, actions, conversationId}`. Missing credentials return 503; unavailable conversation returns 403 and a stable error code. |
 | `GET /api/activity` | `{activity, drafts}` with the latest 100 of each. |
 | `GET /api/insights` | Immediate briefing envelope with generation status, current coverage, retained evidence time, and stale flag; queues a due independent review. |
 | `POST /api/insights/refresh` | `{}` → immediate briefing envelope; queues a bounded explicit refresh while preserving the previous briefing. |
+| `POST /api/outreach/test` | Authenticated owner-only Telegram test preview of existing drafts; fixed destination, persistent receipts, and duplicate protection. |
 | `POST /api/drafts/{id}/edit` | `{body, subject?}` → `{draft}`. Only unsent draft content can change. |
 
 Supported snapshot keys: `people`, `events`, `opportunities`, `projects`, `notices`, `workflows`, `saved`, `activity`, `project`, `organization`, and `metadata`. Record collections need unique string IDs; activity IDs are optional. Credential-like fields are rejected. The state endpoint does not automatically overwrite the browser's local state; the dashboard chooses how to merge and synchronize it.
@@ -98,6 +109,6 @@ Supported snapshot keys: `people`, `events`, `opportunities`, `projects`, `notic
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'bridge_test.py' -v
 ```
 
-Tests use temporary SQLite databases, loopback HTTP servers, and fake provider responses. They cover state versions, body limits, credential-field rejection, origin/Host/path protections, validated tools, conversation isolation and expiry, follow-up draft context, independent briefing jobs and deduplication, stale-job rejection, failure preservation, no automatic retry, restart recovery, fact/source validation, cache behavior, safe draft editing and readiness, Telegram allowlisting, duplicate updates, and webhook/polling coexistence. Passing these tests is not a live Gemini or Telegram connection test.
+Tests use temporary SQLite databases, loopback HTTP servers, and fake provider responses. They cover state versions, body limits, credential-field rejection, origin/Host/path protections, validated tools, conversation isolation and expiry, follow-up draft context, independent briefing jobs and deduplication, stale-job rejection, failure preservation, no automatic retry, restart recovery, fact/source validation, cache behavior, safe draft editing and readiness, Telegram allowlisting, bot-scoped updates and offsets, owner-preview authentication and fixed destinations, preview duplicate/failure handling, and webhook/polling coexistence. Passing these tests is not a live Gemini or Telegram connection test.
 
 Official references: [Gemini key handling](https://ai.google.dev/gemini-api/docs/api-key), [function calling](https://ai.google.dev/gemini-api/docs/function-calling), [Telegram Bot API](https://core.telegram.org/bots/api).

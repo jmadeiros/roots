@@ -1,6 +1,6 @@
 (() => {
   let api, checkedLocally=null, localInsights=[], fingerprint='', refreshTimer=null, pollTimer=null;
-  let checking=false, prompt='', lastRendered='', lastStatus='', checkError='', refreshNotice='', analyticsTab='participation', lastAnalytics='';
+  let checking=false, prompt='', lastRendered='', lastStatus='', checkError='', refreshNotice='', analyticsTab='interests', lastAnalytics='', dailyPeriod='today';
   const e=value=>api.esc(value);
   const bridge=()=>window.RootsBridge;
   const visible=()=>api?.getState().view==='briefing';
@@ -13,26 +13,15 @@
     fingerprint = nextFingerprint;
     checkedLocally = new Date().toISOString();
     localInsights = [];
-    const event = state.events.find(ev => ev.id === 'e01');
-    const gardeners = people.filter(p => p.visits === 1 && p.interests.some(i => /garden/i.test(i)) && /saturday/i.test(p.availability));
-    if (event && gardeners.length && event.capacity > event.attendees) localInsights.push({
-      id:'local-garden', title:`${gardeners.length} first-time volunteers could fit the garden shift.`,
-      summary:`Their gardening interests and Saturday availability align. The ${event.month} ${event.day} shift has ${event.capacity-event.attendees} spaces.`,
-      evidence:[{label:'People with matching interests',value:gardeners.map(p => p.name).join(', ')},{label:'What to confirm',value:'Individual RSVPs and attendance are not recorded for this event.'}],
-      sourceIds:{people:gardeners.map(p=>p.id),events:[event.id]},
-      suggestedPrompt:`Review ${gardeners.map(p=>p.name).join(', ')} for ${event.title} (${event.month} ${event.day}). Explain the fit and what we still need to confirm. Do not assume they have not booked.`
-    });
-    const hours = people.filter(p => p.interests.some(i => /service hours/i.test(i)));
-    if (hours.length) localInsights.push({
-      id:'local-hours',title:'Service hours could give people a reason to return.',
-      summary:`${hours.length} people list service hours, including ${hours.filter(p=>p.visits===1).length} who have visited once. School approval and verification still need checking.`,
-      evidence:[{label:'Interest recorded',value:hours.map(p=>p.name).join(', ')},{label:'What to confirm',value:'School, enrollment, required hours, and eligibility are not established.'}],
-      sourceIds:{people:hours.map(p=>p.id),opportunities:['o05']},
-      suggestedPrompt:'Which people list service hours, and what would we need to verify before offering them a school volunteering pathway? Use the school service-hours opportunity.'
-    });
-    const projectIdea=window.RootsConnections?.compute(state,window.RootsOpportunities.list(),window.RootsOpportunities.projects(),window.RootsPeople.profileData).find(item=>item.projectIds.includes('project-garden'));
-    if(projectIdea)localInsights.push({id:'local-project',title:projectIdea.title,summary:projectIdea.summary,evidence:projectIdea.evidence,sourceIds:{people:projectIdea.personIds,projects:projectIdea.projectIds,opportunities:projectIdea.opportunityIds},suggestedPrompt:projectIdea.suggestedPrompt});
+    const programmes=window.RootsOpportunities.list();
+    const grant=programmes.find(p=>p.stage==='open'&&p.matchKind==='education'&&p.matchCount>0);
+    if(grant)localInsights.push({id:'local-funded-education',type:'programme',title:`${grant.matchCount} students could give an education grant a clear purpose.`,summary:`${grant.title} offers ${grant.headlineBenefit.toLowerCase()}. ${grant.readiness.summary}`,evidence:[...(grant.readiness.facts||[]),{label:'Still to establish',value:(grant.readiness.gaps||[]).join(' ')}],sourceIds:{people:grant.matches.map(m=>m.personId),opportunities:[grant.id]},action:{kind:'opportunity',recordId:grant.id,label:'Explore the grant'},suggestedPrompt:`Help build a practical proposal for ${grant.title}. Use its current requirements and our recorded students. Explain the gaps before applying.`});
+    const school=programmes.find(p=>p.matchKind==='school-service'&&p.matchCount>0);
+    if(school)localInsights.push({id:'local-school-needs',type:'programme',title:`${school.matchCount} school students have service hours to complete.`,summary:school.readiness.summary+' Agree a school-approved schedule, supervision and sign-off.',evidence:[...(school.readiness.facts||[]),{label:'What to confirm',value:(school.readiness.gaps||[]).join(' ')}],sourceIds:{people:school.matches.map(m=>m.personId),opportunities:[school.id]},action:{kind:'opportunity',recordId:school.id,label:'Plan the partnership'},suggestedPrompt:'Build a school service partnership around the students with recorded requirements. Show a practical schedule, supervision needs and what the schools must approve.'});
+    const first=people.filter(p=>p.visits===1);
+    if(first.length)localInsights.push({id:'local-first-visits',type:'participation',title:`${first.length} people have only one recorded visit.`,summary:'A personal invitation could give them a reason to return. Ask what would make the next visit worthwhile; their last visit and future bookings still need confirming.',evidence:[{label:'Recorded visits',value:'Each referenced profile has one total visit.'},{label:'What this does not establish',value:'We do not know when they last attended, whether they have booked again, or why they have not returned.'}],sourceIds:{people:first.map(p=>p.id)},action:{kind:'draft',label:'Build an invitation',personIds:first.map(p=>p.id)},suggestedPrompt:'Prepare SMS invitation drafts for people with one recorded visit and recorded SMS permission. Ask what would make another visit worthwhile. Do not imply we know when they last attended. Keep every message unsent.'});
   }
+
   function sourceButtons(item) {
     const ids = item.sourceIds || {};
     return [
@@ -49,9 +38,9 @@
   function statusMarkup() {
     const data=current(), busy=working(), ai=data.source==='gemini-synthesis';
     const failed=data.generation?.status==='failed'||checkError||bridge()?.insightError;
-    const label=busy?'Looking for useful connections…':failed?(data.hasPreviousBriefing?'Your last briefing is still here.':'Record matches are still available.'):ai?`AI reviewed ${time(data.checkedAt)}`:`Record matches · Checked ${time(data.checkedAt)}`;
+    const label=busy?'Reviewing your community…':failed?(data.hasPreviousBriefing?'Your last briefing is still here.':'Record matches are still available.'):ai?`AI reviewed ${time(data.checkedAt)}`:`Record matches · Checked ${time(data.checkedAt)}`;
     const note=failed?'The latest review could not finish.':data.stale&&!busy?'A fresh review is needed.':'';
-    return `<div class="briefing-fresh ${busy?'is-reviewing':''}" role="status"><span class="briefing-presence" aria-hidden="true">${busy?'<i></i><i></i><i></i>':api.icon('check')}</span><span>${e(label)}</span>${note?`<span>${e(note)}</span>`:''}<span aria-hidden="true">·</span><button class="briefing-refresh" data-briefing="refresh" ${busy?'disabled':''} aria-label="${failed?'Retry insight review':'Refresh briefing'}">${failed?'Try again':'Check again'}</button></div>${refreshNotice&&!busy?`<p class="briefing-update-note">${e(refreshNotice)}</p>`:''}`;
+    return `<div class="briefing-fresh ${busy?'is-reviewing':''}" role="status"><span class="briefing-presence" aria-hidden="true">${busy?'<i></i><i></i><i></i>':api.icon('check')}</span><span>${e(label)}</span>${note?`<span>${e(note)}</span>`:''}${failed?'<button class="briefing-refresh" data-briefing="refresh" aria-label="Retry insight review">Try again</button>':''}</div>${refreshNotice&&!busy?`<p class="briefing-update-note">${e(refreshNotice)}</p>`:''}`;
   }
   function coverageMarkup() {
     const state=api.getState(), data=current(), counts=data.coverage||{};
@@ -105,9 +94,9 @@
   function snapshotMarkup(a) {
     return `<button data-dashboard-group="all">${number(a.people.total)} people</button><span aria-hidden="true">·</span><button data-dashboard-group="hours">${number(a.hours.total)} recorded hours</button><span aria-hidden="true">·</span><a href="#opportunities">${window.RootsOpportunities.list().length} opportunity leads</a>`;
   }
-  function patternsMarkup(a) {
-    if(analyticsTab==='events')return `<div class="overview-events">${eventsMarkup()}</div>`;
-    if(analyticsTab==='interests')return `<div class="overview-interests">${a.interests.top.length?a.interests.top.map(item=>`<button data-dashboard-group="interest" data-interest="${e(item.name)}"><span>${e(item.name)}<strong>${item.count}</strong></span><span class="overview-interest-track" aria-hidden="true"><i style="width:${a.people.total?100*item.count/a.people.total:0}%"></i></span></button>`).join(''):'<p class="overview-empty">Add interests to see what brings people together.</p>'}</div><p class="overview-chart-note">People can have more than one interest. Select a bar to see who.</p>`;
+  function patternsMarkup(a,chart=analyticsTab) {
+    if(chart==='events')return `<div class="overview-events">${eventsMarkup()}</div>`;
+    if(chart==='interests')return `<div class="overview-interests">${a.interests.top.length?a.interests.top.map(item=>`<button data-dashboard-group="interest" data-interest="${e(item.name)}"><span>${e(item.name)}<strong>${item.count}</strong></span><span class="overview-interest-track" aria-hidden="true"><i style="width:${a.people.total?100*item.count/a.people.total:0}%"></i></span></button>`).join(''):'<p class="overview-empty">Add interests to see what brings people together.</p>'}</div><p class="overview-chart-note">People can have more than one interest. Select a bar to see who.</p>`;
     const groups=[['first','One visit',a.visits.first],['repeat','Repeat visits',a.visits.repeat],['zero','No visits yet',a.visits.zero],['unknown','Not recorded',a.visits.unknown]].filter(g=>g[2]>0);
     return `<div class="overview-participation-value"><strong>${a.visits.repeatShare===null?'—':Math.round(a.visits.repeatShare*100)+'%'}</strong><span>have visited more than once<small>Of profiles with at least one recorded visit</small></span></div>${a.people.total?`<div class="overview-participation-bar" aria-label="Visit counts by person">${groups.map(([key,label,count])=>`<button data-dashboard-group="${key}" class="participation-${key}" style="width:${count/a.people.total*100}%" aria-label="${e(label)}: ${count} people"></button>`).join('')}</div><div class="overview-chart-legend">${groups.map(([key,label,count])=>`<button data-dashboard-group="${key}"><i class="participation-${key}" aria-hidden="true"></i>${label}<strong>${count}</strong></button>`).join('')}</div>`:'<p class="overview-empty">Add people to see participation patterns.</p>'}<p class="overview-chart-note">Based on total visits in each profile. Select a group to see the people.</p>`;
   }
@@ -115,24 +104,44 @@
     const events=api.getState().events;
     return events.slice(0,3).map(event=>{const valid=Number.isInteger(event.capacity)&&Number.isInteger(event.attendees)&&event.capacity>=0&&event.attendees>=0&&event.attendees<=event.capacity;return `<button class="overview-event" data-briefing="source" data-kind="event" data-id="${e(event.id)}"><span class="date-tile"><small>${e(event.month)}</small><strong>${e(event.day)}</strong></span><span class="overview-event-copy"><strong>${e(event.title)}</strong><small>${e(event.time)}</small>${valid?`<span class="overview-event-track" aria-hidden="true"><i style="width:${event.capacity?100*event.attendees/event.capacity:0}%"></i></span><span class="overview-event-capacity">${event.attendees} / ${event.capacity} places recorded<span>${event.capacity-event.attendees} open</span></span>`:'<span class="overview-event-capacity">Capacity not recorded</span>'}</span></button>`;}).join('')||'<p class="overview-empty">No events recorded yet.</p>';
   }
+  function dailySnapshot() {
+    if(!api||!window.RootsDaily)return null;
+    const state=api.getState(), remote=bridge()?.activity;
+    const snapshot={people:state.people.map(p=>({...p,...window.RootsPeople.profileData(p)})),events:state.events,opportunities:window.RootsOpportunities.list()};
+    if(remote && bridge()?.status?.connected){snapshot.drafts=remote.drafts||[];snapshot.activity=remote.activity||[];}
+    const today=window.RootsDaily.observe(snapshot);
+    return dailyPeriod==='week'&&window.RootsDaily.recent?window.RootsDaily.recent(7):today;
+  }
+  function dailyMarkup(day=dailySnapshot()) {
+    if(!day)return '<p class="daily-empty">Changes you make here will appear in today’s briefing.</p>';
+    const entries=day.entries.slice(0,3);
+    if(!entries.length)return `<div class="daily-empty"><span>${api.icon('check')}</span><h3>Nothing new since your last update.</h3><p>No changes recorded ${dailyPeriod==='week'?'this week':'today'} yet. New people, profile updates and prepared messages will appear here.</p><a href="#people">Go to your people ${api.icon('arrow')}</a></div><p class="daily-scope">Tracking changes in this browser from ${e(new Date(day.since).toLocaleDateString(undefined,{day:'numeric',month:'short'}))}.</p>`;
+    return `<ol class="daily-timeline">${entries.map(item=>`<li><time datetime="${e(item.at)}">${e(new Date(item.at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}))}</time><p>${e(item.title)}</p>${item.personIds?.length?`<button data-briefing="daily-people" data-ids="${e(item.personIds.join(','))}">See the people ${api.icon('arrow')}</button>`:''}</li>`).join('')}</ol>${day.entries.length>3?`<button class="text-button" data-briefing="daily-all">See all ${day.entries.length} changes ${api.icon('arrow')}</button>`:''}<p class="daily-scope">Changes observed in this browser. Existing records are the starting point.</p>`;
+  }
+  function dailySummary(day) {
+    const totals=day?.totalToday;
+    const parts=[];
+    if(totals?.addedPeople)parts.push(`${totals.addedPeople} ${totals.addedPeople===1?'person added':'people added'}`);
+    if(totals?.updatedPeople)parts.push(`${totals.updatedPeople} ${totals.updatedPeople===1?'profile updated':'profiles updated'}`);
+    if(totals?.newDrafts)parts.push(`${totals.newDrafts} ${totals.newDrafts===1?'draft prepared':'drafts prepared'}`);
+    return parts.length?parts.join(' · '):'A little perspective on your people, and what could happen next.';
+  }
   function render() {
     checkLocalRecords();lastRendered='';lastStatus=statusMarkup();lastAnalytics='';
-    const a=stats();
-    return `<div class="overview-shell">
-      <header class="overview-heading"><h1 id="briefing-title">${briefingTitle()}</h1><div id="briefing-status">${lastStatus}</div></header>
-      <section class="overview-attention" aria-label="Worth your attention"><div id="briefing-insights" class="briefing-insights" aria-label="Current suggestions">${insightsMarkup()}</div></section>
-      <section id="briefing-notebook" class="overview-notebook" aria-label="Another connection">${notebookMarkup()}</section>
-      <details class="overview-patterns"><summary><span>Community patterns</span><span class="pattern-preview" id="pattern-preview">${a.people.total} people · ${number(a.hours.total)} recorded hours</span>${api.icon('chevron-down')}</summary><div class="overview-patterns-body">
-        <div class="overview-chart-tabs" role="group" aria-label="Community chart"><button data-dashboard-tab="participation" aria-pressed="${analyticsTab==='participation'}">Participation</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">Interests</button><button data-dashboard-tab="events" aria-pressed="${analyticsTab==='events'}">Events</button></div>
-        <div id="overview-patterns" class="overview-pattern-content" data-chart="${analyticsTab}">${patternsMarkup(a)}</div>
-        <div id="overview-metrics" class="overview-record-counts" aria-label="Current records">${snapshotMarkup(a)}</div>
-        <div id="overview-pattern-note" class="overview-pattern-note">${patternNote(a)}</div>
-      </div></details>
-      <form id="briefing-chat-form" class="briefing-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="2" maxlength="2000" placeholder="Ask about a finding, or take an idea further…" required>${e(prompt)}</textarea><div class="briefing-composer-bottom"><span>${api.icon('sprout')}Your community, in the conversation</span><button type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form>
-      <div class="overview-footnotes"><div id="briefing-coverage">${coverageMarkup()}</div><a href="#notices">View notices ${api.icon('arrow')}</a></div>
+    const a=stats(),day=dailySnapshot();
+    return `<div class="overview-shell daily-overview">
+      <header class="overview-heading"><div><h1 id="briefing-title">${briefingTitle()}</h1><p id="daily-summary">${e(dailySummary(day))}</p></div><time class="daily-date" datetime="${new Date().toISOString()}">${e(new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}))}</time></header>
+      <section class="daily-updates" aria-label="Recent activity"><div class="daily-section-title"><h2 id="daily-period-heading">${dailyPeriod==='week'?'This week':'Today'}</h2><div class="daily-period" role="group" aria-label="Activity period"><button data-briefing="period" data-period="today" aria-pressed="${dailyPeriod==='today'}">Today</button><button data-briefing="period" data-period="week" aria-pressed="${dailyPeriod==='week'}">This week</button></div></div><div id="daily-activity">${dailyMarkup(day)}</div></section>
+      <div class="daily-briefing-grid"><aside class="daily-patterns" aria-label="Community patterns"><div class="daily-section-title"><h2>Community at a glance</h2></div><div id="overview-metrics" class="overview-record-counts" aria-label="Current records">${snapshotMarkup(a)}</div><div class="daily-chart-grid">
+      <div class="daily-chart"><h3>Participation</h3><div id="daily-participation">${patternsMarkup(a,'participation')}</div></div>
+      <div class="daily-chart"><div class="overview-chart-tabs" role="group" aria-label="Community chart"><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">Interests</button><button data-dashboard-tab="events" aria-pressed="${analyticsTab==='events'}">Events</button></div><div id="overview-patterns" class="overview-pattern-content" data-chart="${analyticsTab}">${patternsMarkup(a)}</div></div>
+      </div></aside><section class="overview-attention" aria-label="Worth your attention"><div class="daily-section-title"><h2 id="daily-findings-heading">${findingsTitle()}</h2></div><p class="daily-findings-intro">Connections noticed in your community. Open one to see what it’s based on.</p><div id="briefing-insights" class="briefing-insights" aria-label="Current suggestions">${insightsMarkup()}</div><div id="briefing-notebook" class="overview-notebook">${notebookMarkup()}</div></section></div>
+      <section class="daily-conversation" aria-label="Take the next step"><div class="daily-section-title"><h2>Turn an insight into action</h2><a href="#chat">Open conversation ${api.icon('arrow')}</a></div><form id="briefing-chat-form" class="briefing-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="2" maxlength="2000" placeholder="Draft an invitation, plan student service, or explore a finding…" required>${e(prompt)}</textarea><div class="briefing-composer-bottom"><span>${api.icon('sprout')}Plan it here. Review before anything goes out.</span><button type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form><div class="daily-prompt-suggestions"><button data-briefing="suggestion" data-prompt="Prepare SMS invitation drafts for first-time volunteers with recorded SMS permission. Build a short friendly invitation, and let me review each message before any sending.">Build an SMS invitation ${api.icon('arrow')}</button><button data-briefing="suggestion" data-prompt="Plan a school service partnership for the students with recorded service-hour requirements. Show the people, the hours to plan, and what the school must approve.">Plan student service ${api.icon('arrow')}</button></div></section>
+      <div class="overview-footnotes"><div id="briefing-coverage">${coverageMarkup()}</div><div id="briefing-status">${lastStatus}</div></div>
     </div>`;
   }
-  function briefingTitle() { const count=Math.min(2,(current().insights||[]).length);return count===2?'Two things worth a look.':count===1?'One thing worth a look.':'A place for the next idea.'; }
+  function briefingTitle() { const hour=new Date().getHours();return `Good ${hour<12?'morning':hour<17?'afternoon':'evening'}, Jamie.`; }
+  function findingsTitle() { const count=Math.min(2,(current().insights||[]).length);return count===2?'Two things worth a look':count===1?'One thing worth a look':'Things worth a look'; }
 
   function patternNote(a) {
     if(analyticsTab==='interests') {
@@ -145,9 +154,12 @@
   function updateAnalytics() {
     const target=document.getElementById('overview-patterns');if(!target)return;
     const a=stats(), fingerprint=JSON.stringify([a,analyticsTab,api.getState().events,window.RootsOpportunities.list().length]);if(fingerprint===lastAnalytics)return;
-    target.innerHTML=patternsMarkup(a);target.dataset.chart=analyticsTab;document.getElementById('overview-metrics').innerHTML=snapshotMarkup(a);document.getElementById('overview-pattern-note').innerHTML=patternNote(a);document.getElementById('pattern-preview').textContent=`${a.people.total} people · ${number(a.hours.total)} recorded hours`;
+    target.innerHTML=patternsMarkup(a);target.dataset.chart=analyticsTab;
+    const participation=document.getElementById('daily-participation');if(participation)participation.innerHTML=patternsMarkup(a,'participation');
+    const metrics=document.getElementById('overview-metrics');if(metrics)metrics.innerHTML=snapshotMarkup(a);
     document.querySelectorAll('[data-dashboard-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.dashboardTab===analyticsTab)));lastAnalytics=fingerprint;
   }
+
   function openGroup(group,interest) {
     const a=stats(), ids=group==='all'?a.people.ids:group==='hours'?a.hours.ids.known:group==='interest'?a.interests.top.find(item=>item.name===interest)?.personIds||[]:a.visits.ids[group]||[];
     const title=({all:'People in your community',hours:'Recorded volunteer hours',first:'People with one recorded visit',repeat:'People with repeat visits',zero:'People with no recorded visits',unknown:'Visit counts not recorded'})[group]||interest;
@@ -160,8 +172,9 @@
     const coverage=document.getElementById('briefing-coverage');
     if(coverage&&!coverage.querySelector('details[open]'))coverage.innerHTML=coverageMarkup();
     const data=current(), rendered=JSON.stringify(data.insights);
-    const heading=document.getElementById('briefing-title');if(heading)heading.textContent=briefingTitle();
+    const heading=document.getElementById('briefing-title');if(heading)heading.textContent=briefingTitle();const findingsHeading=document.getElementById('daily-findings-heading');if(findingsHeading)findingsHeading.textContent=findingsTitle();
     updateAnalytics();
+    const day=dailySnapshot(), dailyTarget=document.getElementById('daily-activity');if(dailyTarget)dailyTarget.innerHTML=dailyMarkup(day);const dailyIntro=document.getElementById('daily-summary');if(dailyIntro)dailyIntro.textContent=dailySummary(day);
     if(rendered!==lastRendered){
       const open=Array.from(document.querySelectorAll('.briefing-evidence[open]')).map(d=>d.closest('[data-insight-id]').dataset.insightId);
       const target=document.getElementById('briefing-insights');if(target)target.innerHTML=insightsMarkup();
@@ -193,7 +206,7 @@
   function openAction(item) {
     const action=actionFor(item);
     if(action.kind==='opportunity')api.showOpportunity(action.id);
-    else if(action.kind==='draft')window.RootsNotices.compose(null,null,action.ids,{eventId:item.sourceIds?.events?.[0]});
+    else if(action.kind==='draft')window.RootsChat.ask(`Prepare SMS invitation drafts for these people: ${action.ids.map(id=>api.getState().people.find(p=>p.id===id)?.name).filter(Boolean).join(', ')}. Only include people with recorded SMS permission. Context: ${item.summary} Keep every draft unsent and show a plan I can review.`);
     else if(action.kind==='people'){
       if(action.ids.length===1)api.showPerson(action.ids[0]);
       else api.openDialog('People behind this connection',`<h2 id="dialog-title">${e(item.title)}</h2><p class="lead">Review the people referenced in this suggestion.</p><div class="briefing-people">${action.ids.map(id=>api.getState().people.find(p=>p.id===id)).filter(Boolean).map(p=>`<button data-briefing="source" data-kind="person" data-id="${e(p.id)}">${api.avatar(p)}<span><strong>${e(p.name)}</strong><small>${e(window.RootsPeople.profileData(p).availability)}</small></span>${api.icon('arrow')}</button>`).join('')}</div>`);
@@ -206,6 +219,10 @@
     const button=event.target.closest('[data-briefing]');if(!button)return;
     const kind=button.dataset.briefing;
     if(kind==='refresh')refresh(true);
+    else if(kind==='period'){dailyPeriod=button.dataset.period;update();const heading=document.getElementById('daily-period-heading');if(heading)heading.textContent=dailyPeriod==='week'?'This week':'Today';document.querySelectorAll('[data-briefing=period]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.period===dailyPeriod)));}
+    else if(kind==='suggestion')window.RootsChat.ask(button.dataset.prompt);
+    else if(kind==='daily-people')openInsightPeople({title:'People in today’s update',sourceIds:{people:button.dataset.ids.split(',')}});
+    else if(kind==='daily-all'){const day=dailySnapshot();api.openDialog('Today in Roots',`<h2 id="dialog-title">Today’s changes</h2><ol class="daily-timeline">${day.entries.map(item=>`<li><time>${e(new Date(item.at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}))}</time><p>${e(item.title)}</p></li>`).join('')}</ol>`);}
     else if(kind==='people'){const item=current().insights[Number(button.dataset.index)];if(item)openInsightPeople(item);}
     else if(kind==='source')({person:api.showPerson,event:api.showEvent,opportunity:api.showOpportunity})[button.dataset.kind]?.(button.dataset.id);
     else if(kind==='action'||kind==='discuss'){
@@ -216,10 +233,11 @@
   document.addEventListener('input',event=>{if(event.target.id==='briefing-prompt')prompt=event.target.value;});
   document.addEventListener('submit',event=>{if(event.target.id==='briefing-chat-form'){event.preventDefault();const text=prompt.trim();if(text){prompt='';window.RootsChat.ask(text);}}});
   document.addEventListener('keydown',event=>{if(event.target.id==='briefing-prompt'&&event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();event.target.form.requestSubmit();}});
-  window.addEventListener('roots:ready',()=>{update();schedulePoll();});
+  window.addEventListener('roots:ready',()=>{dailySnapshot();update();schedulePoll();});
+  window.addEventListener('roots:activity',()=>{dailySnapshot();update();});
   window.addEventListener('roots:insights',()=>{update();schedulePoll();});
   window.addEventListener('roots:records-changed',()=>{if(api){checkLocalRecords();clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>refresh(),600);update();}});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTimeout(pollTimer);else if(api)refresh();});
   setInterval(()=>{if(!document.hidden&&api)refresh();},30*60*1000);
-  window.RootsBriefing={configure(callbacks){api=callbacks;},render};
+  window.RootsBriefing={configure(callbacks){api=callbacks;dailySnapshot();},render};
 })();

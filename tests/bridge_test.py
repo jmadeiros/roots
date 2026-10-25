@@ -223,8 +223,9 @@ class BridgeTests(unittest.TestCase):
             update = self.update(identifier)
             update["message"]["text"] = value
             self.assertTrue(bot.handle(update))
-            self.assertIn("/roots", calls[-1][1]["text"])
-            self.assertIn("unsent", calls[-1][1]["text"])
+            self.assertIn("no command prefix needed", calls[-1][1]["text"])
+            self.assertIn("Drafts", calls[-1][1]["text"])
+            self.assertNotIn("Padel", calls[-1][1]["text"])
         for identifier, value in enumerate(("/status", "/slots", "/pause", "/resume", "/book", "/unknown argument"), 10):
             update = self.update(identifier)
             update["message"]["text"] = value
@@ -258,6 +259,163 @@ class BridgeTests(unittest.TestCase):
         with self.assertRaises(bridge.Unavailable):
             bot.prepare()
         self.assertEqual(calls, ["getWebhookInfo"])
+
+    def dedicated_bot(self, username="roots_test_bot", fail_after=None):
+        calls = []
+        def fake(url, payload):
+            method = url.rsplit("/", 1)[-1]
+            if method == "getWebhookInfo":
+                return {"ok": True, "result": {"url": ""}}
+            if method == "getMe":
+                return {"ok": True, "result": {"id": 123456789, "is_bot": True, "username": username, "first_name": "Roots"}}
+            calls.append(payload)
+            if fail_after is not None and len(calls) > fail_after:
+                raise bridge.Unavailable("Provider failed")
+            return {"ok": True, "result": {"message_id": len(calls), "chat": {"id": 42}}}
+        bot = bridge.Telegram("123456789:" + "x" * 30, 42, bridge.Assistant(self.store), request=fake, dedicated=True)
+        bot.prepare()
+        return bot, calls
+
+    def saved_sms(self, body="Hello Maya"):
+        return bridge.execute_tool(self.store, "draft_message", {"person_id": "p01", "channel": "sms", "body": body})["draft"]
+
+    def test_telegram_bot_identity_namespaces_offsets_updates_and_conversations(self):
+        self.store.offset(9000, bot=101)
+        self.assertEqual(self.store.offset(bot=202), 0)
+        self.assertTrue(self.store.claim_update(50, bot=101))
+        self.assertTrue(self.store.claim_update(50, bot=202))
+        self.assertFalse(self.store.claim_update(50, bot=101))
+        bot, _ = self.dedicated_bot()
+        seen = []
+        bot.assistant.chat = lambda value, **kwargs: seen.append(kwargs["owner"]) or {"reply": "Hello"}
+        update = self.update()
+        update["message"]["text"] = "What's happening today?"
+        bot.handle(update)
+        self.assertEqual(seen, ["telegram:123456789:42"])
+
+    def test_preview_requires_dedicated_identity_and_keeps_sms_unsent(self):
+        draft = self.saved_sms()
+        old_bot, old_calls = self.dedicated_bot("josh_padelwatch_bot")
+        self.assertFalse(old_bot.preview_capability()["available"])
+        with self.assertRaises(bridge.Forbidden):
+            old_bot.send_preview([draft["id"]], "1" * 32)
+        self.assertEqual(old_calls, [])
+        bot, calls = self.dedicated_bot()
+        sent = bot.send_preview([draft["id"]], "2" * 32)
+        self.assertEqual(sent["status"], "sent")
+        self.assertEqual(sent["channel"], "telegram")
+        self.assertEqual(sent["messageIds"], [1])
+        self.assertFalse(sent["deliveredToVolunteers"])
+        self.assertEqual(calls[0]["chat_id"], 42)
+        self.assertIn("TEST PREVIEW", calls[0]["text"])
+        self.assertIn("NOT sent to the volunteer", calls[0]["text"])
+        self.assertFalse(self.store.activity()["drafts"][0]["sent"])
+        self.assertFalse(self.store.activity()["drafts"][0]["readiness"]["canSend"])
+
+    def test_preview_duplicate_and_failure_never_resend(self):
+        draft = self.saved_sms()
+        bot, calls = self.dedicated_bot()
+        first = bot.send_preview([draft["id"]], "a" * 32)
+        same_request = bot.send_preview([draft["id"]], "a" * 32)
+        same_content = bot.send_preview([draft["id"]], "b" * 32)
+        self.assertTrue(same_request["duplicate"])
+        self.assertTrue(same_content["duplicate"])
+        self.assertEqual(first["messageIds"], same_content["messageIds"])
+        self.assertEqual(len(calls), 1)
+        self.store.edit_draft(draft["id"], {"body": "Changed draft"})
+        with self.assertRaises(bridge.Conflict):
+            bot.send_preview([draft["id"]], "a" * 32)
+        failing, failures = self.dedicated_bot(fail_after=0)
+        result = failing.send_preview([draft["id"]], "c" * 32)
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(failing.send_preview([draft["id"]], "c" * 32)["status"], "failed")
+        self.assertEqual(len(failures), 1)
+
+    def test_preview_partial_receipts_and_long_messages(self):
+        draft = self.saved_sms("A" * 4000)
+        bot, calls = self.dedicated_bot(fail_after=1)
+        result = bot.send_preview([draft["id"]], "d" * 32)
+        self.assertEqual(result["status"], "partial")
+        self.assertEqual(result["messageIds"], [1])
+        self.assertTrue(all(len(call["text"]) <= 4096 for call in calls))
+        self.assertIn("Part 1/2", calls[0]["text"])
+        self.assertIn("Part 2/2", calls[1]["text"])
+
+    def test_preview_concurrent_duplicate_and_restart_keep_receipt_claim(self):
+        draft = self.saved_sms()
+        bot, calls = self.dedicated_bot()
+        entered, finish = threading.Event(), threading.Event()
+        original = bot.request
+        def slow(url, payload):
+            entered.set()
+            finish.wait(3)
+            return original(url, payload)
+        bot.request = slow
+        responses = []
+        worker = threading.Thread(target=lambda: responses.append(bot.send_preview([draft["id"]], "f" * 32)))
+        worker.start()
+        try:
+            self.assertTrue(entered.wait(2))
+            duplicate = bot.send_preview([draft["id"]], "f" * 32)
+            self.assertEqual(duplicate["status"], "sending")
+            self.assertTrue(duplicate["duplicate"])
+        finally:
+            finish.set()
+            worker.join()
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(responses[0]["status"], "sent")
+        # Persisted in-flight records after a crash remain uncertain and do not send.
+        preview = {"id": "0" * 32, "status": "sending", "messageIds": []}
+        self.store.claim_preview(preview["id"], "interrupted-content", preview)
+        restarted = bridge.Store(self.store.path)
+        prior, claimed = restarted.claim_preview(preview["id"], "interrupted-content", preview)
+        self.assertFalse(claimed)
+        self.assertEqual(prior["status"], "failed")
+        self.assertEqual(prior["errorCode"], "TELEGRAM_PREVIEW_INTERRUPTED")
+
+    def test_preview_unicode_preserves_complete_draft_without_oversize_messages(self):
+        content = "🌱" * 4000
+        draft = self.saved_sms(content)
+        bot, calls = self.dedicated_bot()
+        result = bot.send_preview([draft["id"]], "9" * 32)
+        self.assertEqual(result["status"], "sent")
+        self.assertEqual(sum(call["text"].count("🌱") for call in calls), 4000)
+        self.assertTrue(all(len(call["text"].encode("utf-16-le")) // 2 <= 4096 for call in calls))
+
+    def test_preview_http_authentication_origin_and_fixed_recipient(self):
+        draft = self.saved_sms()
+        bot, calls = self.dedicated_bot()
+        server = bridge.make_server(self.store, bot.assistant, port=0, telegram=bot)
+        worker = threading.Thread(target=server.serve_forever, daemon=True)
+        worker.start()
+        base = f"http://127.0.0.1:{server.server_address[1]}"
+        client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+        def request(path, payload=None, headers=None, opener=None):
+            req = urllib.request.Request(base + path, data=json.dumps(payload).encode() if payload is not None else None, headers={"Content-Type": "application/json", **(headers or {})})
+            try:
+                with (opener or client).open(req) as response:
+                    return response.status, json.load(response)
+            except urllib.error.HTTPError as error:
+                with error:
+                    return error.code, json.load(error)
+        payload = {"draftIds": [draft["id"]], "requestId": "e" * 32}
+        try:
+            self.assertEqual(request("/api/outreach/test", payload)[0], 403)
+            _, status = request("/api/status")
+            self.assertTrue(status["testPreview"]["available"])
+            headers = {"X-Roots-Test-Token": status["testPreview"]["csrfToken"]}
+            self.assertEqual(request("/api/outreach/test", payload, headers, urllib.request.build_opener())[0], 403)
+            self.assertEqual(request("/api/outreach/test", payload, {**headers, "Origin": "https://other.example"})[0], 403)
+            self.assertEqual(request("/api/outreach/test", {**payload, "chat_id": 999}, headers)[0], 400)
+            self.assertEqual(calls, [])
+            code, result = request("/api/outreach/test", payload, headers)
+            self.assertEqual(code, 200)
+            self.assertEqual(result["testPreview"]["status"], "sent")
+            self.assertEqual(len(calls), 1)
+        finally:
+            server.shutdown()
+            server.server_close()
+            worker.join()
 
     def test_http_origin_host_size_and_configuration(self):
         server = bridge.make_server(self.store, bridge.Assistant(self.store), port=0)
@@ -415,12 +573,12 @@ class BridgeTests(unittest.TestCase):
     def test_insights_are_evidence_based_and_prioritize_actionable_connections(self):
         self.state.update({
             "people": [
-                {"id": "p01", "name": "Maya", "visits": 1, "interests": ["Community gardening", "Service hours"], "availability": "Saturday mornings", "consent": True},
-                {"id": "p02", "name": "Daniel", "visits": 2, "interests": ["Service hours"], "availability": "Weekday afternoons", "consent": False},
+                {"id": "p01", "name": "Maya", "visits": 1, "interests": ["Community gardening", "Service hours"], "availability": "Saturday mornings", "consent": True, "studentStatus": "Student", "educationLevel": "secondary", "serviceRequirementHours": 40},
+                {"id": "p02", "name": "Daniel", "visits": 2, "interests": ["Service hours"], "availability": "Weekday afternoons", "consent": False, "studentStatus": "Student", "educationLevel": "secondary", "serviceRequirementHours": 20},
                 {"id": "p03", "name": "Priya", "visits": 1, "interests": ["Community gardening"], "availability": "Tuesday evenings", "consent": True},
             ],
             "events": [{"id": "e01", "title": "Saturday garden", "capacity": 18, "attendees": 12, "category": "Community gardening"}],
-            "opportunities": [{"id": "o01", "title": "School service", "interests": ["Service hours"], "candidate": True}],
+            "opportunities": [{"id": "o01", "title": "Education grant", "interests": [], "candidate": True, "stage": "open", "headlineBenefit": "Up to $5,000 project support", "beneficiary": "Organisation grant", "readiness": {"matches": [{"personId": "p01"}, {"personId": "p02"}, {"personId": "p01"}, {"personId": "missing"}], "gaps": ["Confirm applicant eligibility"]}}],
             "projects": [{"id": "project-1", "title": "Learning garden", "status": "Draft plan", "team": [{"personId": "p01"}, {"personId": "p02"}], "checks": ["Confirm interest"]}],
             "metadata": {"illustrative": True, "asOf": "2026-10-24"},
         })
@@ -429,19 +587,25 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(result["source"], "snapshot-rules")
         self.assertTrue(result["illustrative"])
         self.assertEqual(result["asOf"], "2026-10-24")
-        self.assertEqual([i["type"] for i in result["insights"][:3]], ["event_capacity", "service_hours_pathway", "project_possibility"])
+        self.assertEqual([i["type"] for i in result["insights"][:3]], ["opportunity_match", "service_hours_pathway", "people_followup"])
         self.assertFalse(any(i["type"] == "project_team_coordination" for i in result["insights"]))
-        event = result["insights"][0]
+        funding = result["insights"][0]
+        self.assertEqual(funding["sourceIds"]["people"], ["p01", "p02"])
+        self.assertIn("$5,000", funding["summary"])
+        self.assertIn("not confirmed eligibility", funding["summary"])
+        self.assertNotIn("overlapping interests", funding["summary"])
+        event = next(item for item in result["insights"] if item["type"] == "event_capacity")
         self.assertEqual(event["title"], "A garden invitation for 2 new volunteers.")
         self.assertEqual(event["summary"], "Maya and Priya share an interest in community gardening. Saturday garden has 6 open places.")
         self.assertEqual(event["sourceIds"]["people"], ["p01", "p03"])
         self.assertEqual(event["evidence"][-1]["label"], "What to confirm")
         self.assertIn("RSVP status", event["evidence"][-1]["value"])
         service = result["insights"][1]
-        self.assertEqual(service["title"], "Service hours could give people a reason to return.")
-        self.assertEqual(service["summary"], "2 people list service hours, including 1 who has visited once. A clearer pathway could help them choose their next step.")
+        self.assertEqual(service["title"], "A school-service pathway for 2 students")
+        self.assertIn("60 hours of service goals", service["summary"])
+        self.assertIn("not verified remaining hours", service["summary"])
         self.assertEqual(service["evidence"][0]["value"], 2)
-        self.assertEqual(service["evidence"][1]["value"], 1)
+        self.assertEqual(service["evidence"][1]["value"], 60)
         self.assertEqual(service["evidence"][-1]["label"], "What to confirm")
         self.assertIn("School approval", service["evidence"][-1]["value"])
         known = {record["id"] for key in ("people", "events", "opportunities", "projects") for record in self.state[key]}
@@ -453,20 +617,29 @@ class BridgeTests(unittest.TestCase):
 
     def test_service_hours_connects_to_existing_school_lead_without_changing_counts(self):
         self.state.update({
-            "people": [{"id": "p01", "visits": 1, "interests": ["Service hours"]}, {"id": "p02", "visits": 2, "interests": ["Service hours"]}, {"id": "p03", "visits": 1, "interests": ["Youth mentoring"]}],
+            "people": [{"id": "p01", "visits": 1, "interests": [], "studentStatus": "Student", "educationLevel": "secondary", "serviceRequirementHours": 40}, {"id": "p02", "visits": 2, "interests": [], "studentStatus": "Student", "educationLevel": "secondary", "serviceRequirementHours": 30}, {"id": "p03", "visits": 1, "interests": ["Service hours"]}],
             "opportunities": [{"id": "o05", "title": "School service-hour partnership", "interests": ["Service hours", "Youth mentoring"], "candidate": True}],
         })
         fact = next(item for item in bridge.insight_catalog(self.state) if item["type"] == "service_hours_pathway")
-        self.assertEqual(fact["summary"], "2 people list service hours, including 1 who has visited once. School service-hour partnership is a possible pathway; school approval still needs checking.")
+        self.assertIn("70 hours of service goals", fact["summary"])
+        self.assertIn("proposed route", fact["summary"])
         self.assertEqual(fact["sourceIds"]["people"], ["p01", "p02"])
         self.assertEqual(fact["sourceIds"]["opportunities"], ["o05"])
-        self.assertEqual([entry["value"] for entry in fact["evidence"][:2]], [2, 1])
-        self.assertEqual(fact["evidence"][2], {"label": "School service-hour lead", "value": "School service-hour partnership", "sourceIds": ["o05"]})
+        self.assertEqual([entry["value"] for entry in fact["evidence"][:3]], [2, 70, 1])
+        self.assertEqual(fact["evidence"][3], {"label": "School service-hour lead", "value": "School service-hour partnership", "sourceIds": ["o05"]})
         self.state["opportunities"] = []
         fallback = next(item for item in bridge.insight_catalog(self.state) if item["type"] == "service_hours_pathway")
         self.assertEqual(fallback["sourceIds"]["opportunities"], [])
         self.assertNotIn("partnership", fallback["summary"])
         self.assertEqual(fallback["evidence"][:2], fact["evidence"][:2])
+
+    def test_programme_and_school_facts_do_not_fall_back_to_interests(self):
+        self.state.update({"people": [{"id": "p01", "visits": 1, "interests": ["Service hours", "Gardening"]}], "opportunities": [{"id": "o01", "interests": ["Gardening"]}]})
+        self.assertFalse(any(item["type"] in ("opportunity_match", "service_hours_pathway") for item in bridge.derive_insights(self.state)))
+        self.state["people"][0].update(studentStatus="Student", educationLevel="secondary", serviceRequirementHours=None)
+        self.assertFalse(any(item["type"] == "service_hours_pathway" for item in bridge.derive_insights(self.state)))
+        self.state["opportunities"][0].update(stage="upcoming", matchKind="watchlist", readiness={"matches": [{"personId": "p01"}]})
+        self.assertFalse(any(item["type"] == "opportunity_match" for item in bridge.derive_insights(self.state)))
 
     def test_project_possibility_connects_actual_interests_roles_and_support_source(self):
         self.state.update({

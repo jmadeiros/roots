@@ -6,7 +6,7 @@ let persisted={};try{persisted=JSON.parse(localStorage.getItem('roots-demo-v1')|
 const data=window.ROOTS_DATA;
 const state={view:'briefing',people:[...data.people,...(persisted.people||[])],events:[...data.events,...(persisted.events||[])],saved:persisted.saved||[],draft:persisted.draft||'',outreachEvent:persisted.outreachEvent||'e01',project:persisted.project||null,period:'October 2026',filter:'All people',search:'',fundFilter:'All opportunities',activity:persisted.activity||[]};
 function persist(){window.RootsBridge?.sync();try{localStorage.setItem('roots-demo-v1',JSON.stringify({people:state.people.filter(p=>!data.people.some(d=>d.id===p.id)),events:state.events.filter(e=>!data.events.some(d=>d.id===e.id)),saved:state.saved,draft:state.draft,outreachEvent:state.outreachEvent,project:state.project,activity:state.activity.slice(0,15)}));return true}catch{toast('Browser storage is unavailable. Changes last for this visit.');return false}}
-function logActivity(text){state.activity.unshift({text,time:'Just now'});persist()}
+function logActivity(text){state.activity.unshift({text,time:'Just now',createdAt:new Date().toISOString()});persist()}
 function avatar(p,cls=''){return `<span class="avatar ${esc(p.color)} ${cls}">${esc(p.initials)}</span>`}
 function toast(text){const el=$('#toast');el.textContent=text;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),3500)}
 const navs=[['briefing','Overview','overview'],['people','People','users'],['opportunities','Opportunities','leaf'],['notices','Notices','message']];
