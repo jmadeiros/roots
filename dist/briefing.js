@@ -149,7 +149,7 @@
     return {lastBack,firstBack,share:Math.round(100*lastBack/(lastBack+lastFirst))};
   }
   function trendMarkup() {
-    const narrow=layout==='e', wide=!narrow, W=narrow?340:wide?820:600, H=layout==='b'?108:wide?128:150, top=10, base=H-22, right=78, bw=narrow?28:wide?44:32, step=(W-right-bw)/(HISTORY.length-1);
+    const half=layout==='a', narrow=layout==='e', wide=!narrow&&!half, W=narrow?340:half?420:wide?820:600, H=layout==='b'?108:wide?128:150, top=10, base=H-22, right=78, bw=narrow?28:half?30:wide?44:32, step=(W-right-bw)/(HISTORY.length-1);
     const max=Math.max(...HISTORY.map(([,first,back])=>first+back)), scale=v=>v/max*(base-top-14);
     const bars=HISTORY.map(([month,first,back],i)=>{
       const x=i*step, hb=scale(back), hf=scale(first);
@@ -164,12 +164,12 @@
     const max=Math.max(...HISTORY.map(([,,back])=>back));
     return `<svg class="today-spark" viewBox="0 0 66 22" aria-hidden="true">${HISTORY.map(([,,back],i)=>{const h=Math.max(2,back/max*20);return `<rect x="${i*11}" y="${22-h}" width="7" height="${h}" rx="1.5"/>`;}).join('')}</svg>`;
   }
-  function interestReturnMarkup(a) {
+  function interestReturnMarkup(a,note=true) {
     const people=api.getState().people, rows=a.interests.top.slice(0,5).map(item=>{
       const members=(item.personIds||[]).map(id=>people.find(p=>p.id===id)).filter(Boolean), back=members.filter(p=>p.visits>1).length;
       return {...item,back,rate:members.length?Math.round(100*back/members.length):0};
     }).sort((x,y)=>y.rate-x.rate||y.count-x.count);
-    return `<div class="trend-interests">${rows.map(row=>`<button data-dashboard-group="interest" data-interest="${e(row.name)}"><span class="trend-interest-name">${e(row.name)}</span><span class="trend-interest-track" aria-hidden="true"><i style="width:${row.rate}%"></i></span><span class="trend-interest-value">${row.rate}%<small>${row.back} of ${row.count}</small></span></button>`).join('')}</div><p class="trend-note">Share of people with each interest who came back more than once.</p>`;
+    return `<div class="trend-interests">${rows.map(row=>`<button data-dashboard-group="interest" data-interest="${e(row.name)}"><span class="trend-interest-name">${e(row.name)}</span><span class="trend-interest-track" aria-hidden="true"><i style="width:${row.rate}%"></i></span><span class="trend-interest-value">${row.rate}%<small>${row.back} of ${row.count}</small></span></button>`).join('')}</div>${note?'<p class="trend-note">Share of people with each interest who came back more than once.</p>':''}`;
   }
   function patternsMarkup(a,chart=analyticsTab) {
     return chart==='interests'?interestReturnMarkup(a):trendMarkup();
@@ -309,7 +309,7 @@
         ${fold('fold-coming','Coming back',`${sparkMarkup()}<span><b>${t.lastBack}</b> came back in October · up from ${t.firstBack} in May</span>`,`<div class="today-fold-tabs">${tabs}</div>${patterns}`)}
         ${fold('fold-feed','Today’s feed',`<span id="today-feed-latest" class="today-latest">${latestMarkup(model)}</span>`,`<ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol>`)}
       </div>`;
-    else body=`${noticed}${coming}<aside class="today-rail" aria-label="Today’s feed"><button class="today-rail-toggle" data-today-rail aria-expanded="${railOpen}" aria-controls="today-rail-body" aria-label="Show today’s feed">${CHEV}<span class="today-live" aria-hidden="true"><i></i></span><span class="today-rail-label">Today’s feed</span><span class="today-rail-count${railUnseen?' is-new':''}" id="today-rail-count">${feedItems(model).length}</span></button><div class="today-rail-body" id="today-rail-body"${railOpen?'':' hidden'}><div class="today-section-head"><h2 id="today-feed-title">Today’s feed <span class="today-live"><i></i>Live</span></h2><button class="today-rail-close" data-today-rail aria-label="Hide today’s feed">${CHEV}</button></div><ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol><p class="today-rail-note">New activity appears here as it happens.</p></div></aside>`;
+    else body=`${noticed}<section class="today-section" aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Coming back</h2></div><div class="today-coming-both"><div id="overview-patterns" class="today-patterns" data-chart="trend">${trendMarkup()}</div><div><p class="today-mini-label">By interest · share who came back</p><div id="today-interests">${interestReturnMarkup(a,false)}</div></div></div></section><aside class="today-rail" aria-label="Today’s feed"><button class="today-rail-toggle" data-today-rail aria-expanded="${railOpen}" aria-controls="today-rail-body" aria-label="Show today’s feed">${CHEV}<span class="today-live" aria-hidden="true"><i></i></span><span class="today-rail-label">Today’s feed</span><span class="today-rail-count${railUnseen?' is-new':''}" id="today-rail-count">${feedItems(model).length}</span></button><div class="today-rail-body" id="today-rail-body"${railOpen?'':' hidden'}><div class="today-section-head"><h2 id="today-feed-title">Today’s feed <span class="today-live"><i></i>Live</span></h2><button class="today-rail-close" data-today-rail aria-label="Hide today’s feed">${CHEV}</button></div><ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol><p class="today-rail-note">New activity appears here as it happens.</p></div></aside>`;
     return `<div class="today-page" data-layout="${layout}"${layout==='a'?` data-rail="${railOpen?'open':'closed'}"`:''}>${head}${body}
       ${dock}
     </div>`;
@@ -329,6 +329,7 @@
     const target=document.getElementById('overview-patterns');if(!target)return;
     const a=stats(), fingerprint=JSON.stringify([a,analyticsTab,api.getState().events,window.RootsOpportunities.list().length]);if(fingerprint===lastAnalytics)return;
     target.innerHTML=patternsMarkup(a);target.dataset.chart=analyticsTab;
+    const interests=document.getElementById('today-interests');if(interests)interests.innerHTML=interestReturnMarkup(a,false);
     const participation=document.getElementById('daily-participation');if(participation)participation.innerHTML=patternsMarkup(a,'participation');
     const metrics=document.getElementById('overview-metrics');if(metrics)metrics.innerHTML=snapshotMarkup(a);
     document.querySelectorAll('[data-dashboard-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.dashboardTab===analyticsTab)));lastAnalytics=fingerprint;

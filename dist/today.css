@@ -228,6 +228,9 @@ main:has(.today-page[data-layout="a"][data-rail="open"]) { padding-right: calc(v
 .today-tag.is-funding { border-color: color-mix(in srgb, var(--warning) 45%, transparent); background: color-mix(in srgb, var(--warning) 10%, transparent); color: var(--warning); }
 
 /* Coming back. */
+.today-coming-both { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--t7); align-items: start; }
+.today-mini-label { margin: 0 0 var(--t4); font-size: 12px; color: var(--muted); }
+.today-coming-both .trend-interests { gap: var(--t3); }
 .trend-head { display: flex; align-items: center; gap: var(--t3); margin-bottom: var(--t2); }
 .trend-head strong { font-size: 30px; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
 .trend-head span { font-size: 13.5px; }
@@ -293,6 +296,7 @@ main:has(.today-page[data-layout="a"][data-rail="open"]) { padding-right: calc(v
   .today-head h1 { flex-direction: column; gap: var(--t1); }
   .today-layout-name { display: none; }
   .today-page[data-layout="b"] .today-columns { grid-template-columns: 1fr; }
+  .today-coming-both { grid-template-columns: 1fr; gap: var(--t6); }
   .today-card-big .today-stack, .today-card-full .today-stack { display: none; }
   .today-card-big { min-height: 0; }
   .today-feed-wide .feed-text { display: block; }
