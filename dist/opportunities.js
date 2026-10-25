@@ -180,7 +180,7 @@
   const requestHex=()=>crypto.randomUUID?crypto.randomUUID().replace(/-/g,''):Array.from({length:32},()=>Math.floor(Math.random()*16).toString(16)).join('');
   function tell({heading,personIds,message}) {
     const people=personIds.map(id=>state().people.find(person=>person.id===id)).filter(Boolean).slice(0,10);
-    api.openDialog('Tell the people',`<h2 id="dialog-title">${e(heading)}</h2><p class="lead">Choose who to tell and check the message. Examples go to your Roots Demo Inbox on Telegram, never to the volunteers.</p>
+    api.openDialog('Tell the people',`<h2 id="dialog-title">${e(heading)}</h2><p class="lead">Choose who to tell and check the message. Send opens the chat and delivers it to your Roots Demo Inbox on Telegram, never to the volunteers.</p>
       <form id="tell-form"><fieldset class="tell-people"><legend>Who</legend>${people.map(person=>`<label class="tell-person"><input type="checkbox" name="person" value="${e(person.id)}" checked>${api.avatar(person)}<span><strong>${e(person.name)}</strong><small>${person.consent?'SMS permission recorded':'SMS permission not recorded'}</small></span></label>`).join('')}</fieldset>
       <div class="form-field tell-message"><label for="tell-message">Message</label><textarea id="tell-message" name="message" rows="4" maxlength="600" required>${e(message)}</textarea><p class="hint">{first_name} becomes each person’s first name.</p></div>
       <div id="tell-result" role="status"></div>
@@ -193,17 +193,17 @@
     if(!message)return;
     if(!bridge?.status?.testPreview?.csrfToken){result.innerHTML='<p class="tell-error">Open the connected local workspace to save or send these messages.</p>';return;}
     buttons.forEach(button=>button.disabled=true);
-    result.innerHTML=`<p class="tell-progress">${send?'Sending to your demo inbox…':'Saving drafts…'}</p>`;
+    result.innerHTML=`<p class="tell-progress">${send?'Opening the chat…':'Saving drafts…'}</p>`;
     try {
       await bridge.flush();
       const headers={'X-Roots-Test-Token':bridge.status.testPreview.csrfToken};
       const saved=await bridge.request('/api/drafts',{method:'POST',headers,body:JSON.stringify({drafts:ids.map(id=>({personId:id,channel:'sms',body:message.replaceAll('{first_name}',state().people.find(person=>person.id===id).name.split(' ')[0])}))})});
       const draftIds=(saved.drafts||[]).map(draft=>draft.id);
       if(!send){result.innerHTML=`<div class="success-panel"><strong>${api.icon('check')}${draftIds.length} ${draftIds.length===1?'draft':'drafts'} saved</strong>Nothing was sent. You can review them on Notices.</div>`;await bridge.loadActivity().catch(()=>{});return;}
-      const preview=(await bridge.request('/api/outreach/test',{method:'POST',headers,body:JSON.stringify({draftIds,requestId:requestHex()})})).testPreview||{};
-      const sent=preview.status==='sent';
-      result.innerHTML=`<div class="success-panel"><strong>${api.icon('check')}${sent?`Sent ${draftIds.length} ${draftIds.length===1?'example':'examples'} to your demo inbox`:'Telegram did not confirm every example'}</strong>${sent?'Nothing was sent to the volunteers.':'Check your demo inbox; nothing is resent automatically.'}${preview.botUsername?` <a href="https://t.me/${encodeURIComponent(preview.botUsername)}" target="_blank" rel="noopener">Open @${e(preview.botUsername)}</a>`:''}</div>`;
+      // Hand the drafts to the dashboard chat, which sends them and shows the receipt.
       await bridge.loadActivity().catch(()=>{});
+      api.closeDialog?.();
+      window.RootsChat.reviewDrafts(saved.drafts||[],{send:true});
     } catch(error) {
       if(error.status===403)await bridge.init().catch(()=>{});
       result.innerHTML=`<p class="tell-error">${e(error.status===403?'The connection was refreshed. Press the button again.':error.message||'That did not work. Your message is still here.')}</p>`;

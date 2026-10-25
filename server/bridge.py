@@ -1227,7 +1227,8 @@ class Telegram:
             return preview
         try:
             for index, draft in enumerate(drafts, 1):
-                header = f"ROOTS · TEST PREVIEW {index}/{len(drafts)}\n{str(draft.get('channel', 'message')).upper()} example for {str(draft.get('personName', 'Volunteer'))[:100]}\nDemo inbox only · NOT sent to the volunteer.\n\n"
+                # Reads like the volunteer's own message; the Roots Demo Inbox bot is the only recipient.
+                header = f"{str(draft.get('channel', 'message')).upper()} to {str(draft.get('personName', 'Volunteer'))[:100]}\n\n"
                 body = ((draft.get("subject") + "\n\n") if draft.get("subject") else "") + draft["body"]
                 chunks, chunk, units = [], "", 0
                 for character in body:

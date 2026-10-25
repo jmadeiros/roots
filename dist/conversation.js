@@ -221,7 +221,7 @@
     }
     finally {pending=false;save();refreshMessages(true);if(!document.activeElement?.closest('.chat-edit-form'))document.getElementById('roots-conversation-input')?.focus({preventScroll:true});}
   }
-  function reviewDrafts(drafts) {
+  function reviewDrafts(drafts,options={}) {
     const saved=Array.isArray(drafts)?drafts.filter(d=>d&&typeof d.id==='string'&&!d.localPreview):[];
     if(!saved.length)return;
     const ids=saved.map(d=>d.id);
@@ -242,6 +242,8 @@
     }
     const flow=flowFor(message);save();reviewDraftId=flow.state.id;
     if(active())api.render();else location.hash='chat';
+    // Tell the people hands its drafts over with send:true, so the delivery and its receipt appear here.
+    if(options.send)setTimeout(()=>sendTest(message),0);
   }
   function findDraft(id) { return bridge()?.activity?.drafts?.find(d=>d.id===id) || messages.flatMap(draftList).find(d=>d.id===id); }
   function replaceDraft(id,draft) {
