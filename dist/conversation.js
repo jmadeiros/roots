@@ -238,12 +238,19 @@
       message.drafts=saved;flow.state.step='review';flow.state.selected=ids;
       if(changed)resetPreview(flow.state);
     }else{
+      // Tell the people sends straight from its window, so the conversation shows the ask and Roots' reply first.
+      if(options.send){
+        const names=saved.map(d=>String(nameOf(d)).split(' ')[0]);
+        const list=names.length>1?`${names.slice(0,-1).join(', ')} and ${names.at(-1)}`:names[0];
+        messages.push({role:'user',text:`Send the ${options.topic?`${options.topic} `:''}message to ${list}.`});
+        messages.push({role:'assistant',text:`Here ${names.length===1?'is the message':'are the messages'} for ${list}. Sending ${names.length===1?'it':'them'} to your Roots Demo Inbox on Telegram now.`});
+      }
       message={role:'workspace',text:'',drafts:saved,workbench:{step:'review',selected:ids}};messages.push(message);
     }
     const flow=flowFor(message);save();reviewDraftId=flow.state.id;
     if(active())api.render();else location.hash='chat';
     // Tell the people hands its drafts over with send:true, so the delivery and its receipt appear here.
-    if(options.send)setTimeout(()=>sendTest(message),0);
+    if(options.send)setTimeout(()=>sendTest(message),1200);
   }
   function findDraft(id) { return bridge()?.activity?.drafts?.find(d=>d.id===id) || messages.flatMap(draftList).find(d=>d.id===id); }
   function replaceDraft(id,draft) {

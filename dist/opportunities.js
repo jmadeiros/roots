@@ -149,7 +149,7 @@
     const p=item.program;
     api.closeDialog?.();
     // A benefit is something to tell the matched volunteers about, so this opens the Tell the people window.
-    if(p.category==='benefits'||p.tellMessage){tell({heading:p.tellMessage?`Ask them to log their hours with ${p.employer}.`:`Tell them about ${p.title}.`,personIds:item.personIds,message:p.tellMessage||p.insight?.sms||`Hi {first_name}, ${benefit(item)}.`});return;}
+    if(p.category==='benefits'||p.tellMessage){tell({heading:p.tellMessage?`Ask them to log their hours with ${p.employer}.`:`Tell them about ${p.title}.`,personIds:item.personIds,message:p.tellMessage||p.insight?.sms||`Hi {first_name}, ${benefit(item)}.`,topic:p.title});return;}
     window.RootsChat.setPrompt(`Prepare a practical application or partnership plan for ${p.title}. Published benefit: ${benefit(item)}. Current source status: ${displayedStatus(p)}. Our community fit: ${item.summary} Evidence: ${item.facts.map(f=>`${f.label}: ${f.value}`).join('; ')}. Gaps: ${item.gaps.join('; ')}. Next step: ${p.action}. Use the programme sources saved in this dashboard, researched 24 October 2026. Clearly label the ages, student needs and capacity as fictional demo assumptions. Do not imply a new web search, guaranteed eligibility, funding or attendance. Draft only; do not submit applications or send messages.`);
   }
   function updateResults(){const target=document.getElementById('opp-results');if(target)target.innerHTML=results();}
@@ -178,7 +178,9 @@
   // It saves drafts and can send labelled examples to the Roots Demo Inbox; nothing reaches volunteers.
   const demoReady=()=>!!window.RootsBridge?.status?.testPreview?.available;
   const requestHex=()=>crypto.randomUUID?crypto.randomUUID().replace(/-/g,''):Array.from({length:32},()=>Math.floor(Math.random()*16).toString(16)).join('');
-  function tell({heading,personIds,message}) {
+  let tellTopic='';
+  function tell({heading,personIds,message,topic=''}) {
+    tellTopic=topic;
     const people=personIds.map(id=>state().people.find(person=>person.id===id)).filter(Boolean).slice(0,10);
     api.openDialog('Tell the people',`<h2 id="dialog-title">${e(heading)}</h2><p class="lead">Choose who to tell and check the message. Send opens the chat and delivers it to your Roots Demo Inbox on Telegram, never to the volunteers.</p>
       <form id="tell-form"><fieldset class="tell-people"><legend>Who</legend>${people.map(person=>`<label class="tell-person"><input type="checkbox" name="person" value="${e(person.id)}" checked>${api.avatar(person)}<span><strong>${e(person.name)}</strong><small>${person.consent?'SMS permission recorded':'SMS permission not recorded'}</small></span></label>`).join('')}</fieldset>
@@ -203,7 +205,7 @@
       // Hand the drafts to the dashboard chat, which sends them and shows the receipt.
       await bridge.loadActivity().catch(()=>{});
       api.closeDialog?.();
-      window.RootsChat.reviewDrafts(saved.drafts||[],{send:true});
+      window.RootsChat.reviewDrafts(saved.drafts||[],{send:true,topic:tellTopic});
     } catch(error) {
       if(error.status===403)await bridge.init().catch(()=>{});
       result.innerHTML=`<p class="tell-error">${e(error.status===403?'The connection was refreshed. Press the button again.':error.message||'That did not work. Your message is still here.')}</p>`;
