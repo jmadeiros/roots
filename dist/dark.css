@@ -1,0 +1,227 @@
+/* The forest-dark palette from the original conversation concept. */
+:root {
+  color-scheme: dark;
+  --paper: #20251f;
+  --sidebar-surface: #1b201b;
+  --surface: #2a3129;
+  --ink: #e5e9df;
+  --muted: #a9b4a6;
+  --line: #3c473a;
+  --selected-surface: #344331;
+  --soft-surface: #293228;
+  --hover-surface: #303c2e;
+  --accent: #d6e5ca;
+  --accent-hover: #e2eed9;
+  --on-accent: #21351f;
+  --forest: var(--accent);
+  --deep: var(--accent-hover);
+  --sage: var(--selected-surface);
+  --lime: #afc795;
+  --peach: #483b30;
+  --field-line: #73836d;
+  --brand-accent: var(--accent);
+  --positive: #bdd7a8;
+  --warning: #e6bd93;
+  --danger: #efb6a4;
+}
+
+body { background: var(--paper); color: var(--ink); }
+.sidebar { background: var(--sidebar-surface); border-color: var(--line); }
+.topbar { background: var(--paper); border-color: var(--line); }
+.brand, .brand-icon, .brand-dot { color: var(--accent); }
+.workspace, .profile { border-color: var(--line); }
+.workspace-symbol { background: var(--selected-surface); color: var(--accent); }
+.nav-item { color: var(--muted); }
+.nav-item.active { background: var(--selected-surface); color: var(--ink); }
+.nav-item:hover:not(.active),
+.secondary-nav a:hover, .secondary-nav button:hover {
+  background: var(--hover-surface); color: var(--ink);
+}
+.nav-count, .active .nav-count { background: var(--surface); color: var(--ink); }
+.growing-note { color: var(--ink); }
+.growing-note > span, .growing-note > span svg { color: var(--accent); }
+.growing-note small, .breadcrumb > span:first-child, .slash { color: var(--muted); }
+.breadcrumb:before { color: var(--accent); }
+.demo-label { background: transparent; border-color: var(--line); color: var(--muted); }
+.demo-label > span { background: var(--positive); }
+.icon-button i { border-color: var(--paper); background: var(--warning); }
+.assistant-shortcut { border-color: var(--field-line); color: var(--ink); }
+.assistant-shortcut:hover { background: var(--hover-surface); }
+
+/* Primary actions stay pale against the dark canvas. */
+.button, .period, .assistant-suggestions button {
+  background: var(--surface); color: var(--ink); border-color: var(--line);
+}
+.button:hover, .icon-button:hover, .assistant-suggestions button:hover {
+  background: var(--hover-surface);
+}
+.button.primary, .chat-send, .briefing-composer > button, .skip-link {
+  background: var(--accent); border-color: var(--accent); color: var(--on-accent);
+}
+.button.primary:hover, .chat-send:hover, .briefing-composer > button:hover {
+  background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent);
+}
+.button.quiet { background: transparent; color: var(--ink); border-color: var(--field-line); }
+.button.quiet:hover { background: var(--hover-surface); }
+.text-button { color: var(--accent); }
+.text-button:hover { color: var(--ink); }
+.filter { color: var(--muted); }
+.filter.active { background: var(--selected-surface); color: var(--ink); }
+.filter:hover { background: var(--hover-surface); color: var(--ink); }
+.search-field { background: var(--surface); border-color: var(--field-line); }
+.search-field input { color: var(--ink); }
+.search-field svg, .search-field input::placeholder { color: var(--muted); }
+.form-field input:not([type=checkbox]), .form-field select, .form-field textarea,
+.assistant-test textarea, .chat-edit-form textarea {
+  background: var(--surface); color: var(--ink); border-color: var(--field-line);
+}
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
+input, textarea, select,
+.people-edit-form input, .people-edit-form select, .people-detail textarea {
+  caret-color: var(--accent); accent-color: var(--accent);
+}
+.consent-row input { accent-color: var(--accent); }
+button:focus-visible, a:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, summary:focus-visible,
+.opp-details > summary:focus-visible { outline-color: var(--accent); }
+::selection, .people-detail ::selection { background: var(--accent); color: var(--on-accent); }
+::-webkit-scrollbar-thumb { background: #60705a; }
+::-webkit-scrollbar-thumb:hover { background: #7f9178; }
+
+/* Distinguishable, low-saturation identity and status colors. */
+.avatar, .people-profile-header .people-profile-avatar { border-color: var(--paper); }
+.sage { background: #3b4c35; color: #d4e5c8; }
+.peach { background: #514034; color: #f0cfb1; }
+.lavender { background: #443c4d; color: #dfcfe9; }
+.sand { background: #4b4530; color: #e3d7ab; }
+.badge.neutral { background: var(--selected-surface); color: var(--muted); }
+.badge.green, .trend { background: #34492d; color: var(--positive); }
+.badge.orange { background: #493b2d; color: var(--warning); }
+.tag { background: var(--selected-surface); color: #c7d2bf; }
+.save-button, .opp-save { color: var(--muted); }
+.save-button.saved, .opp-save.saved { background: var(--selected-surface); color: var(--accent); }
+.opp-save.saved svg { fill: #516645; }
+
+/* Lists, events and older record surfaces use the same material. */
+.table-wrap, .opportunity-card, .event-card, .rail-card, .recommendation,
+.notice-list, .workflow-list, .draft-list, .assistant-connection {
+  background: var(--surface); border-color: var(--line);
+}
+th { background: var(--soft-surface); color: var(--muted); border-color: var(--line); }
+td, .event-row, .rec-footer, .activity, .activity-items,
+.notice-row + .notice-row, .workflow-row + .workflow-row, .draft-row + .draft-row {
+  border-color: var(--line);
+}
+tbody tr:hover, .opp-row:hover { background: var(--hover-surface); }
+.person-cell small, .tiny-label, .table-footer, .title-cluster svg,
+.card-type, .event-details, .event-info small, .event-spots,
+.capacity-label, .activity-item p, .activity-item .activity-time,
+.recommendation-note, .preview-label, .source-note, .page-footer,
+.recommendation p, .rec-benefit, .people-indicator small,
+.metric-top, .metric-top svg, .metric-bottom { color: var(--muted); }
+.empty { border-color: var(--field-line); }
+.help-banner { background: var(--soft-surface); border-color: var(--line); color: var(--muted); }
+.date-tile { background: var(--selected-surface); color: var(--ink); }
+.date-tile small { color: var(--muted); }
+.event-row:hover .event-info strong { color: var(--accent); }
+.capacity-track { background: var(--selected-surface); }
+.capacity-track > span { background: #a7c28c; }
+.community-card, .recommendation.featured { background: var(--soft-surface); border-color: var(--line); }
+.community-card > svg { color: var(--accent); }
+.community-card p { color: var(--muted); }
+.rec-icon { background: var(--selected-surface); color: var(--accent); }
+.rec-icon.outreach { background: var(--peach); color: var(--warning); }
+.metric:hover { border-color: var(--field-line); }
+
+/* Opportunity leads and project detail disclosures. */
+.opp-tab, .opp-toolbar > p, .opp-row-copy > span, .opp-row-copy > small,
+.opp-row-meta > small, .opp-row-arrow, .opp-list-footer, .opp-discovery-note,
+.opp-benefit > span, .opp-benefit > small, .opp-section-heading > span,
+.opp-person strong > small, .opp-person > span:not(.avatar) > span,
+.opp-person > svg, .opp-no-match, .opp-details > summary > small,
+.opp-details > summary > svg, .opp-details > div > p, .opp-checks li,
+.opp-budget > div { color: var(--muted); }
+.opp-tab > span { background: var(--selected-surface); color: var(--muted); }
+.opp-row-icon { background: var(--selected-surface); color: var(--accent); }
+.opp-row-meta > strong, .opp-row-open:hover .opp-row-copy > strong,
+.opp-details > summary:hover { color: var(--accent); }
+.opp-benefit { background: var(--soft-surface); }
+.opp-person:hover { background: var(--hover-surface); }
+.opp-checks li > svg { color: var(--warning); }
+
+/* Outreach, connection panels and drafts. */
+.platform-tabs { border-color: var(--line); }
+.platform-tabs button { color: var(--muted); }
+.platform-tabs button.active { color: var(--accent); border-color: var(--accent); }
+.platform-tabs button span { background: var(--selected-surface); color: var(--muted); }
+.notice-symbol, .assistant-mark { background: var(--selected-surface); color: var(--accent); }
+.notice-kind, .notice-content p, .notice-people > span, .platform-footnote,
+.workflow-intro p, .workflow-row p, .draft-row p, .draft-row small,
+.assistant-intro p, .assistant-connection p { color: var(--muted); }
+.assistant-response { color: var(--ink); }
+.assistant-response:not(:empty) { background: var(--soft-surface); }
+
+/* Profile sheets, tabs, forms, histories and notes. */
+.people-profile-actions > span, .people-tabs [role=tab],
+.people-example-label, .people-facts dt, .people-consent,
+.people-caption, .people-field-label, .people-unrecorded,
+.people-availability > svg, .people-form-note, .people-hours span,
+.people-match small, .people-match > svg, .people-project p,
+.people-project-empty, .people-section-intro, .people-history time,
+.people-history p, .people-outreach-empty > svg, .people-outreach-empty p,
+.people-empty p, .people-note-meta, .people-notes-actions > span { color: var(--muted); }
+.people-tabs [role=tab][aria-selected=true] { color: var(--accent); }
+.people-tabs [role=tab]:hover { background: var(--hover-surface); color: var(--accent); }
+.people-consent.is-recorded { color: var(--positive); }
+.people-match:hover { background: var(--hover-surface); }
+.people-match:hover strong { color: var(--accent); }
+.people-project { background: var(--soft-surface); }
+.people-history-mark, .people-empty-icon { background: var(--selected-surface); color: var(--accent); }
+
+/* Overlays keep the same dark field as the page they belong to. */
+dialog { background: var(--paper); color: var(--ink); box-shadow: -12px 0 60px #10160f66; }
+dialog::backdrop { background: #0d140dc2; backdrop-filter: none; }
+.dialog-top { background: var(--paper); border-color: var(--line); }
+.fit-line svg { color: var(--positive); }
+.fit-line.gap svg { color: var(--warning); }
+.step-list li { color: var(--muted); }
+.step-list li:before { background: var(--selected-surface); color: var(--accent); }
+.audience-chip { background: var(--selected-surface); }
+.draft-preview, .success-panel { background: var(--soft-surface); color: var(--ink); }
+#toast { background: var(--accent); color: var(--on-accent); box-shadow: 0 6px 20px #0d140d66; }
+
+/* The conversation and its actionable draft replies. */
+.connection-dot { background: var(--muted); }
+.connection-dot.connected, .chat-thinking > span { background: var(--positive); }
+.chat-sprout, .assistant-name svg { color: var(--accent); }
+.chat-composer, .chat-draft { background: var(--surface); border-color: var(--field-line); }
+.chat-composer:focus-within, .briefing-composer:focus-within { border-color: var(--accent); }
+.chat-composer textarea::placeholder { color: var(--muted); }
+.user-message > p { background: var(--selected-surface); color: var(--ink); }
+.chat-error, .chat-inline-error, .chat-edit-error { color: var(--danger); }
+.insight-copy h3 svg, .insight-row summary { color: var(--muted); }
+.insight-copy h3 button:hover { color: var(--accent); }
+.insight-evidence { background: var(--soft-surface); }
+
+/* Shared insight evidence and interactive community charts. */
+.briefing-insight-summary, .briefing-evidence, .overview-source-people > span { color: var(--muted); }
+.briefing-evidence strong, .briefing-discuss, .briefing-refresh,
+.briefing-more, .briefing-action, .overview-ask-mark { color: var(--accent); }
+.briefing-composer { background: var(--surface); border-color: var(--field-line); }
+.briefing-composer textarea { color: var(--ink); }
+.briefing-composer textarea::placeholder { color: var(--muted); }
+.briefing-insight:not(.featured) .overview-source-people .avatar { border-color: var(--paper); }
+.overview-section-heading h2 svg { color: var(--accent); }
+.overview-chart-tabs button { color: var(--muted); }
+.overview-chart-tabs button[aria-pressed=true] { color: var(--accent); border-color: var(--accent); }
+.overview-participation-value > strong { color: var(--accent); }
+.participation-repeat { background: #abc395; }
+.participation-first { background: #647b51; }
+.participation-zero { background: #394734; }
+.participation-unknown { background: #798273; }
+.overview-chart-legend button { color: var(--muted); }
+.overview-chart-legend button:hover { color: var(--accent); }
+.overview-interest-track, .overview-event-track { background: var(--selected-surface); }
+.overview-interest-track > i, .overview-event-track > i { background: #abc395; }
+.overview-interests > button:hover .overview-interest-track > i { background: var(--accent); }
+.overview-event:hover .overview-event-copy > strong { color: var(--accent); }

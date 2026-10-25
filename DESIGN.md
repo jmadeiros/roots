@@ -1,39 +1,47 @@
 ---
 name: Roots
-description: A forest-green Overview dashboard with current-record analytics and independent recommendations.
+description: A deep-green workspace centered on conversation, with independent recommendations and compact analytics.
 colors:
-  forest: "#234c3c"
-  deep: "#193d30"
-  brand-accent: "#234c3c"
-  sage: "#e8eddf"
-  featured: "#e8eddf"
-  featured-line: "#dbe4cf"
-  positive-bg: "#d8e5c6"
-  positive-text: "#496134"
-  peach: "#f9ebdf"
-  action-bg: "#f7ebdf"
-  action-text: "#87522c"
-  paper: "#f7f8f3"
-  surface: "#fff"
-  sidebar: "#eff2e9"
-  soft-surface: "#edf2e7"
-  hover-surface: "#e6eddf"
-  topbar: "#f7f8f3"
-  sheet: "#fbfcf8"
-  ink: "#23392f"
-  muted: "#596d5f"
-  secondary-text: "#596d5f"
-  recommendation-text: "#53684f"
-  line: "#dfe5da"
-  focus: "#587842"
-  selected: "#234c3c"
-  field-line: "#cbd6c3"
-  tag-bg: "#f1f3ed"
-  tag-text: "#59694b"
-  table-heading-text: "#596d5f"
+  forest: "#d6e5ca"
+  deep: "#e2eed9"
+  brand-accent: "#d6e5ca"
+  sage: "#344331"
+  featured: "#293228"
+  featured-line: "#3c473a"
+  positive-bg: "#34492d"
+  positive-text: "#bdd7a8"
+  peach: "#483b30"
+  action-bg: "#493b2d"
+  action-text: "#e6bd93"
+  paper: "#20251f"
+  surface: "#2a3129"
+  sidebar: "#1b201b"
+  soft-surface: "#293228"
+  hover-surface: "#303c2e"
+  topbar: "#20251f"
+  sheet: "#20251f"
+  ink: "#e5e9df"
+  muted: "#a9b4a6"
+  secondary-text: "#a9b4a6"
+  recommendation-text: "#a9b4a6"
+  line: "#3c473a"
+  focus: "#d6e5ca"
+  selected: "#344331"
+  field-line: "#73836d"
+  tag-bg: "#344331"
+  tag-text: "#c7d2bf"
+  table-heading-text: "#a9b4a6"
+  accent: "#d6e5ca"
+  accent-hover: "#e2eed9"
+  on-accent: "#21351f"
 typography:
   display:
     fontFamily: "'DM Sans', sans-serif"
+    fontSize: "31px"
+    fontWeight: 500
+    lineHeight: 1.3
+    letterSpacing: "-0.85px"
+  fontFamily: "'DM Sans', sans-serif"
     fontSize: "30px"
     fontWeight: 500
     lineHeight: 1.3
@@ -52,6 +60,11 @@ typography:
     letterSpacing: "-0.3px"
   recommendation-title:
     fontFamily: "'DM Sans', sans-serif"
+    fontSize: "15px"
+    fontWeight: 500
+    lineHeight: 1.5
+    letterSpacing: "-0.12px"
+  fontFamily: "'DM Sans', sans-serif"
     fontSize: "20px"
     fontWeight: 500
     lineHeight: 1.4
@@ -63,6 +76,10 @@ typography:
     lineHeight: 1.5
   supporting:
     fontFamily: "'DM Sans', sans-serif"
+    fontSize: "12px"
+    fontWeight: 400
+    lineHeight: 1.8
+  fontFamily: "'DM Sans', sans-serif"
     fontSize: "13px"
     fontWeight: 400
     lineHeight: 1.8
@@ -85,8 +102,8 @@ rounded:
   compact-card: "10px"
   preview: "12px"
   card: "14px"
-  composer: "12px"
-  insight-card: "13px"
+  composer: "15px"
+  insight-row: "0px"
   circle: "50%"
 spacing:
   micro: "5px"
@@ -100,13 +117,13 @@ spacing:
   gutter: "40px"
 components:
   button-primary:
-    backgroundColor: "{colors.forest}"
-    textColor: "{colors.surface}"
+    backgroundColor: "{colors.accent}"
+    textColor: "{colors.on-accent}"
     typography: "{typography.action}"
     rounded: "{rounded.control}"
     padding: "9px 13px"
   button-primary-hover:
-    backgroundColor: "{colors.deep}"
+    backgroundColor: "{colors.accent-hover}"
   button-secondary:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
@@ -121,7 +138,7 @@ components:
     padding: "9px 13px"
   button-text:
     backgroundColor: "transparent"
-    textColor: "{colors.ink}"
+    textColor: "{colors.accent}"
     typography: "{typography.label}"
     padding: "0"
   input:
@@ -133,11 +150,11 @@ components:
   navigation:
     textColor: "{colors.muted}"
     rounded: "{rounded.navigation}"
-    padding: "10px 12px"
-    height: "42px"
+    padding: "9px 11px"
+    height: "38px"
   navigation-active:
     backgroundColor: "{colors.selected}"
-    textColor: "{colors.surface}"
+    textColor: "{colors.ink}"
   badge-positive:
     backgroundColor: "{colors.positive-bg}"
     textColor: "{colors.positive-text}"
@@ -150,23 +167,18 @@ components:
     typography: "{typography.label}"
     rounded: "{rounded.badge}"
     padding: "4px 7px"
-  metric:
+  composer:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.preview}"
-    padding: "16px 19px"
+    rounded: "{rounded.composer}"
+    padding: "17px 18px 12px"
   recommendation:
-    backgroundColor: "{colors.surface}"
+    backgroundColor: "transparent"
     textColor: "{colors.ink}"
-    rounded: "{rounded.insight-card}"
-    padding: "23px"
-  recommendation-featured:
-    backgroundColor: "{colors.featured}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.insight-card}"
-    padding: "23px"
+    rounded: "{rounded.insight-row}"
+    padding: "16px 0 14px"
   event-date:
-    backgroundColor: "{colors.soft-surface}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     rounded: "{rounded.control}"
     width: "39px"
@@ -177,66 +189,63 @@ components:
 
 ## Direction and authority
 
-**Creative North Star: “Good things are taking root.”**
+**Creative North Star: “What could we make happen?”**
 
-Roots opens on an Overview dashboard that combines current community analytics, useful recommendations, and upcoming events. Dark forest navigation and primary actions, sage featured cards, white analytical surfaces, warm paper, and self-hosted DM Sans restore the original Roots identity.
+Roots is a deep-green workspace centered on conversation. A prominent composer begins the page, with restrained insight rows and compact community patterns beneath it. Light text, pale sage actions, self-hosted DM Sans, and thin dividers establish a quiet, practical interface.
 
-The user's latest direction prefers the original darker green style and asks for a better presentation of insights and analytics on the first page. The original Overview screenshot and forest-green dashboard composition are the visual reference. This supersedes the narrow Today and conversation-first layouts. Preserve a useful dashboard hierarchy while keeping cards compact and supporting details accessible on demand.
+The visual authority is the DARK rendition of the user's earlier central-chat concept in `roots-quieter-workspace.html`. Its `light-dark()` declarations specify the intended dark palette. The subsequent light broad dashboard was a mistaken reference. Preserve the confirmed dark canvas and centered hierarchy while keeping recommendations independent of chat.
 
-Implementation authority is the shared shell in `dist/style.css` and `dist/app.js`, plus the Overview overrides in `dist/briefing.css`. `dist/briefing.js` renders Overview, and `dist/analytics.js` computes current-record arithmetic. `dist/neutral.css` is no longer loaded. The `conversation`, `opportunities`, `people-detail`, and `notices` modules provide the supporting workspaces.
+Implementation authority is the shared shell in `dist/style.css` and `dist/app.js`, the composition in `dist/briefing.css`, and the global theme in `dist/dark.css`, which loads last. `dist/briefing.js` renders Overview and `dist/analytics.js` computes current-record arithmetic. `dist/neutral.css` is no longer loaded. The supporting conversation, opportunities, people-detail, and notices modules share the dark theme.
 
 ## Color and material
 
-- **Forest `#234c3c`** carries selected navigation with white text, primary actions, key chart segments, and the wordmark. **Deep `#193d30`** is the stronger hover state. These dark anchors establish the identity.
-- **Paper `#f7f8f3`** is the page ground, **Ink `#23392f`** carries text, and **Muted `#596d5f`** carries supporting copy.
-- **Sage `#e8eddf`** highlights the first recommendation. Its border is `#dbe4cf`; later recommendations and analytics cards are white.
-- **Sidebar `#eff2e9`**, **Soft Surface `#edf2e7`**, **Hover `#e6eddf`**, **Line `#dfe5da`**, and **Field Line `#cbd6c3`** create a restrained surface hierarchy.
-- Participation uses forest for repeat visits, `#b4c992` for one visit, `#e4e8de` for zero visits, and `#a7ada6` for unknown counts. Labels and counts accompany color. Interest bars use `#658952`; event capacity uses `#8ea86d`.
-- Warm amber remains available for actual prerequisites or warnings. Muted avatar colors identify people without becoming extra dashboard categories.
+The canvas is deep forest green with a darker sidebar, softly lighter dark work surfaces, light ink, muted sage supporting text, and pale sage primary actions. Frontmatter owns the exact values. The production theme sets `color-scheme: dark`; it does not switch to the concept's light rendition.
 
-Do not flatten selected navigation and primary actions into pale green or charcoal. Ordinary surfaces stay flat, with fine borders and restrained corners. Sheets retain a modest side shadow and backdrop. Focus, caret, selection, hover, and active states remain consistent with the forest palette.
+Selected navigation uses the selected surface and light ink. Primary actions use accent with on-accent text, becoming accent-hover on hover. Forest and deep are compatibility aliases for those pale action colors in the current CSS. Ordinary recommendations sit directly on the canvas with a bottom divider; the composer supplies the main raised tonal surface.
+
+Participation uses `#abc395` for repeat visits, `#647b51` for one visit, `#394734` for zero visits, and `#798273` for unknown counts. Interest and event-capacity fills also use `#abc395`. Counts and labels accompany colors. Positive, warning, and avatar treatments use muted dark fills with readable light text.
+
+Focus, caret, selection, and active states use the pale accent. Sheets share the dark canvas with a restrained side shadow and dark backdrop. Avoid introducing white cards or sage feature-card framing into this confirmed Overview composition.
 
 ## Typography
 
-Self-hosted DM Sans remains the sole UI family. The Overview heading is 30px, medium weight, with a 1.3 line height and −0.8px tracking. It steps to 28px on smaller desktops and 26px on phones. Metric values use 34px tabular numbers; metric labels are 12px and explanatory text is 11px.
+Self-hosted DM Sans remains the sole UI family. The centered Overview heading is 31px, medium weight, with 1.3 line height and −0.85px tracking. On phones it becomes left-aligned at 27px with −0.65px tracking. The participation figure is 29px with tabular numerals; inline record totals are 11px.
 
-Section headings use 16px semibold. Recommendation titles use 20px medium, with the featured title at 22px; both are 20px on phones. Supporting recommendation copy is 13px with a 1.8 line height. Navigation is 13px, actions are 12px, and compact review metadata is 11px. Ask Roots uses a 30px greeting and comfortable conversation text. Text entry reaches 16px on phones to avoid browser zoom.
+Overview section labels use 13px medium text. Recommendation titles use 15px medium text, 1.5 line height, and −0.12px tracking; summaries use 12px text at 1.8 line height. Phone summaries rise to 13px. Navigation is 13px, standard buttons 12px, and compact actions and review metadata 11px. The prominent composer uses 14px text on desktop and 16px on phones. Ask Roots retains a 30px greeting and comfortable conversation text.
 
-Use hierarchy and spacing to make the dashboard scannable. Keep body contrast at least 4.5:1 and visible focus on every interactive control. Record pages retain practical 12–14px text.
+Use the restrained hierarchy to keep the composer prominent and supporting records readable. Keep body contrast at least 4.5:1 and visible focus on every interactive control. Record pages retain practical 12–14px text.
 
 ## Navigation and layout
 
 Primary navigation contains **Overview, People, Opportunities, Outreach**. Overview keeps the `#briefing` route; `#overview` is an alias. **Ask Roots** and **Calendar** are secondary links. Old Funding links resolve to Opportunities, and the underlying Notices route is labeled Outreach.
 
-The desktop sidebar is **200px** wide, reduces to **180px** between 761px and 1100px, and collapses to a **60px** icon rail. Navigation rows are 42px high with solid forest selection and white text. The wordmark is 29px, and the workspace label and profile remain compact. Hidden labels retain accessible names. The desktop topbar is 56px high with a fine bottom divider.
+The desktop sidebar is **174px** and collapses to a **60px** icon rail. Navigation rows are 38px high with dark selected-surface fill and light ink. The wordmark is 27px; the workspace label is hidden. Collapsed labels retain accessible names. The desktop topbar is 52px high without a bottom border.
 
-The page container is capped at **1184px**, including 32px side padding. A familiar heading and **Current records** scope label sit above three compact metric cards. Below them, recommendations occupy the wider left column and analytics the right, using a **1.65:1** grid with a **25px** gap and a 300px minimum right column.
+The shared page container caps at **1184px**, with Overview and Ask Roots each centered in a **720px** column. Overview starts with **What could we make happen?** and its prominent composer, followed by **Worth your attention**, two insight rows with an optional third, and **Community patterns**. The latter offers Participation, Interests, and Events tabs and inline record counts. Footnotes hold the review explanation and illustrative-record label. There is no separate Coming up panel or row of KPI cards.
 
-The left column has **Worth your attention**, compact independent review status, two recommendation cards with an optional third, a review explanation disclosure, and a small Ask Roots composer. The right column holds **Community patterns** above **Coming up**. The Overview remains independent of chat messages and is not a centered conversation landing page.
+The composer has a 15px radius, 17px 18px 12px padding, a multiline field, context label, and 32px pale send control. Submitting opens the existing Ask Roots conversation. Overview's independent insights remain available without a prompt.
 
-Between 761px and 900px the recommendations stack above a two-card analytics row. On phones all sections stack, the three metrics remain compact across the top, and navigation becomes four labeled bottom items with safe-area spacing. The main phone gutters are 19px. Charts, forms, and disclosures must not force horizontal page scrolling.
-
-Ask Roots remains a separate conversation, with a 700px reading column and its own transcript and inline actions. The Overview composer is a compact entry point: white surface, 12px radius, 12–13px padding, a small sprout, and forest send control. It grows for text and uses a larger input on phones; it does not determine the dashboard's height or composition.
+At desktop heights up to 760px, top spacing and row padding tighten. At widths up to 1000px, page gutters become 25px. On phones at 760px and below, the heading aligns left, content uses 20px gutters, the composer input becomes 16px and its send control becomes 44×44px, chart content stacks, and navigation becomes four labeled bottom items with safe-area spacing. Charts, forms, and disclosures must not force horizontal page scrolling.
 
 ## Snapshot analytics
 
-The three top metrics are **People**, **Recorded hours**, and **Opportunity leads**. The first two open the contributing people; the third opens Opportunities. Current seed totals are **35 people**, **893 recorded hours**, and **11 opportunity leads**. The people card also identifies **8 people with one recorded visit**. These are illustrative saved-record totals, recomputed when records change.
+Inline counts beneath Community patterns show **People**, **Recorded hours**, and **Opportunity leads**. The first two open contributing people; the third opens Opportunities. Seed totals are **35 people**, **893 recorded hours**, and **11 opportunity leads**. These are illustrative saved-record totals, recomputed when records change.
 
-Community patterns switches between **Participation** and **Interests**. Participation shows a stacked bar for one visit, repeat visits, zero visits, and unknown counts. Clicking a segment or legend opens its people. Its headline percentage is repeat-visit profiles divided by profiles with at least one recorded visit: **27 / 35**, rounded to **77%**, in the seed snapshot. The bar itself represents all profiles, including zero and unknown groups when present. State the denominator clearly.
+Community patterns switches between **Participation**, **Interests**, and **Events**. Participation shows a stacked bar for one visit, repeat visits, zero visits, and unknown counts. Clicking a segment or legend opens its people. Its headline percentage is repeat-visit profiles divided by profiles with at least one recorded visit: **27 / 35**, rounded to **77%**, in the seed snapshot. The bar itself represents all profiles, including zero and unknown groups when present. State the denominator clearly.
 
 This is a distribution of accumulated visit counts, not cohort retention, a monthly return rate, or a trend. Do not restore the old hardcoded 42%, month-over-month changes, growth arrows, or invented historical series. Missing values are not zero. Recorded hours sum valid direct profile totals and do not use generated attendance stories or illustrative approved/pending breakdowns.
 
 Interests shows the five largest groups by stated interest. Each bar counts people and opens that group; a person may appear in several groups. The bar scale uses the number of people in the workspace, not a claim that categories sum to 100%. Keep names, counts, and an overlap explanation visible.
 
-Coming up shows three date-sorted event rows with date, title, time, recorded attendee/capacity values, open places, and a capacity bar. Each opens the event record; View all opens Calendar. Missing or invalid capacity gets a plain unknown state. Aggregate counts do not establish any named person's RSVP or attendance.
+The Events tab shows up to three event rows with date, title, time, recorded attendee/capacity values, open places, and a capacity bar. Each opens the event record; Calendar remains in secondary navigation. Missing or invalid capacity gets a plain unknown state. Aggregate counts do not establish any named person's RSVP or attendance.
 
 Every chart needs readable labels, keyboard-operable groups, honest empty states, and a path to its underlying records. Unknown data, invalid values, and a lack of history must remain distinct from poor performance.
 
 ## Recommendations, evidence, and freshness
 
-Start with two recommendations, with **One more idea** exposing a third when available. The first card uses sage and a forest primary action; the second uses white and a quieter action. Cards have a 13px radius and 23px padding. Each contains a concise title, one factual explanation, referenced people when available, and a direct review action.
+Start with two recommendations, with **One more idea** exposing a third when available. Each is a restrained row directly on the canvas, separated by a fine bottom border and 16px 0 14px padding. A concise title and small review action share the first line, followed by factual supporting copy and an evidence disclosure. No recommendation receives feature-card fill.
 
-**Why this surfaced** reveals the model's suggested next step, evidence, unknowns, source record links, and **Discuss this with Roots**. Referenced avatars open their profiles. **How Roots finds these ideas** explains the review source, bounded fact catalog, cadence, and limitations below the recommendations.
+**Why this surfaced** reveals the model's suggested next step, evidence, unknowns, source record links, and **Discuss this with Roots**. Referenced source links open their records. **How Roots finds these ideas** explains the review source, bounded fact catalog, cadence, and limitations in the page footnotes.
 
 Current matches connect first-visit gardeners to a relevant event, service-hour interests to a school-partnership lead, and a draft project team to different availability descriptions. An interest match is not eligibility; a proposed role is not agreement; recorded capacity does not establish individual RSVPs. All seed records remain illustrative.
 
@@ -252,9 +261,9 @@ Keep status beside the section heading. Three small dots indicate actual checkin
 
 ## Ask Roots and inline actions
 
-Ask Roots is separate from the Overview and accessible through secondary navigation, its compact composer, and recommendation disclosures. User messages use a soft green bubble; assistant text sits directly on the page with a small Roots identity. Checking indicators reflect actual requests, and failures expose recovery rather than fabricated replies.
+Ask Roots is accessible through secondary navigation, the prominent Overview composer, and recommendation disclosures. Submitting the Overview composer hands the prompt into the existing conversation. User messages use a soft green bubble; assistant text sits directly on the page with a small Roots identity. Checking indicators reflect actual requests, and failures expose recovery rather than fabricated replies.
 
-The conversation composer remains a white field with a fine boundary and forest send control. Nearby text explains connection needs and the lack of email/SMS delivery. The published preview must not imitate a live model connection.
+The conversation composer uses the dark surface with a fine boundary and pale sage send control. Nearby text explains connection needs and the lack of email/SMS delivery. The published preview must not imitate a live model connection.
 
 Email and SMS drafts appear inline with recipient, channel, message, **Not sent**, and readiness blockers. Recipient names open records. **Edit message** changes an existing unsent draft; **Copy** copies text; **Refine in chat** prepares a follow-up instruction. None sends outreach. Keep draft revisions available through Outreach and never conceal missing permission, contact details, or providers behind a successful-looking status.
 
@@ -280,4 +289,4 @@ Connection details distinguish configuration, synchronization, polling, and fail
 
 Use explicit labels, native disclosures, accessible chart groups and selectors, and keyboard focus return. Preserve expanded evidence during status updates where possible. Prefer restrained sheet transitions and truthful work indicators, with reduced-motion support.
 
-Keep Overview practical: current-record patterns, a small number of useful recommendations, and upcoming events. Preserve the darker forest identity and original dashboard hierarchy while making its numbers inspectable and its actions concrete. Keep calculations, interpretations, delivery readiness, and unverified program leads clearly distinguishable.
+Keep Overview practical: current-record patterns, a small number of useful recommendations, and upcoming events. Preserve the full dark green canvas and centered composer-first hierarchy while making its numbers inspectable and its actions concrete. Keep calculations, interpretations, delivery readiness, and unverified program leads clearly distinguishable.

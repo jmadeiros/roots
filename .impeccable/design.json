@@ -1,449 +1,494 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-25T03:52:00.757429+00:00",
+  "generatedAt": "2026-10-25T03:57:33.245287+00:00",
   "title": "Design System: Roots",
   "extensions": {
     "colorMeta": {
       "forest": {
         "role": "primary",
         "displayName": "Forest",
-        "canonical": "#234c3c",
+        "canonical": "#d6e5ca",
         "tonalRamp": [
-          "oklch(15.00% 0.05432 165.94)",
-          "oklch(26.43% 0.05432 165.94)",
-          "oklch(37.86% 0.05432 165.94)",
-          "oklch(49.29% 0.05432 165.94)",
-          "oklch(60.71% 0.05432 165.94)",
-          "oklch(72.14% 0.05432 165.94)",
-          "oklch(83.57% 0.05432 165.94)",
-          "oklch(95.00% 0.05432 165.94)"
+          "oklch(15.00% 0.03952 131.06)",
+          "oklch(26.43% 0.03952 131.06)",
+          "oklch(37.86% 0.03952 131.06)",
+          "oklch(49.29% 0.03952 131.06)",
+          "oklch(60.71% 0.03952 131.06)",
+          "oklch(72.14% 0.03952 131.06)",
+          "oklch(83.57% 0.03952 131.06)",
+          "oklch(95.00% 0.03952 131.06)"
         ]
       },
       "deep": {
         "role": "primary",
         "displayName": "Deep",
-        "canonical": "#193d30",
+        "canonical": "#e2eed9",
         "tonalRamp": [
-          "oklch(15.00% 0.04806 167.34)",
-          "oklch(26.43% 0.04806 167.34)",
-          "oklch(37.86% 0.04806 167.34)",
-          "oklch(49.29% 0.04806 167.34)",
-          "oklch(60.71% 0.04806 167.34)",
-          "oklch(72.14% 0.04806 167.34)",
-          "oklch(83.57% 0.04806 167.34)",
-          "oklch(95.00% 0.04806 167.34)"
+          "oklch(15.00% 0.03067 131.55)",
+          "oklch(26.43% 0.03067 131.55)",
+          "oklch(37.86% 0.03067 131.55)",
+          "oklch(49.29% 0.03067 131.55)",
+          "oklch(60.71% 0.03067 131.55)",
+          "oklch(72.14% 0.03067 131.55)",
+          "oklch(83.57% 0.03067 131.55)",
+          "oklch(95.00% 0.03067 131.55)"
         ]
       },
       "sage": {
         "role": "primary",
         "displayName": "Sage",
-        "canonical": "#e8eddf",
+        "canonical": "#344331",
         "tonalRamp": [
-          "oklch(15.00% 0.01933 122.84)",
-          "oklch(26.43% 0.01933 122.84)",
-          "oklch(37.86% 0.01933 122.84)",
-          "oklch(49.29% 0.01933 122.84)",
-          "oklch(60.71% 0.01933 122.84)",
-          "oklch(72.14% 0.01933 122.84)",
-          "oklch(83.57% 0.01933 122.84)",
-          "oklch(95.00% 0.01933 122.84)"
+          "oklch(15.00% 0.03600 140.39)",
+          "oklch(26.43% 0.03600 140.39)",
+          "oklch(37.86% 0.03600 140.39)",
+          "oklch(49.29% 0.03600 140.39)",
+          "oklch(60.71% 0.03600 140.39)",
+          "oklch(72.14% 0.03600 140.39)",
+          "oklch(83.57% 0.03600 140.39)",
+          "oklch(95.00% 0.03600 140.39)"
         ]
       },
       "featured": {
         "role": "primary",
         "displayName": "Featured",
-        "canonical": "#e8eddf",
+        "canonical": "#293228",
         "tonalRamp": [
-          "oklch(15.00% 0.01933 122.84)",
-          "oklch(26.43% 0.01933 122.84)",
-          "oklch(37.86% 0.01933 122.84)",
-          "oklch(49.29% 0.01933 122.84)",
-          "oklch(60.71% 0.01933 122.84)",
-          "oklch(72.14% 0.01933 122.84)",
-          "oklch(83.57% 0.01933 122.84)",
-          "oklch(95.00% 0.01933 122.84)"
+          "oklch(15.00% 0.02155 142.34)",
+          "oklch(26.43% 0.02155 142.34)",
+          "oklch(37.86% 0.02155 142.34)",
+          "oklch(49.29% 0.02155 142.34)",
+          "oklch(60.71% 0.02155 142.34)",
+          "oklch(72.14% 0.02155 142.34)",
+          "oklch(83.57% 0.02155 142.34)",
+          "oklch(95.00% 0.02155 142.34)"
         ]
       },
       "featured-line": {
         "role": "primary",
         "displayName": "Featured Line",
-        "canonical": "#dbe4cf",
+        "canonical": "#3c473a",
         "tonalRamp": [
-          "oklch(15.00% 0.02969 125.99)",
-          "oklch(26.43% 0.02969 125.99)",
-          "oklch(37.86% 0.02969 125.99)",
-          "oklch(49.29% 0.02969 125.99)",
-          "oklch(60.71% 0.02969 125.99)",
-          "oklch(72.14% 0.02969 125.99)",
-          "oklch(83.57% 0.02969 125.99)",
-          "oklch(95.00% 0.02969 125.99)"
+          "oklch(15.00% 0.02594 140.81)",
+          "oklch(26.43% 0.02594 140.81)",
+          "oklch(37.86% 0.02594 140.81)",
+          "oklch(49.29% 0.02594 140.81)",
+          "oklch(60.71% 0.02594 140.81)",
+          "oklch(72.14% 0.02594 140.81)",
+          "oklch(83.57% 0.02594 140.81)",
+          "oklch(95.00% 0.02594 140.81)"
         ]
       },
       "positive-bg": {
         "role": "primary",
         "displayName": "Positive Bg",
-        "canonical": "#d8e5c6",
+        "canonical": "#34492d",
         "tonalRamp": [
-          "oklch(15.00% 0.04362 125.83)",
-          "oklch(26.43% 0.04362 125.83)",
-          "oklch(37.86% 0.04362 125.83)",
-          "oklch(49.29% 0.04362 125.83)",
-          "oklch(60.71% 0.04362 125.83)",
-          "oklch(72.14% 0.04362 125.83)",
-          "oklch(83.57% 0.04362 125.83)",
-          "oklch(95.00% 0.04362 125.83)"
+          "oklch(15.00% 0.05305 138.08)",
+          "oklch(26.43% 0.05305 138.08)",
+          "oklch(37.86% 0.05305 138.08)",
+          "oklch(49.29% 0.05305 138.08)",
+          "oklch(60.71% 0.05305 138.08)",
+          "oklch(72.14% 0.05305 138.08)",
+          "oklch(83.57% 0.05305 138.08)",
+          "oklch(95.00% 0.05305 138.08)"
         ]
       },
       "positive-text": {
         "role": "primary",
         "displayName": "Positive Text",
-        "canonical": "#496134",
+        "canonical": "#bdd7a8",
         "tonalRamp": [
-          "oklch(15.00% 0.07418 131.67)",
-          "oklch(26.43% 0.07418 131.67)",
-          "oklch(37.86% 0.07418 131.67)",
-          "oklch(49.29% 0.07418 131.67)",
-          "oklch(60.71% 0.07418 131.67)",
-          "oklch(72.14% 0.07418 131.67)",
-          "oklch(83.57% 0.07418 131.67)",
-          "oklch(95.00% 0.07418 131.67)"
+          "oklch(15.00% 0.06930 131.36)",
+          "oklch(26.43% 0.06930 131.36)",
+          "oklch(37.86% 0.06930 131.36)",
+          "oklch(49.29% 0.06930 131.36)",
+          "oklch(60.71% 0.06930 131.36)",
+          "oklch(72.14% 0.06930 131.36)",
+          "oklch(83.57% 0.06930 131.36)",
+          "oklch(95.00% 0.06930 131.36)"
         ]
       },
       "peach": {
         "role": "secondary",
         "displayName": "Peach",
-        "canonical": "#f9ebdf",
+        "canonical": "#483b30",
         "tonalRamp": [
-          "oklch(15.00% 0.02211 63.20)",
-          "oklch(26.43% 0.02211 63.20)",
-          "oklch(37.86% 0.02211 63.20)",
-          "oklch(49.29% 0.02211 63.20)",
-          "oklch(60.71% 0.02211 63.20)",
-          "oklch(72.14% 0.02211 63.20)",
-          "oklch(83.57% 0.02211 63.20)",
-          "oklch(95.00% 0.02211 63.20)"
+          "oklch(15.00% 0.02584 62.11)",
+          "oklch(26.43% 0.02584 62.11)",
+          "oklch(37.86% 0.02584 62.11)",
+          "oklch(49.29% 0.02584 62.11)",
+          "oklch(60.71% 0.02584 62.11)",
+          "oklch(72.14% 0.02584 62.11)",
+          "oklch(83.57% 0.02584 62.11)",
+          "oklch(95.00% 0.02584 62.11)"
         ]
       },
       "action-bg": {
         "role": "secondary",
         "displayName": "Action Bg",
-        "canonical": "#f7ebdf",
+        "canonical": "#493b2d",
         "tonalRamp": [
-          "oklch(15.00% 0.02065 67.57)",
-          "oklch(26.43% 0.02065 67.57)",
-          "oklch(37.86% 0.02065 67.57)",
-          "oklch(49.29% 0.02065 67.57)",
-          "oklch(60.71% 0.02065 67.57)",
-          "oklch(72.14% 0.02065 67.57)",
-          "oklch(83.57% 0.02065 67.57)",
-          "oklch(95.00% 0.02065 67.57)"
+          "oklch(15.00% 0.03021 66.63)",
+          "oklch(26.43% 0.03021 66.63)",
+          "oklch(37.86% 0.03021 66.63)",
+          "oklch(49.29% 0.03021 66.63)",
+          "oklch(60.71% 0.03021 66.63)",
+          "oklch(72.14% 0.03021 66.63)",
+          "oklch(83.57% 0.03021 66.63)",
+          "oklch(95.00% 0.03021 66.63)"
         ]
       },
       "action-text": {
         "role": "secondary",
         "displayName": "Action Text",
-        "canonical": "#87522c",
+        "canonical": "#e6bd93",
         "tonalRamp": [
-          "oklch(15.00% 0.08830 54.63)",
-          "oklch(26.43% 0.08830 54.63)",
-          "oklch(37.86% 0.08830 54.63)",
-          "oklch(49.29% 0.08830 54.63)",
-          "oklch(60.71% 0.08830 54.63)",
-          "oklch(72.14% 0.08830 54.63)",
-          "oklch(83.57% 0.08830 54.63)",
-          "oklch(95.00% 0.08830 54.63)"
+          "oklch(15.00% 0.07290 67.21)",
+          "oklch(26.43% 0.07290 67.21)",
+          "oklch(37.86% 0.07290 67.21)",
+          "oklch(49.29% 0.07290 67.21)",
+          "oklch(60.71% 0.07290 67.21)",
+          "oklch(72.14% 0.07290 67.21)",
+          "oklch(83.57% 0.07290 67.21)",
+          "oklch(95.00% 0.07290 67.21)"
         ]
       },
       "paper": {
         "role": "neutral",
         "displayName": "Paper",
-        "canonical": "#f7f8f3",
+        "canonical": "#20251f",
         "tonalRamp": [
-          "oklch(15.00% 0.00667 115.70)",
-          "oklch(26.43% 0.00667 115.70)",
-          "oklch(37.86% 0.00667 115.70)",
-          "oklch(49.29% 0.00667 115.70)",
-          "oklch(60.71% 0.00667 115.70)",
-          "oklch(72.14% 0.00667 115.70)",
-          "oklch(83.57% 0.00667 115.70)",
-          "oklch(95.00% 0.00667 115.70)"
+          "oklch(15.00% 0.01320 140.45)",
+          "oklch(26.43% 0.01320 140.45)",
+          "oklch(37.86% 0.01320 140.45)",
+          "oklch(49.29% 0.01320 140.45)",
+          "oklch(60.71% 0.01320 140.45)",
+          "oklch(72.14% 0.01320 140.45)",
+          "oklch(83.57% 0.01320 140.45)",
+          "oklch(95.00% 0.01320 140.45)"
         ]
       },
       "surface": {
         "role": "neutral",
         "displayName": "Surface",
-        "canonical": "#fff",
+        "canonical": "#2a3129",
         "tonalRamp": [
-          "oklch(15.00% 0.00000 89.88)",
-          "oklch(26.43% 0.00000 89.88)",
-          "oklch(37.86% 0.00000 89.88)",
-          "oklch(49.29% 0.00000 89.88)",
-          "oklch(60.71% 0.00000 89.88)",
-          "oklch(72.14% 0.00000 89.88)",
-          "oklch(83.57% 0.00000 89.88)",
-          "oklch(95.00% 0.00000 89.88)"
+          "oklch(15.00% 0.01714 141.68)",
+          "oklch(26.43% 0.01714 141.68)",
+          "oklch(37.86% 0.01714 141.68)",
+          "oklch(49.29% 0.01714 141.68)",
+          "oklch(60.71% 0.01714 141.68)",
+          "oklch(72.14% 0.01714 141.68)",
+          "oklch(83.57% 0.01714 141.68)",
+          "oklch(95.00% 0.01714 141.68)"
         ]
       },
       "sidebar": {
         "role": "neutral",
         "displayName": "Sidebar",
-        "canonical": "#eff2e9",
+        "canonical": "#1b201b",
         "tonalRamp": [
-          "oklch(15.00% 0.01232 121.70)",
-          "oklch(26.43% 0.01232 121.70)",
-          "oklch(37.86% 0.01232 121.70)",
-          "oklch(49.29% 0.01232 121.70)",
-          "oklch(60.71% 0.01232 121.70)",
-          "oklch(72.14% 0.01232 121.70)",
-          "oklch(83.57% 0.01232 121.70)",
-          "oklch(95.00% 0.01232 121.70)"
+          "oklch(15.00% 0.01197 145.18)",
+          "oklch(26.43% 0.01197 145.18)",
+          "oklch(37.86% 0.01197 145.18)",
+          "oklch(49.29% 0.01197 145.18)",
+          "oklch(60.71% 0.01197 145.18)",
+          "oklch(72.14% 0.01197 145.18)",
+          "oklch(83.57% 0.01197 145.18)",
+          "oklch(95.00% 0.01197 145.18)"
         ]
       },
       "topbar": {
         "role": "neutral",
         "displayName": "Topbar",
-        "canonical": "#f7f8f3",
+        "canonical": "#20251f",
         "tonalRamp": [
-          "oklch(15.00% 0.00667 115.70)",
-          "oklch(26.43% 0.00667 115.70)",
-          "oklch(37.86% 0.00667 115.70)",
-          "oklch(49.29% 0.00667 115.70)",
-          "oklch(60.71% 0.00667 115.70)",
-          "oklch(72.14% 0.00667 115.70)",
-          "oklch(83.57% 0.00667 115.70)",
-          "oklch(95.00% 0.00667 115.70)"
+          "oklch(15.00% 0.01320 140.45)",
+          "oklch(26.43% 0.01320 140.45)",
+          "oklch(37.86% 0.01320 140.45)",
+          "oklch(49.29% 0.01320 140.45)",
+          "oklch(60.71% 0.01320 140.45)",
+          "oklch(72.14% 0.01320 140.45)",
+          "oklch(83.57% 0.01320 140.45)",
+          "oklch(95.00% 0.01320 140.45)"
         ]
       },
       "sheet": {
         "role": "neutral",
         "displayName": "Sheet",
-        "canonical": "#fcfdf9",
+        "canonical": "#20251f",
         "tonalRamp": [
-          "oklch(15.00% 0.00536 117.92)",
-          "oklch(26.43% 0.00536 117.92)",
-          "oklch(37.86% 0.00536 117.92)",
-          "oklch(49.29% 0.00536 117.92)",
-          "oklch(60.71% 0.00536 117.92)",
-          "oklch(72.14% 0.00536 117.92)",
-          "oklch(83.57% 0.00536 117.92)",
-          "oklch(95.00% 0.00536 117.92)"
+          "oklch(15.00% 0.01320 140.45)",
+          "oklch(26.43% 0.01320 140.45)",
+          "oklch(37.86% 0.01320 140.45)",
+          "oklch(49.29% 0.01320 140.45)",
+          "oklch(60.71% 0.01320 140.45)",
+          "oklch(72.14% 0.01320 140.45)",
+          "oklch(83.57% 0.01320 140.45)",
+          "oklch(95.00% 0.01320 140.45)"
         ]
       },
       "ink": {
         "role": "neutral",
         "displayName": "Ink",
-        "canonical": "#23392f",
+        "canonical": "#e5e9df",
         "tonalRamp": [
-          "oklch(15.00% 0.03327 164.30)",
-          "oklch(26.43% 0.03327 164.30)",
-          "oklch(37.86% 0.03327 164.30)",
-          "oklch(49.29% 0.03327 164.30)",
-          "oklch(60.71% 0.03327 164.30)",
-          "oklch(72.14% 0.03327 164.30)",
-          "oklch(83.57% 0.03327 164.30)",
-          "oklch(95.00% 0.03327 164.30)"
+          "oklch(15.00% 0.01399 124.56)",
+          "oklch(26.43% 0.01399 124.56)",
+          "oklch(37.86% 0.01399 124.56)",
+          "oklch(49.29% 0.01399 124.56)",
+          "oklch(60.71% 0.01399 124.56)",
+          "oklch(72.14% 0.01399 124.56)",
+          "oklch(83.57% 0.01399 124.56)",
+          "oklch(95.00% 0.01399 124.56)"
         ]
       },
       "muted": {
         "role": "neutral",
         "displayName": "Muted",
-        "canonical": "#596d5f",
+        "canonical": "#a9b4a6",
         "tonalRamp": [
-          "oklch(15.00% 0.03244 154.60)",
-          "oklch(26.43% 0.03244 154.60)",
-          "oklch(37.86% 0.03244 154.60)",
-          "oklch(49.29% 0.03244 154.60)",
-          "oklch(60.71% 0.03244 154.60)",
-          "oklch(72.14% 0.03244 154.60)",
-          "oklch(83.57% 0.03244 154.60)",
-          "oklch(95.00% 0.03244 154.60)"
+          "oklch(15.00% 0.02317 138.98)",
+          "oklch(26.43% 0.02317 138.98)",
+          "oklch(37.86% 0.02317 138.98)",
+          "oklch(49.29% 0.02317 138.98)",
+          "oklch(60.71% 0.02317 138.98)",
+          "oklch(72.14% 0.02317 138.98)",
+          "oklch(83.57% 0.02317 138.98)",
+          "oklch(95.00% 0.02317 138.98)"
         ]
       },
       "secondary-text": {
         "role": "neutral",
         "displayName": "Secondary Text",
-        "canonical": "#596d5f",
+        "canonical": "#a9b4a6",
         "tonalRamp": [
-          "oklch(15.00% 0.03244 154.60)",
-          "oklch(26.43% 0.03244 154.60)",
-          "oklch(37.86% 0.03244 154.60)",
-          "oklch(49.29% 0.03244 154.60)",
-          "oklch(60.71% 0.03244 154.60)",
-          "oklch(72.14% 0.03244 154.60)",
-          "oklch(83.57% 0.03244 154.60)",
-          "oklch(95.00% 0.03244 154.60)"
+          "oklch(15.00% 0.02317 138.98)",
+          "oklch(26.43% 0.02317 138.98)",
+          "oklch(37.86% 0.02317 138.98)",
+          "oklch(49.29% 0.02317 138.98)",
+          "oklch(60.71% 0.02317 138.98)",
+          "oklch(72.14% 0.02317 138.98)",
+          "oklch(83.57% 0.02317 138.98)",
+          "oklch(95.00% 0.02317 138.98)"
         ]
       },
       "recommendation-text": {
         "role": "neutral",
         "displayName": "Recommendation Text",
-        "canonical": "#53684f",
+        "canonical": "#a9b4a6",
         "tonalRamp": [
-          "oklch(15.00% 0.04651 140.58)",
-          "oklch(26.43% 0.04651 140.58)",
-          "oklch(37.86% 0.04651 140.58)",
-          "oklch(49.29% 0.04651 140.58)",
-          "oklch(60.71% 0.04651 140.58)",
-          "oklch(72.14% 0.04651 140.58)",
-          "oklch(83.57% 0.04651 140.58)",
-          "oklch(95.00% 0.04651 140.58)"
+          "oklch(15.00% 0.02317 138.98)",
+          "oklch(26.43% 0.02317 138.98)",
+          "oklch(37.86% 0.02317 138.98)",
+          "oklch(49.29% 0.02317 138.98)",
+          "oklch(60.71% 0.02317 138.98)",
+          "oklch(72.14% 0.02317 138.98)",
+          "oklch(83.57% 0.02317 138.98)",
+          "oklch(95.00% 0.02317 138.98)"
         ]
       },
       "line": {
         "role": "neutral",
         "displayName": "Line",
-        "canonical": "#dfe5da",
+        "canonical": "#3c473a",
         "tonalRamp": [
-          "oklch(15.00% 0.01605 130.43)",
-          "oklch(26.43% 0.01605 130.43)",
-          "oklch(37.86% 0.01605 130.43)",
-          "oklch(49.29% 0.01605 130.43)",
-          "oklch(60.71% 0.01605 130.43)",
-          "oklch(72.14% 0.01605 130.43)",
-          "oklch(83.57% 0.01605 130.43)",
-          "oklch(95.00% 0.01605 130.43)"
+          "oklch(15.00% 0.02594 140.81)",
+          "oklch(26.43% 0.02594 140.81)",
+          "oklch(37.86% 0.02594 140.81)",
+          "oklch(49.29% 0.02594 140.81)",
+          "oklch(60.71% 0.02594 140.81)",
+          "oklch(72.14% 0.02594 140.81)",
+          "oklch(83.57% 0.02594 140.81)",
+          "oklch(95.00% 0.02594 140.81)"
         ]
       },
       "focus": {
         "role": "primary",
         "displayName": "Focus",
-        "canonical": "#587842",
+        "canonical": "#d6e5ca",
         "tonalRamp": [
-          "oklch(15.00% 0.08757 133.62)",
-          "oklch(26.43% 0.08757 133.62)",
-          "oklch(37.86% 0.08757 133.62)",
-          "oklch(49.29% 0.08757 133.62)",
-          "oklch(60.71% 0.08757 133.62)",
-          "oklch(72.14% 0.08757 133.62)",
-          "oklch(83.57% 0.08757 133.62)",
-          "oklch(95.00% 0.08757 133.62)"
+          "oklch(15.00% 0.03952 131.06)",
+          "oklch(26.43% 0.03952 131.06)",
+          "oklch(37.86% 0.03952 131.06)",
+          "oklch(49.29% 0.03952 131.06)",
+          "oklch(60.71% 0.03952 131.06)",
+          "oklch(72.14% 0.03952 131.06)",
+          "oklch(83.57% 0.03952 131.06)",
+          "oklch(95.00% 0.03952 131.06)"
         ]
       },
       "tag-bg": {
         "role": "neutral",
         "displayName": "Tag Bg",
-        "canonical": "#f1f3ed",
+        "canonical": "#344331",
         "tonalRamp": [
-          "oklch(15.00% 0.00821 121.63)",
-          "oklch(26.43% 0.00821 121.63)",
-          "oklch(37.86% 0.00821 121.63)",
-          "oklch(49.29% 0.00821 121.63)",
-          "oklch(60.71% 0.00821 121.63)",
-          "oklch(72.14% 0.00821 121.63)",
-          "oklch(83.57% 0.00821 121.63)",
-          "oklch(95.00% 0.00821 121.63)"
+          "oklch(15.00% 0.03600 140.39)",
+          "oklch(26.43% 0.03600 140.39)",
+          "oklch(37.86% 0.03600 140.39)",
+          "oklch(49.29% 0.03600 140.39)",
+          "oklch(60.71% 0.03600 140.39)",
+          "oklch(72.14% 0.03600 140.39)",
+          "oklch(83.57% 0.03600 140.39)",
+          "oklch(95.00% 0.03600 140.39)"
         ]
       },
       "tag-text": {
         "role": "neutral",
         "displayName": "Tag Text",
-        "canonical": "#59694b",
+        "canonical": "#c7d2bf",
         "tonalRamp": [
-          "oklch(15.00% 0.04991 130.86)",
-          "oklch(26.43% 0.04991 130.86)",
-          "oklch(37.86% 0.04991 130.86)",
-          "oklch(49.29% 0.04991 130.86)",
-          "oklch(60.71% 0.04991 130.86)",
-          "oklch(72.14% 0.04991 130.86)",
-          "oklch(83.57% 0.04991 130.86)",
-          "oklch(95.00% 0.04991 130.86)"
+          "oklch(15.00% 0.02848 131.84)",
+          "oklch(26.43% 0.02848 131.84)",
+          "oklch(37.86% 0.02848 131.84)",
+          "oklch(49.29% 0.02848 131.84)",
+          "oklch(60.71% 0.02848 131.84)",
+          "oklch(72.14% 0.02848 131.84)",
+          "oklch(83.57% 0.02848 131.84)",
+          "oklch(95.00% 0.02848 131.84)"
         ]
       },
       "table-heading-text": {
         "role": "neutral",
         "displayName": "Table Heading Text",
-        "canonical": "#596d5f",
+        "canonical": "#a9b4a6",
         "tonalRamp": [
-          "oklch(15.00% 0.03244 154.60)",
-          "oklch(26.43% 0.03244 154.60)",
-          "oklch(37.86% 0.03244 154.60)",
-          "oklch(49.29% 0.03244 154.60)",
-          "oklch(60.71% 0.03244 154.60)",
-          "oklch(72.14% 0.03244 154.60)",
-          "oklch(83.57% 0.03244 154.60)",
-          "oklch(95.00% 0.03244 154.60)"
+          "oklch(15.00% 0.02317 138.98)",
+          "oklch(26.43% 0.02317 138.98)",
+          "oklch(37.86% 0.02317 138.98)",
+          "oklch(49.29% 0.02317 138.98)",
+          "oklch(60.71% 0.02317 138.98)",
+          "oklch(72.14% 0.02317 138.98)",
+          "oklch(83.57% 0.02317 138.98)",
+          "oklch(95.00% 0.02317 138.98)"
         ]
       },
       "brand-accent": {
         "role": "primary",
         "displayName": "Brand Accent",
-        "canonical": "#234c3c",
+        "canonical": "#d6e5ca",
         "tonalRamp": [
-          "oklch(15.00% 0.05432 165.94)",
-          "oklch(26.43% 0.05432 165.94)",
-          "oklch(37.86% 0.05432 165.94)",
-          "oklch(49.29% 0.05432 165.94)",
-          "oklch(60.71% 0.05432 165.94)",
-          "oklch(72.14% 0.05432 165.94)",
-          "oklch(83.57% 0.05432 165.94)",
-          "oklch(95.00% 0.05432 165.94)"
+          "oklch(15.00% 0.03952 131.06)",
+          "oklch(26.43% 0.03952 131.06)",
+          "oklch(37.86% 0.03952 131.06)",
+          "oklch(49.29% 0.03952 131.06)",
+          "oklch(60.71% 0.03952 131.06)",
+          "oklch(72.14% 0.03952 131.06)",
+          "oklch(83.57% 0.03952 131.06)",
+          "oklch(95.00% 0.03952 131.06)"
         ]
       },
       "soft-surface": {
         "role": "neutral",
         "displayName": "Soft Surface",
-        "canonical": "#edf2e7",
+        "canonical": "#293228",
         "tonalRamp": [
-          "oklch(15.00% 0.01549 126.82)",
-          "oklch(26.43% 0.01549 126.82)",
-          "oklch(37.86% 0.01549 126.82)",
-          "oklch(49.29% 0.01549 126.82)",
-          "oklch(60.71% 0.01549 126.82)",
-          "oklch(72.14% 0.01549 126.82)",
-          "oklch(83.57% 0.01549 126.82)",
-          "oklch(95.00% 0.01549 126.82)"
+          "oklch(15.00% 0.02155 142.34)",
+          "oklch(26.43% 0.02155 142.34)",
+          "oklch(37.86% 0.02155 142.34)",
+          "oklch(49.29% 0.02155 142.34)",
+          "oklch(60.71% 0.02155 142.34)",
+          "oklch(72.14% 0.02155 142.34)",
+          "oklch(83.57% 0.02155 142.34)",
+          "oklch(95.00% 0.02155 142.34)"
         ]
       },
       "hover-surface": {
         "role": "neutral",
         "displayName": "Hover Surface",
-        "canonical": "#e6eddf",
+        "canonical": "#303c2e",
         "tonalRamp": [
-          "oklch(15.00% 0.02004 128.70)",
-          "oklch(26.43% 0.02004 128.70)",
-          "oklch(37.86% 0.02004 128.70)",
-          "oklch(49.29% 0.02004 128.70)",
-          "oklch(60.71% 0.02004 128.70)",
-          "oklch(72.14% 0.02004 128.70)",
-          "oklch(83.57% 0.02004 128.70)",
-          "oklch(95.00% 0.02004 128.70)"
+          "oklch(15.00% 0.02881 141.09)",
+          "oklch(26.43% 0.02881 141.09)",
+          "oklch(37.86% 0.02881 141.09)",
+          "oklch(49.29% 0.02881 141.09)",
+          "oklch(60.71% 0.02881 141.09)",
+          "oklch(72.14% 0.02881 141.09)",
+          "oklch(83.57% 0.02881 141.09)",
+          "oklch(95.00% 0.02881 141.09)"
         ]
       },
       "selected": {
         "role": "primary",
         "displayName": "Selected",
-        "canonical": "#234c3c",
+        "canonical": "#344331",
         "tonalRamp": [
-          "oklch(15.00% 0.05432 165.94)",
-          "oklch(26.43% 0.05432 165.94)",
-          "oklch(37.86% 0.05432 165.94)",
-          "oklch(49.29% 0.05432 165.94)",
-          "oklch(60.71% 0.05432 165.94)",
-          "oklch(72.14% 0.05432 165.94)",
-          "oklch(83.57% 0.05432 165.94)",
-          "oklch(95.00% 0.05432 165.94)"
+          "oklch(15.00% 0.03600 140.39)",
+          "oklch(26.43% 0.03600 140.39)",
+          "oklch(37.86% 0.03600 140.39)",
+          "oklch(49.29% 0.03600 140.39)",
+          "oklch(60.71% 0.03600 140.39)",
+          "oklch(72.14% 0.03600 140.39)",
+          "oklch(83.57% 0.03600 140.39)",
+          "oklch(95.00% 0.03600 140.39)"
         ]
       },
       "field-line": {
         "role": "neutral",
         "displayName": "Field Line",
-        "canonical": "#cbd6c3",
+        "canonical": "#73836d",
         "tonalRamp": [
-          "oklch(15.00% 0.02838 131.83)",
-          "oklch(26.43% 0.02838 131.83)",
-          "oklch(37.86% 0.02838 131.83)",
-          "oklch(49.29% 0.02838 131.83)",
-          "oklch(60.71% 0.02838 131.83)",
-          "oklch(72.14% 0.02838 131.83)",
-          "oklch(83.57% 0.02838 131.83)",
-          "oklch(95.00% 0.02838 131.83)"
+          "oklch(15.00% 0.03779 137.15)",
+          "oklch(26.43% 0.03779 137.15)",
+          "oklch(37.86% 0.03779 137.15)",
+          "oklch(49.29% 0.03779 137.15)",
+          "oklch(60.71% 0.03779 137.15)",
+          "oklch(72.14% 0.03779 137.15)",
+          "oklch(83.57% 0.03779 137.15)",
+          "oklch(95.00% 0.03779 137.15)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Accent",
+        "canonical": "#d6e5ca",
+        "tonalRamp": [
+          "oklch(15.00% 0.03952 131.06)",
+          "oklch(26.43% 0.03952 131.06)",
+          "oklch(37.86% 0.03952 131.06)",
+          "oklch(49.29% 0.03952 131.06)",
+          "oklch(60.71% 0.03952 131.06)",
+          "oklch(72.14% 0.03952 131.06)",
+          "oklch(83.57% 0.03952 131.06)",
+          "oklch(95.00% 0.03952 131.06)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Accent Hover",
+        "canonical": "#e2eed9",
+        "tonalRamp": [
+          "oklch(15.00% 0.03067 131.55)",
+          "oklch(26.43% 0.03067 131.55)",
+          "oklch(37.86% 0.03067 131.55)",
+          "oklch(49.29% 0.03067 131.55)",
+          "oklch(60.71% 0.03067 131.55)",
+          "oklch(72.14% 0.03067 131.55)",
+          "oklch(83.57% 0.03067 131.55)",
+          "oklch(95.00% 0.03067 131.55)"
+        ]
+      },
+      "on-accent": {
+        "role": "primary",
+        "displayName": "On Accent",
+        "canonical": "#21351f",
+        "tonalRamp": [
+          "oklch(15.00% 0.04644 142.23)",
+          "oklch(26.43% 0.04644 142.23)",
+          "oklch(37.86% 0.04644 142.23)",
+          "oklch(49.29% 0.04644 142.23)",
+          "oklch(60.71% 0.04644 142.23)",
+          "oklch(72.14% 0.04644 142.23)",
+          "oklch(83.57% 0.04644 142.23)",
+          "oklch(95.00% 0.04644 142.23)"
         ]
       }
     },
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Overview heading; responsive size is documented in DESIGN.md."
+        "purpose": "Centered Overview heading; left-aligned at the phone breakpoint."
       },
       "headline": {
         "displayName": "Headline",
@@ -455,7 +500,7 @@
       },
       "recommendation-title": {
         "displayName": "Recommendation Title",
-        "purpose": "Recommendation card titles."
+        "purpose": "Restrained insight-row titles."
       },
       "body": {
         "displayName": "Body",
@@ -477,13 +522,13 @@
     "shadows": [
       {
         "name": "sheet",
-        "value": "-12px 0 60px #193d3017",
-        "purpose": "Separate the right-side modal sheet from the workspace."
+        "value": "-12px 0 60px #10160f66",
+        "purpose": "Separate the dark detail sheet from the workspace."
       },
       {
         "name": "toast",
-        "value": "0 6px 20px #1b35221a",
-        "purpose": "Separate transient status feedback from content."
+        "value": "0 6px 20px #0d140d66",
+        "purpose": "Separate transient pale status feedback from the dark content."
       }
     ],
     "motion": [
@@ -525,15 +570,15 @@
     ],
     "breakpoints": [
       {
-        "name": "overview-compact-desktop-max",
-        "value": "1100px"
+        "name": "compact-desktop-width-max",
+        "value": "1000px"
       },
       {
-        "name": "overview-stacked-columns-max",
-        "value": "900px"
+        "name": "compact-desktop-height-max",
+        "value": "760px"
       },
       {
-        "name": "phone-max",
+        "name": "phone-width-max",
         "value": "760px"
       }
     ]
@@ -545,7 +590,7 @@
       "refersTo": "button-primary",
       "description": "A committed action with forest emphasis.",
       "html": "<div class=\"ds-preview\"><button class=\"ds-button ds-primary\">Explore partnership <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border-radius:6px;padding:9px 13px;font-size:12px;font-weight:500;border:1px solid var(--line, #dfe5da);background:#fff;white-space:nowrap;transition:background .15s,box-shadow .15s}.ds-button:hover{background:#f0f4ea}.ds-button svg{width:14px;height:14px}.ds-button.ds-primary{background:var(--forest, #234c3c);border-color:var(--forest, #234c3c);color:#fff}.ds-button.ds-primary:hover{background:var(--deep, #193d30)}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#e5e9df);background:var(--paper,#20251f);padding:20px}.ds-preview button,.ds-preview input,.ds-preview textarea{font-family:inherit;color:inherit}.ds-preview button,.ds-preview a,.ds-preview summary{cursor:pointer}.ds-preview button{border:0;background:none}.ds-preview a{color:inherit;text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,input,textarea,summary):focus-visible{outline:3px solid var(--accent,#d6e5ca);outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview .ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border:1px solid var(--line,#3c473a);border-radius:6px;padding:9px 13px;font-size:12px;font-weight:500;background:var(--surface,#2a3129);color:var(--ink,#e5e9df);transition:background .15s}.ds-preview .ds-button:hover{background:var(--hover-surface,#303c2e)}.ds-button svg{width:14px;height:14px}.ds-preview .ds-button.ds-primary{background:var(--accent,#d6e5ca);border-color:var(--accent,#d6e5ca);color:var(--on-accent,#21351f)}.ds-preview .ds-button.ds-primary:hover{background:var(--accent-hover,#e2eed9);border-color:var(--accent-hover,#e2eed9)}"
     },
     {
       "name": "Secondary button",
@@ -553,7 +598,7 @@
       "refersTo": "button-secondary",
       "description": "A bordered neutral action.",
       "html": "<div class=\"ds-preview\"><button class=\"ds-button\">Add volunteer <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border-radius:6px;padding:9px 13px;font-size:12px;font-weight:500;border:1px solid var(--line, #dfe5da);background:#fff;white-space:nowrap;transition:background .15s,box-shadow .15s}.ds-button:hover{background:#f0f4ea}.ds-button svg{width:14px;height:14px}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#e5e9df);background:var(--paper,#20251f);padding:20px}.ds-preview button,.ds-preview input,.ds-preview textarea{font-family:inherit;color:inherit}.ds-preview button,.ds-preview a,.ds-preview summary{cursor:pointer}.ds-preview button{border:0;background:none}.ds-preview a{color:inherit;text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,input,textarea,summary):focus-visible{outline:3px solid var(--accent,#d6e5ca);outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview .ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border:1px solid var(--line,#3c473a);border-radius:6px;padding:9px 13px;font-size:12px;font-weight:500;background:var(--surface,#2a3129);color:var(--ink,#e5e9df);transition:background .15s}.ds-preview .ds-button:hover{background:var(--hover-surface,#303c2e)}.ds-button svg{width:14px;height:14px}"
     },
     {
       "name": "Quiet button",
@@ -561,7 +606,7 @@
       "refersTo": "button-quiet",
       "description": "A transparent bordered action on a content surface.",
       "html": "<div class=\"ds-preview\"><button class=\"ds-button ds-quiet\">Design outreach flow <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border-radius:6px;padding:9px 13px;font-size:12px;font-weight:500;border:1px solid var(--line, #dfe5da);background:#fff;white-space:nowrap;transition:background .15s,box-shadow .15s}.ds-button:hover{background:#f0f4ea}.ds-button svg{width:14px;height:14px}.ds-button.ds-quiet{background:transparent;border-color:#ccd7c0}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#e5e9df);background:var(--paper,#20251f);padding:20px}.ds-preview button,.ds-preview input,.ds-preview textarea{font-family:inherit;color:inherit}.ds-preview button,.ds-preview a,.ds-preview summary{cursor:pointer}.ds-preview button{border:0;background:none}.ds-preview a{color:inherit;text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,input,textarea,summary):focus-visible{outline:3px solid var(--accent,#d6e5ca);outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview .ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border:1px solid var(--line,#3c473a);border-radius:6px;padding:9px 13px;font-size:12px;font-weight:500;background:var(--surface,#2a3129);color:var(--ink,#e5e9df);transition:background .15s}.ds-preview .ds-button:hover{background:var(--hover-surface,#303c2e)}.ds-button svg{width:14px;height:14px}.ds-preview .ds-button.ds-quiet{background:transparent;border-color:var(--field-line,#73836d)}.ds-preview .ds-button.ds-quiet:hover{background:var(--hover-surface,#303c2e)}"
     },
     {
       "name": "Text button",
@@ -569,7 +614,7 @@
       "refersTo": "button-text",
       "description": "A small supporting navigation action.",
       "html": "<div class=\"ds-preview\"><button class=\"ds-text-button\">View all <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-text-button{display:inline-flex;align-items:center;gap:6px;padding:0;color:var(--forest,#234c3c);font-size:11px;font-weight:500;white-space:nowrap}.ds-text-button:hover{color:var(--forest, #234c3c);text-decoration:underline;text-underline-offset:4px}.ds-text-button svg{width:12px;height:12px}.ds-text-button{border:0;background:none}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#e5e9df);background:var(--paper,#20251f);padding:20px}.ds-preview button,.ds-preview input,.ds-preview textarea{font-family:inherit;color:inherit}.ds-preview button,.ds-preview a,.ds-preview summary{cursor:pointer}.ds-preview button{border:0;background:none}.ds-preview a{color:inherit;text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,input,textarea,summary):focus-visible{outline:3px solid var(--accent,#d6e5ca);outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview .ds-text-button{display:inline-flex;align-items:center;gap:6px;padding:0;color:var(--accent,#d6e5ca);font-size:11px;font-weight:500}.ds-text-button:hover{color:var(--ink,#e5e9df);text-decoration:underline;text-underline-offset:4px}.ds-text-button svg{width:12px;height:12px}"
     },
     {
       "name": "Labeled field",
@@ -577,7 +622,7 @@
       "refersTo": "input",
       "description": "White field with visible keyboard focus and an explicit label.",
       "html": "<div class=\"ds-preview\"><div class=\"ds-form-field\"><label for=\"ds-volunteer-name\">Full name</label><input id=\"ds-volunteer-name\" type=\"text\" placeholder=\"e.g. Avery Green\"></div></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-form-field{margin-bottom:18px}.ds-form-field>label{display:block;font-size:11px;font-weight:500;margin-bottom:7px}.ds-form-field input:not([type=checkbox]),.ds-form-field select,.ds-form-field textarea{width:100%;border:1px solid #d4dec9;padding:11px 12px;border-radius:6px;background:white;color:var(--ink, #23392f);font-size:12px;line-height:1.7}.ds-form-field{max-width:350px}.ds-form-field input{box-sizing:border-box;cursor:text}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#e5e9df);background:var(--paper,#20251f);padding:20px}.ds-preview button,.ds-preview input,.ds-preview textarea{font-family:inherit;color:inherit}.ds-preview button,.ds-preview a,.ds-preview summary{cursor:pointer}.ds-preview button{border:0;background:none}.ds-preview a{color:inherit;text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,input,textarea,summary):focus-visible{outline:3px solid var(--accent,#d6e5ca);outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-form-field{max-width:350px;margin-bottom:18px}.ds-form-field>label{display:block;font-size:11px;font-weight:500;margin-bottom:7px}.ds-form-field input{width:100%;box-sizing:border-box;border:1px solid var(--field-line,#73836d);padding:11px 12px;border-radius:6px;background:var(--surface,#2a3129);color:var(--ink,#e5e9df);font-size:12px;line-height:1.7;caret-color:var(--accent,#d6e5ca)}.ds-form-field input::placeholder{color:var(--muted,#a9b4a6)}"
     },
     {
       "name": "Workspace navigation",
@@ -585,7 +630,7 @@
       "refersTo": "navigation",
       "description": "Desktop navigation with a forest current-page state.",
       "html": "<div class=\"ds-preview\"><nav aria-label=\"Preview navigation\"><a class=\"ds-nav-item ds-active\" href=\"#briefing\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z\"/></svg><span>Overview</span></a><a class=\"ds-nav-item\" href=\"#people\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm7 0a4 4 0 0 1 0 8m6 10v-2a4 4 0 0 0-3-3.87\"/></svg><span>People</span></a></nav></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview button,.ds-preview a{font-family:inherit;cursor:pointer}.ds-preview button{color:inherit;border:0;background:none}.ds-preview a{text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,summary):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview nav{width:170px;padding:10px;background:var(--sidebar-surface,#eff2e9)}.ds-nav-item{display:flex;align-items:center;gap:11px;height:42px;padding:10px 12px;box-sizing:border-box;border-radius:7px;margin-bottom:5px;font-size:13px;font-weight:500;color:#576659;transition:background .15s,color .15s}.ds-nav-item.ds-active{background:var(--forest,#234c3c);color:#fff}.ds-nav-item:hover:not(.ds-active){background:var(--hover-surface,#e6eddf);color:var(--forest,#234c3c)}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#e5e9df);background:var(--paper,#20251f);padding:20px}.ds-preview button,.ds-preview input,.ds-preview textarea{font-family:inherit;color:inherit}.ds-preview button,.ds-preview a,.ds-preview summary{cursor:pointer}.ds-preview button{border:0;background:none}.ds-preview a{color:inherit;text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,input,textarea,summary):focus-visible{outline:3px solid var(--accent,#d6e5ca);outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview nav{width:152px;padding:11px;background:var(--sidebar-surface,#1b201b)}.ds-nav-item{display:flex;align-items:center;gap:10px;height:38px;box-sizing:border-box;padding:9px 11px;border-radius:7px;margin-bottom:5px;font-size:13px;font-weight:500;color:var(--muted,#a9b4a6);transition:background .15s,color .15s}.ds-nav-item.ds-active{background:var(--selected-surface,#344331);color:var(--ink,#e5e9df)}.ds-nav-item:hover:not(.ds-active){background:var(--hover-surface,#303c2e);color:var(--ink,#e5e9df)}.ds-nav-item svg{width:17px;height:17px}"
     },
     {
       "name": "Fit and action badges",
@@ -593,23 +638,23 @@
       "refersTo": "badge-positive",
       "description": "Compact, labeled states with restrained green and peach emphasis.",
       "html": "<div class=\"ds-preview\"><span class=\"ds-badge ds-green\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg> High fit</span> <span class=\"ds-badge ds-orange\">Your next action</span></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-badge{display:inline-flex;align-items:center;gap:5px;border-radius:5px;padding:4px 7px;font-size:11px;font-weight:500;line-height:1.2;white-space:nowrap}.ds-badge.ds-green{color:#496134;background:#d8e5c6}.ds-badge.ds-green svg{width:11px;height:11px}.ds-badge.ds-orange{background:#f7ebdf;color:#87522c}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#e5e9df);background:var(--paper,#20251f);padding:20px}.ds-preview button,.ds-preview input,.ds-preview textarea{font-family:inherit;color:inherit}.ds-preview button,.ds-preview a,.ds-preview summary{cursor:pointer}.ds-preview button{border:0;background:none}.ds-preview a{color:inherit;text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,input,textarea,summary):focus-visible{outline:3px solid var(--accent,#d6e5ca);outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-badge{display:inline-flex;align-items:center;gap:5px;border-radius:5px;padding:4px 7px;font-size:11px;font-weight:500;line-height:1.2;white-space:nowrap}.ds-badge.ds-green{background:#34492d;color:var(--positive,#bdd7a8)}.ds-badge.ds-orange{background:#493b2d;color:var(--warning,#e6bd93)}.ds-badge svg{width:11px;height:11px}.ds-badge-row{display:flex;gap:10px;flex-wrap:wrap}"
     },
     {
-      "name": "Metric card",
-      "kind": "card",
-      "refersTo": "metric",
-      "description": "A compact current-record total opens its contributing records; no invented trend.",
-      "html": "<div class=\"ds-preview\"><button class=\"ds-metric\"><span>People</span><strong>35</strong><small>8 with one recorded visit</small></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview button,.ds-preview a{font-family:inherit;cursor:pointer}.ds-preview button{color:inherit;border:0;background:none}.ds-preview a{text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,summary):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview .ds-metric{display:block;text-align:left;width:100%;max-width:365px;background:#fff;border:1px solid var(--line,#dfe5da);border-radius:12px;padding:16px 19px;transition:border-color .15s}.ds-metric:hover{border-color:#a4b599}.ds-metric>span{font-size:12px;color:var(--muted,#596d5f)}.ds-metric>strong{display:block;font-size:34px;line-height:1.2;font-weight:500;letter-spacing:-.7px;margin:8px 0;font-variant-numeric:tabular-nums}.ds-metric>small{font-size:11px;line-height:1.6;color:var(--muted,#596d5f)}"
+      "name": "Overview composer",
+      "kind": "input",
+      "refersTo": "composer",
+      "description": "The primary conversation entry point at the top of the centered Overview.",
+      "html": "<div class=\"ds-preview\"><div class=\"ds-composer\"><textarea aria-label=\"Ask Roots about your community\" placeholder=\"Ask about your people, explore an idea, or draft a message\u2026\" rows=\"2\"></textarea><div class=\"ds-composer-bottom\"><span>Your community in context</span><button type=\"button\" aria-label=\"Ask Roots\">\u2191</button></div></div></div>",
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#e5e9df);background:var(--paper,#20251f);padding:20px}.ds-preview button,.ds-preview input,.ds-preview textarea{font-family:inherit;color:inherit}.ds-preview button,.ds-preview a,.ds-preview summary{cursor:pointer}.ds-preview button{border:0;background:none}.ds-preview a{color:inherit;text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,input,textarea,summary):focus-visible{outline:3px solid var(--accent,#d6e5ca);outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-composer{max-width:720px;padding:17px 18px 12px;background:var(--surface,#2a3129);border:1px solid var(--field-line,#73836d);border-radius:15px}.ds-composer:focus-within{border-color:var(--accent,#d6e5ca)}.ds-composer textarea{display:block;width:100%;min-height:48px;border:0;padding:0;background:transparent;color:var(--ink,#e5e9df);font-size:14px;line-height:1.7;resize:vertical}.ds-composer textarea::placeholder{color:var(--muted,#a9b4a6)}.ds-composer-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}.ds-composer-bottom>span{font-size:11px;color:var(--muted,#a9b4a6)}.ds-preview .ds-composer-bottom>button{width:32px;height:32px;border-radius:8px;background:var(--accent,#d6e5ca);color:var(--on-accent,#21351f)}.ds-preview .ds-composer-bottom>button:hover{background:var(--accent-hover,#e2eed9)}@media(max-width:760px){.ds-preview .ds-composer-bottom>button{width:44px;height:44px}}"
     },
     {
-      "name": "Featured recommendation",
-      "kind": "card",
-      "refersTo": "recommendation-featured",
-      "description": "A sage recommendation connects a factual summary to an action and a native evidence disclosure.",
-      "html": "<div class=\"ds-preview\"><article class=\"ds-recommendation\"><h3>A garden invitation to bring people back</h3><p>Maya, Sofia and Chloe share an interest in community gardening. Saturday in the garden has 6 open places.</p><div class=\"ds-actions\"><span>3 people referenced</span><button class=\"ds-primary\">Review invitation \u2192</button></div><details class=\"ds-evidence\"><summary>Why this surfaced</summary><p>These illustrative profiles share a gardening interest. Availability and attendance still need confirming.</p></details></article></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview button,.ds-preview a{font-family:inherit;cursor:pointer}.ds-preview button{color:inherit;border:0;background:none}.ds-preview a{text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,summary):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-recommendation{max-width:640px;background:var(--sage,#e8eddf);border:1px solid #dbe4cf;border-radius:13px;padding:23px}.ds-recommendation h3{font-size:22px;font-weight:500;line-height:1.4;letter-spacing:-.4px;color:var(--forest,#234c3c);margin-bottom:10px}.ds-recommendation p{font-size:13px;line-height:1.8;color:#53684f}.ds-actions{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-top:19px}.ds-actions>span{font-size:11px;color:#596e52}.ds-preview .ds-primary{font-size:12px;font-weight:500;min-height:36px;padding:9px 13px;border-radius:6px;background:var(--forest,#234c3c);color:#fff;transition:background .15s}.ds-preview .ds-primary:hover{background:var(--deep,#193d30)}.ds-evidence{margin-top:15px;padding-top:12px;border-top:1px solid #dbe3d2;font-size:11px;color:#53684f}.ds-evidence summary{cursor:pointer;width:max-content;max-width:100%;line-height:1.8}.ds-evidence p{font-size:12px;padding-top:14px}"
+      "name": "Recommendation row",
+      "kind": "custom",
+      "refersTo": "recommendation",
+      "description": "A restrained insight row pairs a concise factual summary with a review action and evidence disclosure.",
+      "html": "<div class=\"ds-preview\"><article class=\"ds-recommendation\"><div class=\"ds-rec-heading\"><h3>A garden invitation to bring people back</h3><button type=\"button\" class=\"ds-action\">Review invitation \u2192</button></div><p>Maya, Sofia and Chloe share an interest in community gardening. Saturday in the garden has 6 open places.</p><details class=\"ds-evidence\"><summary>Why this surfaced</summary><p>These illustrative profiles share a gardening interest. Availability and attendance still need confirming.</p></details></article></div>",
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#e5e9df);background:var(--paper,#20251f);padding:20px}.ds-preview button,.ds-preview input,.ds-preview textarea{font-family:inherit;color:inherit}.ds-preview button,.ds-preview a,.ds-preview summary{cursor:pointer}.ds-preview button{border:0;background:none}.ds-preview a{color:inherit;text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,input,textarea,summary):focus-visible{outline:3px solid var(--accent,#d6e5ca);outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-recommendation{max-width:720px;padding:16px 0 14px;border-bottom:1px solid var(--line,#3c473a)}.ds-rec-heading{display:flex;align-items:baseline;justify-content:space-between;gap:20px}.ds-recommendation h3{font-size:15px;font-weight:500;line-height:1.5;letter-spacing:-.12px;color:var(--ink,#e5e9df)}.ds-preview .ds-action{min-height:24px;flex-shrink:0;font-size:11px;color:var(--accent,#d6e5ca)}.ds-action:hover{text-decoration:underline;text-underline-offset:4px}.ds-recommendation>p{font-size:12px;line-height:1.8;color:var(--muted,#a9b4a6);margin-top:5px}.ds-evidence{margin-top:6px;font-size:11px;color:var(--muted,#a9b4a6)}.ds-evidence summary{cursor:pointer;line-height:1.8}.ds-evidence p{font-size:12px;line-height:1.8;padding:12px 0 5px}@media(max-width:760px){.ds-rec-heading{align-items:flex-start;flex-direction:column;gap:5px}.ds-recommendation>p{font-size:13px}}"
     },
     {
       "name": "Upcoming event row",
@@ -617,12 +662,12 @@
       "refersTo": "event-date",
       "description": "A full-row event action pairs a date tile with recorded aggregate capacity.",
       "html": "<div class=\"ds-preview\"><button class=\"ds-event\"><span class=\"ds-date\"><small>OCT</small><strong>31</strong></span><span class=\"ds-event-copy\"><strong>Saturday in the garden</strong><small>9:00 AM \u2013 12:00 PM</small><span class=\"ds-track\"><i style=\"width:66.67%\"></i></span><span class=\"ds-capacity\"><span>12 / 18 places recorded</span><span>6 open</span></span></span></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview button,.ds-preview a{font-family:inherit;cursor:pointer}.ds-preview button{color:inherit;border:0;background:none}.ds-preview a{text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,summary):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview .ds-event{display:flex;align-items:flex-start;gap:12px;width:100%;max-width:370px;text-align:left;padding:15px 0;border-top:1px solid var(--line,#dfe5da)}.ds-date{display:flex;flex-direction:column;justify-content:center;flex-shrink:0;width:39px;height:51px;box-sizing:border-box;padding:6px 4px;background:var(--soft-surface,#edf2e7);border-radius:6px;text-align:center}.ds-date small{font-size:11px;letter-spacing:.5px;color:#647052}.ds-date strong{font-size:20px;line-height:1.25;font-weight:500;font-variant-numeric:tabular-nums}.ds-event-copy{display:block;flex:1;min-width:0}.ds-event-copy>strong{display:block;font-size:12px;line-height:1.5;font-weight:500}.ds-event-copy>small{display:block;font-size:11px;color:var(--muted,#596d5f);margin-top:2px}.ds-track{display:block;height:4px;background:#e8eddf;border-radius:3px;overflow:hidden;margin:10px 0 5px}.ds-track i{display:block;height:100%;background:#8ea86d}.ds-capacity{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--muted,#596d5f)}.ds-event:hover .ds-event-copy>strong{color:#668246}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#e5e9df);background:var(--paper,#20251f);padding:20px}.ds-preview button,.ds-preview input,.ds-preview textarea{font-family:inherit;color:inherit}.ds-preview button,.ds-preview a,.ds-preview summary{cursor:pointer}.ds-preview button{border:0;background:none}.ds-preview a{color:inherit;text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,input,textarea,summary):focus-visible{outline:3px solid var(--accent,#d6e5ca);outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview .ds-event{display:flex;align-items:flex-start;gap:12px;width:100%;max-width:720px;text-align:left;padding:12px 0;border-bottom:1px solid var(--line,#3c473a)}.ds-date{display:flex;flex-direction:column;justify-content:center;flex-shrink:0;width:39px;height:51px;box-sizing:border-box;padding:6px 4px;background:var(--surface,#2a3129);border-radius:6px;text-align:center}.ds-date small{font-size:11px;letter-spacing:.5px;color:var(--muted,#a9b4a6)}.ds-date strong{font-size:20px;line-height:1.25;font-weight:500;font-variant-numeric:tabular-nums}.ds-event-copy{display:block;flex:1;min-width:0}.ds-event-copy>strong{display:block;font-size:12px;line-height:1.5;font-weight:500}.ds-event-copy>small{display:block;font-size:11px;color:var(--muted,#a9b4a6);margin-top:2px}.ds-track{display:block;height:4px;background:var(--selected-surface,#344331);border-radius:3px;overflow:hidden;margin:8px 0 5px}.ds-track i{display:block;height:100%;background:#abc395}.ds-capacity{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--muted,#a9b4a6)}.ds-event:hover .ds-event-copy>strong{color:var(--accent,#d6e5ca)}"
     }
   ],
   "narrative": {
-    "northStar": "Good things are taking root.",
-    "overview": "Roots opens on an Overview dashboard that combines current community analytics, useful recommendations, and upcoming events. Dark forest navigation and primary actions, sage featured cards, white analytical surfaces, warm paper, and self-hosted DM Sans restore the original Roots identity.\n\nThe user's latest direction prefers the original darker green style and asks for a better presentation of insights and analytics on the first page. The original Overview screenshot and forest-green dashboard composition are the visual reference. This supersedes the narrow Today and conversation-first layouts. Preserve a useful dashboard hierarchy while keeping cards compact and supporting details accessible on demand.",
+    "northStar": "What could we make happen?",
+    "overview": "Roots is a deep-green workspace centered on conversation. A prominent composer begins the page, with restrained insight rows and compact community patterns beneath it. Light text, pale sage actions, self-hosted DM Sans, and thin dividers establish a quiet, practical interface.\n\nThe visual authority is the DARK rendition of the user's earlier central-chat concept in `roots-quieter-workspace.html`. Its `light-dark()` declarations specify the intended dark palette. The subsequent light broad dashboard was a mistaken reference. Preserve the confirmed dark canvas and centered hierarchy while keeping recommendations independent of chat.",
     "keyCharacteristics": [],
     "rules": [],
     "dos": [],

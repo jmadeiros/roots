@@ -422,7 +422,7 @@ def schema(name, description, properties=None, required=None):
 
 STR = {"type": "STRING"}
 TOOLS = [
-    schema("get_overview", "Read counts and participation summary from the synchronized Roots snapshot."),
+    schema("get_overview", "Read community counts and recordedVisits: total recorded visits, people with zero/one/repeat visits, unknown counts, and exact visit-count groups. Visit totals and people counts have different units."),
     schema("find_person", "Find up to 10 people by name or identifier.", {"query": STR}, ["query"]),
     schema("list_events", "Read the event calendar with recorded dates, times, activity categories, attendance, and capacity. Use for upcoming events, shifts, and event invitations; optionally filter by query.", {"query": STR}),
     schema("list_opportunities", "Read opportunities, optionally matching a title or description.", {"query": STR}),
@@ -441,6 +441,10 @@ Ask for a person if a match is ambiguous. Treat demo records as fictional and do
 Previous conversation turns help resolve references such as 'that' or 'turn it into an SMS'.
 Use the prior draft's recipient and content when clear; ask if no single recipient is established.
 Check current tools for facts that may have changed. Read get_insights to explain evidence and source IDs.
+For recorded visit counts, read get_overview.recordedVisits. Its total is the sum of known visit counts.
+firstVisit and recordedVisits.oneVisitPeople count PEOPLE with exactly one recorded visit, not total
+visits. Distinguish total visits from people and mention missing counts when relevant. These snapshot
+counts do not establish a monthly trend or a retention rate.
 Use list_events for upcoming events, shifts, invitation details, and dates; do not substitute grants or
 other opportunities for calendar events. Read the relevant person's interests with find_person when
 matching them to an event. Use recorded dates and availability only; do not invent RSVP status or times.
@@ -461,7 +465,25 @@ def execute_tool(store, name, args):
     state = snapshot["state"]
     people = state.get("people", [])
     if name == "get_overview":
-        return {"people": len(people), "events": len(state.get("events", [])), "opportunities": len(state.get("opportunities", [])), "projects": len(state.get("projects", [])), "notices": len(state.get("notices", [])), "firstVisit": sum(p.get("visits") == 1 for p in people), "recordedVolunteerHours": sum(p.get("hours", 0) for p in people if type(p.get("hours", 0)) in (int, float)), "snapshotVersion": snapshot["version"], "deliveryConnected": False}
+        groups, unknown = {}, []
+        for person in people:
+            value = person.get("visits")
+            if type(value) in (int, float) and 0 <= value <= 9007199254740991 and math.isfinite(value) and int(value) == value:
+                groups.setdefault(int(value), []).append(person["id"])
+            else:
+                unknown.append(person["id"])
+        recorded_visits = {
+            "total": sum(value * len(ids) for value, ids in groups.items()) if groups else None,
+            "peopleWithRecordedCount": len(people) - len(unknown),
+            "peopleWithUnknownCount": len(unknown),
+            "zeroVisitPeople": len(groups.get(0, [])),
+            "oneVisitPeople": len(groups.get(1, [])),
+            "repeatVisitPeople": sum(len(ids) for value, ids in groups.items() if value >= 2),
+            "byVisitCount": [{"visits": value, "people": len(ids), "personIds": ids} for value, ids in sorted(groups.items())],
+            "unknownPersonIds": unknown,
+            "scope": "Current recorded counts; no time window or retention measure. Missing and invalid counts are unknown, not zero.",
+        }
+        return {"people": len(people), "events": len(state.get("events", [])), "opportunities": len(state.get("opportunities", [])), "projects": len(state.get("projects", [])), "notices": len(state.get("notices", [])), "firstVisit": recorded_visits["oneVisitPeople"], "recordedVisits": recorded_visits, "recordedVolunteerHours": sum(p.get("hours", 0) for p in people if type(p.get("hours", 0)) in (int, float)), "snapshotVersion": snapshot["version"], "deliveryConnected": False}
     if name == "find_person":
         query = text(args.get("query"), "query", 100).casefold()
         matches = [p for p in people if query == str(p.get("id", "")).casefold() or query in str(p.get("name", "")).casefold()]

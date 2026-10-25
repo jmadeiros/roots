@@ -60,6 +60,60 @@ class BridgeTests(unittest.TestCase):
         self.assertFalse(summary["deliveryConnected"])
         self.assertEqual(bridge.execute_tool(self.store, "find_person", {"query": "maya"})["people"][0]["id"], "p01")
 
+    def test_overview_distinguishes_visit_totals_from_people_and_unknown_counts(self):
+        values = [0, 1, 1, 2, 3, None, True, "2", -1, 1.5]
+        self.state["people"] = [{"id": f"p{index}", "visits": value} for index, value in enumerate(values)]
+        self.store.save(self.state)
+        summary = bridge.execute_tool(self.store, "get_overview", {})
+        visits = summary["recordedVisits"]
+        self.assertEqual(summary["people"], 10)
+        self.assertEqual(summary["firstVisit"], 2)
+        self.assertEqual(visits["total"], 7)
+        self.assertEqual(visits["peopleWithRecordedCount"], 5)
+        self.assertEqual(visits["peopleWithUnknownCount"], 5)
+        self.assertEqual([visits["zeroVisitPeople"], visits["oneVisitPeople"], visits["repeatVisitPeople"]], [1, 2, 2])
+        self.assertEqual(visits["byVisitCount"], [
+            {"visits": 0, "people": 1, "personIds": ["p0"]},
+            {"visits": 1, "people": 2, "personIds": ["p1", "p2"]},
+            {"visits": 2, "people": 1, "personIds": ["p3"]},
+            {"visits": 3, "people": 1, "personIds": ["p4"]},
+        ])
+        self.assertEqual(visits["unknownPersonIds"], ["p5", "p6", "p7", "p8", "p9"])
+        self.store.save({"people": [{"id": "missing"}]})
+        self.assertIsNone(bridge.execute_tool(self.store, "get_overview", {})["recordedVisits"]["total"])
+        self.store.save({"people": [{"id": "zero", "visits": 0}]})
+        self.assertEqual(bridge.execute_tool(self.store, "get_overview", {})["recordedVisits"]["total"], 0)
+
+    def test_overview_treats_an_enormous_integer_visit_count_as_unknown(self):
+        snapshot = self.store.snapshot()
+        snapshot["state"]["people"][0]["visits"] = 10 ** 400
+        # Exercise the summary guard directly; ordinary snapshot writes reject
+        # this value earlier, before it could reach the saved records.
+        self.store.snapshot = lambda: snapshot
+        visits = bridge.execute_tool(self.store, "get_overview", {})["recordedVisits"]
+        self.assertIsNone(visits["total"])
+        self.assertEqual(visits["peopleWithRecordedCount"], 0)
+        self.assertEqual(visits["unknownPersonIds"], ["p01"])
+
+    def test_visit_summary_reaches_model_as_separate_units(self):
+        self.state["people"] = [{"id": "p01", "visits": 1}, {"id": "p02", "visits": 9}]
+        self.store.save(self.state)
+        requests = []
+        def fake(url, payload, headers):
+            requests.append(payload)
+            if len(requests) == 1:
+                parts = [{"functionCall": {"name": "get_overview", "args": {}}}]
+            else:
+                overview = payload["contents"][-1]["parts"][0]["functionResponse"]["response"]
+                self.assertEqual(overview["recordedVisits"]["total"], 10)
+                self.assertEqual(overview["recordedVisits"]["oneVisitPeople"], 1)
+                self.assertEqual(overview["recordedVisits"]["repeatVisitPeople"], 1)
+                parts = [{"text": "There are 10 recorded visits across 2 people."}]
+            return {"candidates": [{"content": {"parts": parts}}]}
+        answer = bridge.Assistant(self.store, "fake-test-key", request=fake).chat("What are the recorded visit counts?")
+        self.assertEqual(len(requests), 2)
+        self.assertIn("10 recorded visits", answer["reply"])
+
     def test_event_tool_returns_calendar_details_and_validates_query(self):
         event = {"id": "e01", "title": "Saturday garden", "date": "2026-10-31", "time": "9:00 AM", "category": "Community gardening", "capacity": 18, "attendees": 12}
         self.state.update(events=[event], metadata={"asOf": "2026-10-24"})
