@@ -1,6 +1,6 @@
 (() => {
   let api, checkedLocally=null, localInsights=[], fingerprint='', refreshTimer=null, pollTimer=null;
-  let checking=false, prompt='', lastRendered='', lastStatus='', checkError='', refreshNotice='', analyticsTab='participation', openTile='', lastAnalytics='', dailyPeriod='today';
+  let checking=false, prompt='', lastRendered='', lastStatus='', checkError='', refreshNotice='', analyticsTab='participation', lastAnalytics='', dailyPeriod='today';
   const e=value=>api.esc(value);
   const bridge=()=>window.RootsBridge;
   const visible=()=>api?.getState().view==='briefing';
@@ -96,7 +96,7 @@
   }
   function insightMarkup(item,index) {
     const action=actionFor(item), ids=item.sourceIds?.people||[];
-    return `<details class="today-notice" data-insight-id="${e(item.id)}"${index===0?' open':''}><summary><span class="today-tag is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span><span class="today-notice-head"><strong>${e(item.title)}</strong>${item.meta?`<small>${e(item.meta)}</small>`:''}</span>${ids.length?peopleStack(ids):'<span></span>'}<span class="today-chevron" aria-hidden="true">${api.icon('chevron-down')}</span></summary>
+    return `<details class="today-notice" data-insight-id="${e(item.id)}"><summary><span class="today-tag is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span><span class="today-notice-head"><strong>${e(item.title)}</strong>${item.meta?`<small>${e(item.meta)}</small>`:''}</span>${ids.length?peopleStack(ids):'<span></span>'}<span class="today-chevron" aria-hidden="true">${api.icon('chevron-down')}</span></summary>
       <div class="today-notice-body"><dl><div><dt>What they get</dt><dd>${e(item.gets)}</dd></div><div><dt>What you’d do</dt><dd>${e(item.todo)}</dd></div>${sourceLine(item.source)}</dl>
       <div class="today-notice-actions"><button class="today-btn" data-briefing="action" data-index="${index}">${e(action.label)} ${api.icon('arrow')}</button>${ids.length?`<button class="today-link" data-briefing="people" data-index="${index}">${api.icon('users')}See the ${ids.length} people</button>`:''}<button class="today-link" data-briefing="discuss" data-index="${index}">${api.icon('message')}Ask Roots about this</button></div></div></details>`;
   }
@@ -141,22 +141,10 @@
     feed.push({mins:70,icon:'users',text:`${joined.length} people joined from the sign-up form`,ids:joined.map(p=>p.id),cta:'See who'});
     feed.push({mins:130,icon:'message',text:`SMS invitation drafted for ${first.length} first-timers · waiting for your review`,href:'#notices',cta:'Review'});
     if(saturday)feed.push({mins:190,icon:'calendar',text:`${saturday.title}: 2 new sign-ups, ${saturday.capacity-saturday.attendees} places left`,kind:'event',id:saturday.id,cta:'Open'});
-    if(nextGrant)feed.push({mins:300,icon:'clock',text:`${nextGrant.title} closes in ${daysUntil(nextGrant.deadlineAt)} days`,kind:'opportunity',id:nextGrant.id,cta:'Open'});
-    const tiles=[
-      {id:'people',value:joined.length,label:'new people',note:'joined from the sign-up form'},
-      {id:'benefits',value:benefitPeople.size,label:'could gain a benefit',note:`${benefits.length} ${benefits.length===1?'programme matches':'programmes match'}`},
-      {id:'funding',value:grants.length,label:'funding routes open',note:nextGrant?`next closes in ${daysUntil(nextGrant.deadlineAt)} days`:'none with a deadline'},
-      {id:'review',value:2,label:'drafts to review',note:'nothing sends without you'}
-    ];
-    const summary=`Since yesterday, <b>${joined.length} people joined</b>, Roots found <b>${benefitPeople.size} volunteers who could gain a benefit</b> by coming back${nextGrant?`, and <b>${e(nextGrant.title)}</b> closes in ${daysUntil(nextGrant.deadlineAt)} days`:''}.`;
-    return {benefits,grants,joined,first,feed,tiles,summary};
-  }
-  function tilePanel(id,model=todayModel()) {
-    const row=(attrs,lead,title,detail)=>`<button class="today-panel-row" ${attrs}>${lead}<span><strong>${e(title)}</strong><small>${e(detail)}</small></span>${api.icon('arrow')}</button>`;
-    if(id==='people')return model.joined.map(p=>row(`data-briefing="source" data-kind="person" data-id="${e(p.id)}"`,api.avatar(p),p.name,(p.interests||[]).join(' · '))).join('');
-    if(id==='benefits')return model.benefits.map(p=>row(`data-briefing="source" data-kind="opportunity" data-id="${e(p.id)}"`,`<span class="today-panel-lead">${peopleStack(p.matches.map(m=>m.personId))}</span>`,p.title,`${p.matchCount} people · ${p.headlineBenefit}`)).join('')||'<p class="today-empty">No benefit matches yet.</p>';
-    if(id==='funding')return model.grants.map(p=>row(`data-briefing="source" data-kind="opportunity" data-id="${e(p.id)}"`,`<span class="today-panel-icon">${api.icon('funding')}</span>`,p.title,`${p.headlineBenefit} · ${p.statusLabel}`)).join('');
-    return [row('data-today-go="notices"',`<span class="today-panel-icon">${api.icon('message')}</span>`,`SMS invitation · ${model.first.length} first-timers`,'Drafted this morning · unsent'),row('data-today-go="notices"',`<span class="today-panel-icon">${api.icon('heart')}</span>`,'Thank-you note · Saturday regulars','Drafted yesterday · unsent')].join('');
+    const link=(attrs,text)=>`<button class="today-inline" ${attrs}>${text}</button>`;
+    const drafts=link('data-today-go="notices"','2 drafts');
+    const summary=`Since yesterday, ${link(`data-briefing="daily-people" data-ids="${e(joined.map(p=>p.id).join(','))}"`,`${joined.length} people joined`)} and Roots found ${link('data-today-go="opportunities"',`${benefitPeople.size} volunteers who could gain a benefit`)} by coming back. ${nextGrant?`${link(`data-briefing="source" data-kind="opportunity" data-id="${e(nextGrant.id)}"`,e(nextGrant.title))} closes in ${daysUntil(nextGrant.deadlineAt)} days, and ${drafts} are`:`There are ${drafts}`} waiting for your review.`;
+    return {benefits,grants,joined,first,feed,summary};
   }
   function feedMarkup(model=todayModel()) {
     const day=dailySnapshot(), real=(day?.entries||[]).slice(0,3).map(item=>({at:item.at,icon:'check',text:item.title,ids:item.personIds,cta:item.personIds?.length?'See who':''}));
@@ -170,18 +158,18 @@
   function render() {
     checkLocalRecords();lastRendered='';lastAnalytics='';
     const a=stats(), model=todayModel(), date=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+    const benefit=model.benefits[0];
+    const chips=[benefit&&[`Message the ${benefit.insight?.noun?.[1]||'people'}`,`Draft a short SMS telling the matched volunteers about ${benefit.title} and what they get. Keep every message unsent for my review.`],
+      ['Invite first-timers back','Prepare SMS invitation drafts for first-time volunteers with recorded SMS permission. Build a short friendly invitation, and let me review each message before any sending.'],
+      ['Start the CalAgPlate proposal','Help build a practical proposal for the CalAgPlate education grant. Use its current requirements and our recorded students. Explain the gaps before applying.']].filter(Boolean);
     return `<div class="today-page">
-      <header class="today-head"><p class="today-date">${e(date)}</p><h1 id="today-title">Today</h1><p class="today-summary" id="today-summary">${model.summary}</p></header>
-      <div class="today-tiles" role="group" aria-label="Today at a glance">${model.tiles.map(tile=>`<button class="today-tile" data-today-tile="${tile.id}" aria-expanded="${openTile===tile.id}" aria-controls="today-panel"><strong>${tile.value}</strong><span>${e(tile.label)}</span><small>${e(tile.note)}</small></button>`).join('')}</div>
-      <div id="today-panel" class="today-panel"${openTile?'':' hidden'}>${openTile?tilePanel(openTile,model):''}</div>
-      <section class="today-section" aria-labelledby="today-noticed"><div class="today-section-head"><h2 id="today-noticed">What Roots noticed</h2><span id="today-checked">Checked ${e(time(checkedLocally))} · updates as records change</span></div><div id="briefing-insights" class="today-notices">${insightsMarkup()}</div></section>
+      <header class="today-head"><h1 id="today-title">Today <span class="today-date">${e(date)}</span></h1><p class="today-summary" id="today-summary">${model.summary}</p></header>
+      <section class="today-section" aria-labelledby="today-noticed"><div class="today-section-head"><h2 id="today-noticed">What Roots noticed</h2><span id="today-checked">Checked ${e(time(checkedLocally))}</span></div><div id="briefing-insights" class="today-notices">${insightsMarkup()}</div></section>
       <div class="today-columns">
-        <section aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today’s feed</h2><span>Newest first</span></div><ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol></section>
-        <section aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Community patterns</h2><div class="overview-chart-tabs" role="group" aria-label="Community chart"><button data-dashboard-tab="participation" aria-pressed="${analyticsTab==='participation'}">Visits</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">Interests</button><button data-dashboard-tab="events" aria-pressed="${analyticsTab==='events'}">Events</button></div></div><div id="overview-patterns" class="today-patterns overview-pattern-content" data-chart="${analyticsTab}">${patternsMarkup(a)}</div><p class="today-records" id="overview-metrics">${snapshotMarkup(a)}</p></section>
+        <section aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today’s feed</h2></div><ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol></section>
+        <section aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Community patterns</h2><div class="overview-chart-tabs" role="group" aria-label="Community chart"><button data-dashboard-tab="participation" aria-pressed="${analyticsTab==='participation'}">Visits</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">Interests</button><button data-dashboard-tab="events" aria-pressed="${analyticsTab==='events'}">Events</button></div></div><div id="overview-patterns" class="today-patterns overview-pattern-content" data-chart="${analyticsTab}">${patternsMarkup(a)}</div></section>
       </div>
-      <section class="today-ask" aria-label="Ask Roots"><form id="briefing-chat-form" class="briefing-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="2" maxlength="2000" placeholder="Ask Roots, or turn an idea into an SMS…" required>${e(prompt)}</textarea><div class="briefing-composer-bottom"><span>${api.icon('sprout')}Plan it here. Nothing goes out until you approve it.</span><button type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form>
-      <div class="today-chips">${model.benefits[0]?`<button data-briefing="suggestion" data-prompt="Draft a short SMS telling the matched volunteers about ${e(model.benefits[0].title)} and what they get. Keep every message unsent for my review.">Draft a note about ${e(model.benefits[0].title)}</button>`:''}<button data-briefing="suggestion" data-prompt="Prepare SMS invitation drafts for first-time volunteers with recorded SMS permission. Build a short friendly invitation, and let me review each message before any sending.">Invite first-timers back</button><button data-briefing="suggestion" data-prompt="Help build a practical proposal for the CalAgPlate education grant. Use its current requirements and our recorded students. Explain the gaps before applying.">Start the CalAgPlate proposal</button></div></section>
-      <footer class="today-foot"><div id="briefing-coverage">${coverageMarkup()}</div><span>Demo workspace · today’s activity is illustrative</span></footer>
+      <div class="today-dock"><form id="briefing-chat-form" class="briefing-composer today-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="1" maxlength="2000" placeholder="Ask Roots, or turn an idea into an SMS…" required>${e(prompt)}</textarea><div class="today-composer-bottom"><div class="today-chips">${chips.map(([label,ask])=>`<button type="button" data-briefing="suggestion" data-prompt="${e(ask)}">${e(label)}</button>`).join('')}</div><button class="today-send" type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form></div>
     </div>`;
   }
   function briefingTitle() { const hour=new Date().getHours();return `Good ${hour<12?'morning':hour<17?'afternoon':'evening'}, Jamie.`; }
@@ -216,7 +204,7 @@
     if(coverage&&!coverage.querySelector('details[open]'))coverage.innerHTML=coverageMarkup();
     updateAnalytics();
     const feed=document.getElementById('today-feed');if(feed)feed.innerHTML=feedMarkup();
-    const stamp=document.getElementById('today-checked');if(stamp)stamp.textContent=`Checked ${time(checkedLocally)} · updates as records change`;
+    const stamp=document.getElementById('today-checked');if(stamp)stamp.textContent=`Checked ${time(checkedLocally)}`;
     const rendered=JSON.stringify(current().insights);
     if(rendered!==lastRendered){
       const target=document.getElementById('briefing-insights');
@@ -225,12 +213,7 @@
     }
   }
   document.addEventListener('click',event=>{
-    if(!api)return;
-    const go=event.target.closest('[data-today-go]');if(go){location.hash=go.dataset.todayGo;return;}
-    const tile=event.target.closest('[data-today-tile]');if(!tile)return;
-    openTile=openTile===tile.dataset.todayTile?'':tile.dataset.todayTile;
-    document.querySelectorAll('[data-today-tile]').forEach(el=>el.setAttribute('aria-expanded',String(el.dataset.todayTile===openTile)));
-    const panel=document.getElementById('today-panel');if(panel){panel.hidden=!openTile;panel.innerHTML=openTile?tilePanel(openTile):'';}
+    const go=event.target.closest('[data-today-go]');if(go)location.hash=go.dataset.todayGo;
   });
   function schedulePoll() {
     clearTimeout(pollTimer);
