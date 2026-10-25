@@ -4,6 +4,8 @@
 
 The Guild's problem is consistency: people volunteer once and do not return. Roots gives each person a reason to come back, uses AI to know them and reach them, and finds money that funds more volunteer days.
 
+**Live dashboard:** https://roots-ebpg.vercel.app (the dashboard only; the AI assistant and Telegram run from the local bridge below).
+
 ## What it does
 
 - **Today:** what changed since yesterday, what Roots noticed, who is coming back, and a live feed.

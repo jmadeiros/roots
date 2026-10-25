@@ -142,7 +142,7 @@ Josh Madeiros built Roots with AI coding agents. OpenAI's Codex agent built the 
 - SMS and email are not connected. "Send" delivers examples only to the owner's Telegram demo inbox. No message has reached a volunteer.
 - These Today items are seeded: the monthly "Coming back" history, "4 people joined", the "2 drafts" label in the summary, and the feed items. 3 feed items arrive on timers, at 8 s, 45 s and 110 s. The "By interest" chart is worked out from the records.
 - LinkedIn is never read or scraped. Roots stores only a link the volunteer types, and the demo links are made up.
-- The version shown runs locally on a laptop. It is not hosted. An earlier static demo of the Codex base was published by Codex. It has no assistant, Telegram or benefits layer.
+- The dashboard is hosted at https://roots-ebpg.vercel.app. The AI assistant and Telegram bots run from the laptop during the demo. An earlier static demo of the Codex base was published by Codex. It has no assistant, Telegram or benefits layer.
 - Join answers saved in Garden Steward do not flow into Roots yet.
 - Microsoft matching is a published policy. Eligibility must still be confirmed.
 - Grant applications are never submitted.
@@ -218,7 +218,8 @@ East Bay Permaculture Guild (Oakland). Our onboarding work is in Garden Steward,
 Opt in to the East Bay Permaculture Guild problem-statement prize and to Crowd Favorite, if the form offers them. TO CONFIRM on the form.
 
 **Try it out links / repo** (Josh's decision whether to list them)
-- Roots dashboard (public): https://github.com/jmadeiros/roots
+- Roots live dashboard: https://roots-ebpg.vercel.app (the dashboard; the AI assistant and Telegram run locally at the demo)
+- Roots code (public): https://github.com/jmadeiros/roots
 - Garden Steward backend (public fork): https://github.com/jmadeiros/steward-bank-hack/tree/volunteer-onboarding
 - Garden Steward frontend (public fork): https://github.com/jmadeiros/garden-vue-hack/tree/volunteer-onboarding
 - All three are public. No PR is open to Garden-Steward; the onboarding work lives on the forks.
