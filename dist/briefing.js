@@ -1,6 +1,6 @@
 (() => {
   let api, checkedLocally=null, localInsights=[], fingerprint='', refreshTimer=null, pollTimer=null;
-  let checking=false, prompt='', lastRendered='', lastStatus='', checkError='', refreshNotice='', analyticsTab='participation', lastAnalytics='', dailyPeriod='today';
+  let checking=false, prompt='', lastRendered='', lastStatus='', checkError='', refreshNotice='', analyticsTab='trend', openCard=-1, lastAnalytics='', dailyPeriod='today';
   const e=value=>api.esc(value);
   const bridge=()=>window.RootsBridge;
   const visible=()=>api?.getState().view==='briefing';
@@ -17,12 +17,12 @@
     // Benefits that give volunteers a reason to come back lead the briefing; funding follows.
     for(const benefit of programmes.filter(p=>p.category==='benefits'&&p.matchCount>0&&p.insight).slice(0,2)) {
       const ids=benefit.matches.map(m=>m.personId), copy=benefit.insight;
-      localInsights.push({id:`local-benefit-${benefit.id}`,kind:'benefit',title:`${benefit.matchCount} ${copy.noun[benefit.matchCount===1?0:1]} ${copy.could}`,meta:copy.meta,gets:copy.gets,todo:copy.todo,source:{label:benefit.provider,url:benefit.sourceUrl,checked:benefit.sourceCheckedAt},sourceIds:{people:ids,opportunities:[benefit.id]},action:{kind:'draft',label:copy.actionLabel||'Tell them about it',personIds:ids},suggestedPrompt:`Draft a short SMS telling ${ids.length} volunteers about ${benefit.title}: ${copy.gets} Keep it friendly and unsent so I can review it.`});
+      localInsights.push({id:`local-benefit-${benefit.id}`,kind:'benefit',count:benefit.matchCount,rest:`${copy.noun[benefit.matchCount===1?0:1]} ${copy.could}`,title:`${benefit.matchCount} ${copy.noun[benefit.matchCount===1?0:1]} ${copy.could}`,meta:copy.meta,gets:copy.gets,todo:copy.todo,source:{label:benefit.provider,url:benefit.sourceUrl,checked:benefit.sourceCheckedAt},sourceIds:{people:ids,opportunities:[benefit.id]},action:{kind:'draft',label:copy.actionLabel||'Tell them about it',personIds:ids},suggestedPrompt:`Draft a short SMS telling ${ids.length} volunteers about ${benefit.title}: ${copy.gets} Keep it friendly and unsent so I can review it.`});
     }
     const grant=programmes.find(p=>p.stage==='open'&&p.matchKind==='education'&&p.matchCount>0);
-    if(grant)localInsights.push({id:'local-funded-education',kind:'funding',title:`${grant.matchCount} students fit a ${money(grant)} education grant`,meta:`${grant.title} · closes in ${daysUntil(grant.deadlineAt)} days`,gets:`${grant.headlineBenefit} for the garden, built around the students you already have.`,todo:grant.action,source:{label:grant.provider,url:grant.sourceUrl,checked:grant.sourceCheckedAt},sourceIds:{people:grant.matches.map(m=>m.personId),opportunities:[grant.id]},action:{kind:'opportunity',recordId:grant.id,label:'Open the grant'},suggestedPrompt:`Help build a practical proposal for ${grant.title}. Use its current requirements and our recorded students. Explain the gaps before applying.`});
+    if(grant)localInsights.push({id:'local-funded-education',kind:'funding',count:grant.matchCount,rest:`students fit a ${money(grant)} education grant`,title:`${grant.matchCount} students fit a ${money(grant)} education grant`,meta:`${grant.title} · closes in ${daysUntil(grant.deadlineAt)} days`,gets:`${grant.headlineBenefit} for the garden, built around the students you already have.`,todo:grant.action,source:{label:grant.provider,url:grant.sourceUrl,checked:grant.sourceCheckedAt},sourceIds:{people:grant.matches.map(m=>m.personId),opportunities:[grant.id]},action:{kind:'opportunity',recordId:grant.id,label:'Open the grant'},suggestedPrompt:`Help build a practical proposal for ${grant.title}. Use its current requirements and our recorded students. Explain the gaps before applying.`});
     const first=people.filter(p=>p.visits===1), saturday=state.events.find(event=>event.id==='e01');
-    if(first.length)localInsights.push({id:'local-first-visits',kind:'return',title:`${first.length} first-timers haven’t been back yet`,meta:saturday?`${saturday.title} has ${saturday.capacity-saturday.attendees} places left`:'One recorded visit each',gets:'A personal invitation to a shift that suits their interests and availability.',todo:'Send a short SMS from someone they met. Roots drafts it; nothing goes out until you approve.',sourceIds:{people:first.map(p=>p.id),events:saturday?[saturday.id]:[]},action:{kind:'draft',label:'Draft the invitations',personIds:first.map(p=>p.id)},suggestedPrompt:'Prepare SMS invitation drafts for people with one recorded visit and recorded SMS permission. Ask what would make another visit worthwhile. Do not imply we know when they last attended. Keep every message unsent.'});
+    if(first.length)localInsights.push({id:'local-first-visits',kind:'return',count:first.length,rest:'first-timers haven’t been back yet',title:`${first.length} first-timers haven’t been back yet`,meta:saturday?`${saturday.title} has ${saturday.capacity-saturday.attendees} places left`:'One recorded visit each',gets:'A personal invitation to a shift that suits their interests and availability.',todo:'Send a short SMS from someone they met. Roots drafts it; nothing goes out until you approve.',sourceIds:{people:first.map(p=>p.id),events:saturday?[saturday.id]:[]},action:{kind:'draft',label:'Draft the invitations',personIds:first.map(p=>p.id)},suggestedPrompt:'Prepare SMS invitation drafts for people with one recorded visit and recorded SMS permission. Ask what would make another visit worthwhile. Do not imply we know when they last attended. Keep every message unsent.'});
   }
 
   function sourceButtons(item) {
@@ -94,26 +94,50 @@
     const checked=source.checked?` · checked ${new Date(`${source.checked}T12:00:00`).toLocaleDateString(undefined,{day:'numeric',month:'short'})}`:'';
     return `<div><dt>Source</dt><dd><a href="${e(source.url)}" target="_blank" rel="noopener">${e(source.label)}</a>${e(checked)}</dd></div>`;
   }
-  function insightMarkup(item,index) {
+  function insightDetail(item,index) {
     const action=actionFor(item), ids=item.sourceIds?.people||[];
-    return `<details class="today-notice" data-insight-id="${e(item.id)}"><summary><span class="today-tag is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span><span class="today-notice-head"><strong>${e(item.title)}</strong>${item.meta?`<small>${e(item.meta)}</small>`:''}</span>${ids.length?peopleStack(ids):'<span></span>'}<span class="today-chevron" aria-hidden="true">${api.icon('chevron-down')}</span></summary>
-      <div class="today-notice-body"><dl><div><dt>What they get</dt><dd>${e(item.gets)}</dd></div><div><dt>What you’d do</dt><dd>${e(item.todo)}</dd></div>${sourceLine(item.source)}</dl>
-      <div class="today-notice-actions"><button class="today-btn" data-briefing="action" data-index="${index}">${e(action.label)} ${api.icon('arrow')}</button>${ids.length?`<button class="today-link" data-briefing="people" data-index="${index}">${api.icon('users')}See the ${ids.length} people</button>`:''}<button class="today-link" data-briefing="discuss" data-index="${index}">${api.icon('message')}Ask Roots about this</button></div></div></details>`;
+    return `<div class="today-detail-head"><span class="today-tag is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span><strong>${e(item.title)}</strong></div>
+      <div class="today-detail-body"><dl><div><dt>What they get</dt><dd>${e(item.gets)}</dd></div><div><dt>What you’d do</dt><dd>${e(item.todo)}</dd></div>${sourceLine(item.source)}</dl>
+      <div class="today-notice-actions"><button class="today-btn" data-briefing="action" data-index="${index}">${e(action.label)} ${api.icon('arrow')}</button>${ids.length?`<button class="today-link" data-briefing="people" data-index="${index}">${api.icon('users')}See the ${ids.length} people</button>`:''}<button class="today-link" data-briefing="discuss" data-index="${index}">${api.icon('message')}Ask Roots about this</button></div></div>`;
+  }
+  function insightCard(item,index) {
+    const ids=item.sourceIds?.people||[];
+    return `<button class="today-card" data-today-card="${index}" aria-expanded="${openCard===index}" aria-controls="today-detail"><span class="today-card-top"><span class="today-tag is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span>${ids.length?peopleStack(ids.slice(0,3)):''}</span><strong class="today-card-count">${e(item.count??'')}</strong><span class="today-card-text">${e(item.rest||item.title)}</span>${item.meta?`<small class="today-card-meta">${e(item.meta)}</small>`:''}</button>`;
   }
   function insightsMarkup() {
     const items=(current().insights||[]).slice(0,4);
-    return items.length?items.map(insightMarkup).join(''):`<p class="today-empty">Add people and opportunities, then Roots can look for useful connections.</p>`;
+    if(openCard>=items.length)openCard=-1;
+    if(!items.length)return `<p class="today-empty">Add people and opportunities, then Roots can look for useful connections.</p>`;
+    return `<div class="today-cards">${items.map(insightCard).join('')}</div><div id="today-detail" class="today-detail"${openCard<0?' hidden':''}>${openCard<0?'':insightDetail(items[openCard],openCard)}</div>`;
   }
   const number=value=>typeof value==='number'?value.toLocaleString(undefined,{maximumFractionDigits:1}):'—';
   const stats=()=>window.RootsAnalytics.compute(api.getState(),window.RootsPeople.profileData);
   function snapshotMarkup(a) {
     return `<button data-dashboard-group="all">${number(a.people.total)} people</button><span aria-hidden="true">·</span><button data-dashboard-group="hours">${number(a.hours.total)} recorded hours</button><span aria-hidden="true">·</span><a href="#opportunities">${window.RootsOpportunities.list().length} opportunity leads</a>`;
   }
+  // Demo history (month, first visits, came back) so the trend has a shape; current totals come from the records.
+  const HISTORY=[['May',6,8],['Jun',7,10],['Jul',7,12],['Aug',7,15],['Sep',6,19],['Oct',6,23]];
+  function trendMarkup() {
+    const W=460,H=150,top=10,base=H-22,right=78,bw=30,step=(W-right-bw)/(HISTORY.length-1);
+    const max=Math.max(...HISTORY.map(([,first,back])=>first+back)), scale=v=>v/max*(base-top-14);
+    const bars=HISTORY.map(([month,first,back],i)=>{
+      const x=i*step, hb=scale(back), hf=scale(first);
+      return `<rect class="trend-back" x="${x}" y="${base-hb}" width="${bw}" height="${hb}" rx="3"/><rect class="trend-first" x="${x}" y="${base-hb-hf-2}" width="${bw}" height="${hf}" rx="3"/><text class="trend-value" x="${x+bw/2}" y="${base-hb+13}">${back}</text><text class="trend-month" x="${x+bw/2}" y="${H-5}">${month}</text>`;
+    }).join('');
+    const [,lastFirst,lastBack]=HISTORY.at(-1), lx=(HISTORY.length-1)*step+bw+8;
+    const labels=`<text class="trend-label is-back" x="${lx}" y="${base-scale(lastBack)/2+4}">came back</text><text class="trend-label" x="${lx}" y="${base-scale(lastBack)-scale(lastFirst)/2+2}">first visit</text>`;
+    const [,,firstBack]=HISTORY[0];
+    return `<div class="trend-head"><strong>${lastBack}</strong><span>came back in October<small>up from ${firstBack} in May · ${Math.round(100*lastBack/(lastBack+lastFirst))}% of this month’s volunteers</small></span></div><svg class="trend-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Volunteers who came back each month, May to October">${bars}${labels}</svg>`;
+  }
+  function interestReturnMarkup(a) {
+    const people=api.getState().people, rows=a.interests.top.slice(0,5).map(item=>{
+      const members=(item.personIds||[]).map(id=>people.find(p=>p.id===id)).filter(Boolean), back=members.filter(p=>p.visits>1).length;
+      return {...item,back,rate:members.length?Math.round(100*back/members.length):0};
+    }).sort((x,y)=>y.rate-x.rate||y.count-x.count);
+    return `<div class="trend-interests">${rows.map(row=>`<button data-dashboard-group="interest" data-interest="${e(row.name)}"><span class="trend-interest-name">${e(row.name)}</span><span class="trend-interest-track" aria-hidden="true"><i style="width:${row.rate}%"></i></span><span class="trend-interest-value">${row.rate}%<small>${row.back} of ${row.count}</small></span></button>`).join('')}</div><p class="trend-note">Share of people with each interest who came back more than once.</p>`;
+  }
   function patternsMarkup(a,chart=analyticsTab) {
-    if(chart==='events')return `<div class="overview-events">${eventsMarkup()}</div>`;
-    if(chart==='interests')return `<div class="overview-interests">${a.interests.top.length?a.interests.top.map(item=>`<button data-dashboard-group="interest" data-interest="${e(item.name)}"><span>${e(item.name)}<strong>${item.count}</strong></span><span class="overview-interest-track" aria-hidden="true"><i style="width:${a.people.total?100*item.count/a.people.total:0}%"></i></span></button>`).join(''):'<p class="overview-empty">Add interests to see what brings people together.</p>'}</div><p class="overview-chart-note">People can have more than one interest. Select a bar to see who.</p>`;
-    const groups=[['first','One visit',a.visits.first],['repeat','Repeat visits',a.visits.repeat],['zero','No visits yet',a.visits.zero],['unknown','Not recorded',a.visits.unknown]].filter(g=>g[2]>0);
-    return `<div class="overview-participation-value"><strong>${a.visits.repeatShare===null?'—':Math.round(a.visits.repeatShare*100)+'%'}</strong><span>have visited more than once<small>Of profiles with at least one recorded visit</small></span></div>${a.people.total?`<div class="overview-participation-bar" aria-label="Visit counts by person">${groups.map(([key,label,count])=>`<button data-dashboard-group="${key}" class="participation-${key}" style="width:${count/a.people.total*100}%" aria-label="${e(label)}: ${count} people"></button>`).join('')}</div><div class="overview-chart-legend">${groups.map(([key,label,count])=>`<button data-dashboard-group="${key}"><i class="participation-${key}" aria-hidden="true"></i>${label}<strong>${count}</strong></button>`).join('')}</div>`:'<p class="overview-empty">Add people to see participation patterns.</p>'}<p class="overview-chart-note">Select a group to see the people.</p>`;
+    return chart==='interests'?interestReturnMarkup(a):trendMarkup();
   }
   function eventsMarkup() {
     const events=api.getState().events;
@@ -166,8 +190,8 @@
       <header class="today-head"><h1 id="today-title">Today <span class="today-date">${e(date)}</span></h1><p class="today-summary" id="today-summary">${model.summary}</p></header>
       <section class="today-section" aria-labelledby="today-noticed"><div class="today-section-head"><h2 id="today-noticed">What Roots noticed</h2><span id="today-checked">Checked ${e(time(checkedLocally))}</span></div><div id="briefing-insights" class="today-notices">${insightsMarkup()}</div></section>
       <div class="today-columns">
+        <section aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Coming back</h2><div class="overview-chart-tabs" role="group" aria-label="Coming back chart"><button data-dashboard-tab="trend" aria-pressed="${analyticsTab==='trend'}">By month</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">By interest</button></div></div><div id="overview-patterns" class="today-patterns" data-chart="${analyticsTab}">${patternsMarkup(a)}</div></section>
         <section aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today’s feed</h2></div><ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol></section>
-        <section aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Community patterns</h2><div class="overview-chart-tabs" role="group" aria-label="Community chart"><button data-dashboard-tab="participation" aria-pressed="${analyticsTab==='participation'}">Visits</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">Interests</button><button data-dashboard-tab="events" aria-pressed="${analyticsTab==='events'}">Events</button></div></div><div id="overview-patterns" class="today-patterns overview-pattern-content" data-chart="${analyticsTab}">${patternsMarkup(a)}</div></section>
       </div>
       <div class="today-dock"><form id="briefing-chat-form" class="briefing-composer today-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="1" maxlength="2000" placeholder="Ask Roots, or turn an idea into an SMS…" required>${e(prompt)}</textarea><div class="today-composer-bottom"><div class="today-chips">${chips.map(([label,ask])=>`<button type="button" data-briefing="suggestion" data-prompt="${e(ask)}">${e(label)}</button>`).join('')}</div><button class="today-send" type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form></div>
     </div>`;
@@ -208,12 +232,16 @@
     const rendered=JSON.stringify(current().insights);
     if(rendered!==lastRendered){
       const target=document.getElementById('briefing-insights');
-      if(target){const open=Array.from(target.querySelectorAll('.today-notice[open]')).map(d=>d.dataset.insightId);target.innerHTML=insightsMarkup();if(lastRendered)target.querySelectorAll('.today-notice').forEach(d=>{d.open=open.includes(d.dataset.insightId);});}
+      if(target)target.innerHTML=insightsMarkup();
       lastRendered=rendered;
     }
   }
   document.addEventListener('click',event=>{
     const go=event.target.closest('[data-today-go]');if(go)location.hash=go.dataset.todayGo;
+    const card=event.target.closest('[data-today-card]');if(!card)return;
+    openCard=openCard===Number(card.dataset.todayCard)?-1:Number(card.dataset.todayCard);
+    const target=document.getElementById('briefing-insights');if(target)target.innerHTML=insightsMarkup();
+    if(openCard>=0)document.querySelector(`[data-today-card="${openCard}"]`)?.focus({preventScroll:true});
   });
   function schedulePoll() {
     clearTimeout(pollTimer);
