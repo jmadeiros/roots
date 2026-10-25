@@ -1,12 +1,14 @@
 (() => {
   let api, status = null, version = null, syncTimer = null;
   let writes = Promise.resolve(), activity = {activity: [], drafts: []};
+  let insightRequest = null;
   async function request(path, options = {}) {
     const response = await fetch(path, {...options, headers: {...(options.body ? {'Content-Type': 'application/json'} : {}), ...options.headers}});
     const body = await response.json();
     if (!response.ok) {
       const error = new Error(body.error || 'The local assistant could not complete that request.');
       error.status = response.status;
+      error.code = body.code;
       throw error;
     }
     return body;
@@ -45,6 +47,7 @@
     return operation;
   }
   function sync() {
+    window.dispatchEvent(new CustomEvent('roots:records-changed'));
     if (!status?.connected || !api) return;
     clearTimeout(syncTimer);
     syncTimer = setTimeout(() => { flush().catch(() => {}); }, 200);
@@ -63,17 +66,37 @@
       version = (await request('/api/state')).version;
       await flush();
       await loadActivity();
+      await loadInsights().catch(() => {});
     } catch (error) {
       if (status?.connected) reportSync(error);
       else { status = null; window.RootsBridge.status = null; }
     }
     if (api.getState().view === 'notices') api.render();
+    window.dispatchEvent(new CustomEvent('roots:ready'));
   }
-  async function chat(message) {
+  async function loadInsights(force = false) {
+    if (!status?.connected) return null;
+    if (insightRequest) return insightRequest;
+    insightRequest = (async () => {
+      try {
+        const result = await request(force ? '/api/insights/refresh' : '/api/insights', force ? {method:'POST',body:'{}'} : {});
+        window.RootsBridge.insights = result;
+        window.RootsBridge.insightError = null;
+        window.dispatchEvent(new CustomEvent('roots:insights'));
+        return result;
+      } catch (error) {
+        window.RootsBridge.insightError = error.message;
+        window.dispatchEvent(new CustomEvent('roots:insights'));
+        throw error;
+      } finally { insightRequest = null; }
+    })();
+    return insightRequest;
+  }
+  async function chat(message, conversationId) {
     if (!status?.geminiConfigured) throw new Error('Configure Gemini on the local test server to ask Roots.');
     await flush();
-    return request('/api/chat', {method: 'POST', body: JSON.stringify({message})});
+    return request('/api/chat', {method: 'POST', body: JSON.stringify({message, ...(conversationId ? {conversationId} : {})})});
   }
   window.addEventListener('focus', () => { loadActivity().catch(() => {}); });
-  window.RootsBridge = {configure(callbacks) { api = callbacks; }, init, sync, flush, chat, loadActivity, status, activity};
+  window.RootsBridge = {configure(callbacks) { api = callbacks; }, init, sync, flush, chat, loadActivity, loadInsights, request, status, activity, insights:null, insightError:null};
 })();

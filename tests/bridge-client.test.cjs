@@ -36,6 +36,7 @@ function harness() {
     requests.push(request);
     if (url === '/api/status') return response(200, {connected: true, geminiConfigured: true});
     if (url === '/api/activity') return response(200, server.activity);
+    if (url === '/api/insights' || url === '/api/insights/refresh') return response(200, {insights:[{id:'garden',title:'Garden shift'}],checkedAt:'2026-10-24T10:00:00Z'});
     if (url === '/api/state' && request.method === 'GET') return response(200, {version: server.version, state: server.state});
     if (url === '/api/state' && request.method === 'PUT') {
       activePuts++;
@@ -202,4 +203,24 @@ test('a failed background save remains visible and the next debounced save recov
   await tick();
   assert.equal(h.bridge.status.syncError, null);
   assert.deepEqual(h.server.state.saved, ['o01']);
+});
+
+test('chat carries the conversation identity only when one has been established', async () => {
+  const h=harness();
+  await h.bridge.init();
+  await h.bridge.chat('Who is Maya?');
+  assert.equal(h.chats()[0].body.conversationId, undefined);
+  await h.bridge.chat('Turn that into an SMS.', 'conversation-test');
+  assert.equal(h.chats()[1].body.conversationId, 'conversation-test');
+});
+
+test('insights load with connection readiness and explicit refresh uses the refresh endpoint', async () => {
+  const h=harness();
+  await h.bridge.init();
+  assert.equal(h.bridge.insights.insights[0].id,'garden');
+  assert.ok(h.events.includes('roots:insights'));
+  assert.ok(h.events.includes('roots:ready'));
+  await h.bridge.loadInsights(true);
+  assert.equal(h.requests.at(-1).url,'/api/insights/refresh');
+  assert.equal(h.requests.at(-1).method,'POST');
 });

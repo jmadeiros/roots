@@ -1,0 +1,233 @@
+/* Shared neutral treatment. Layout and responsive navigation stay in style.css. */
+:root {
+  --paper: #faf9f6;
+  --surface: #fff;
+  --ink: #343632;
+  --forest: #343632;
+  --deep: #242622;
+  --muted: #6c6a63;
+  --line: #e2e0d9;
+  --sage: #eeede7;
+  --lime: #eeede7;
+  --peach: #f2e9df;
+  --sidebar-surface: #f2f1ed;
+  --soft-surface: #f4f3ef;
+  --hover-surface: #eeede7;
+  --selected-surface: #e6e4dd;
+  --field-line: #cbc8be;
+  --brand-accent: #5b7153;
+}
+
+body { background: var(--paper); color: var(--ink); }
+.sidebar { background: var(--sidebar-surface); border-color: var(--line); }
+.topbar { background: var(--paper); border-color: var(--line); }
+.brand { color: var(--ink); }
+.brand-icon, .brand-dot { color: var(--brand-accent); }
+.workspace, .profile { border-color: var(--line); }
+.workspace-symbol { background: var(--selected-surface); color: var(--muted); }
+.nav-item { color: var(--muted); }
+.nav-item.active { background: var(--selected-surface); color: var(--ink); }
+.nav-item:hover:not(.active) { background: var(--hover-surface); color: var(--ink); }
+.nav-count, .active .nav-count { background: var(--surface); color: var(--ink); }
+.growing-note { color: var(--ink); }
+.growing-note > span { color: var(--brand-accent); }
+.growing-note small, .breadcrumb > span:first-child { color: var(--muted); }
+.slash { color: #96938a; }
+.demo-label { background: transparent; color: var(--muted); border-color: var(--line); }
+.demo-label > span { background: var(--brand-accent); }
+.icon-button i { border-color: var(--paper); }
+.assistant-shortcut { border-color: var(--field-line); color: var(--ink); }
+.assistant-shortcut:hover { background: var(--hover-surface); }
+.page-footer { color: var(--muted); }
+
+/* Controls stay legible and distinct without carrying the brand color. */
+.button { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.button:hover, .icon-button:hover { background: var(--hover-surface); }
+.button.primary { background: var(--ink); border-color: var(--ink); color: #fff; }
+.button.primary:hover { background: var(--deep); border-color: var(--deep); }
+.button.quiet { background: transparent; border-color: var(--field-line); }
+.button.quiet:hover { background: var(--hover-surface); }
+.text-button { color: var(--ink); }
+.text-button:hover { color: var(--deep); }
+.filter { color: var(--muted); }
+.filter.active { background: var(--selected-surface); color: var(--ink); }
+.filter:hover { background: var(--hover-surface); color: var(--ink); }
+.search-field { border-color: var(--field-line); }
+.search-field svg, .search-field input::placeholder { color: var(--muted); }
+.form-field input:not([type=checkbox]),
+.form-field select,
+.form-field textarea,
+.assistant-test textarea { background: var(--surface); color: var(--ink); border-color: var(--field-line); }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
+input, textarea, select { caret-color: var(--ink); accent-color: var(--ink); }
+.people-edit-form input, .people-edit-form select, .people-detail textarea { caret-color: var(--ink); }
+.consent-row input { accent-color: var(--ink); }
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible { outline-color: var(--ink); }
+summary:focus-visible { outline-style: solid; outline-width: 3px; outline-offset: 4px; }
+.opp-details > summary:focus-visible { outline-color: var(--ink); }
+::selection, .people-detail ::selection { background: #dedbd1; color: var(--ink); }
+::-webkit-scrollbar-thumb { background: #c4c1b7; }
+
+/* Color marks a status, rather than every supporting surface. */
+.badge.neutral { background: var(--hover-surface); color: var(--muted); }
+.badge.green { background: #edf1e9; color: #4b6142; }
+.badge.orange { background: #f5ece1; color: #81562e; }
+.tag { background: var(--soft-surface); color: var(--muted); }
+.sage { background: #e7e6df; color: #53544d; }
+.peach { background: #eee5dd; color: #795a43; }
+.lavender { background: #e8e5e9; color: #6e6076; }
+.sand { background: #ede9dd; color: #74633d; }
+.save-button, .opp-save { color: var(--muted); }
+.save-button.saved, .opp-save.saved { background: var(--selected-surface); color: var(--ink); }
+.opp-save.saved svg { fill: #d4d1c6; }
+
+/* Record lists, quiet metadata, and secondary destinations. */
+th { background: var(--soft-surface); color: var(--muted); border-color: var(--line); }
+td { border-color: var(--line); }
+tbody tr:hover, .opp-row:hover { background: var(--paper); }
+.person-cell small,
+.tiny-label,
+.table-footer,
+.title-cluster svg,
+.card-type,
+.event-details,
+.event-info small,
+.event-spots,
+.capacity-label,
+.activity-item p,
+.activity-item .activity-time,
+.recommendation-note,
+.preview-label,
+.source-note { color: var(--muted); }
+.empty { border-color: var(--field-line); }
+.help-banner { background: var(--soft-surface); border-color: var(--line); color: var(--muted); }
+.date-tile { background: var(--soft-surface); }
+.date-tile small { color: var(--muted); }
+.event-row { border-color: var(--line); }
+.event-row:hover .event-info strong { color: var(--ink); }
+.capacity-track { background: var(--selected-surface); }
+.capacity-track > span { background: #8b8b7f; }
+.platform-tabs,
+.notice-list,
+.workflow-list,
+.draft-list,
+.notice-row + .notice-row,
+.workflow-row + .workflow-row,
+.draft-row + .draft-row,
+.assistant-connection { border-color: var(--line); }
+.platform-tabs button { color: var(--muted); }
+.platform-tabs button.active { color: var(--ink); border-color: var(--ink); }
+.platform-tabs button span { background: var(--hover-surface); color: var(--muted); }
+.notice-symbol, .assistant-mark { background: var(--soft-surface); color: var(--muted); }
+.notice-kind,
+.notice-content p,
+.notice-people > span,
+.platform-footnote,
+.workflow-intro p,
+.workflow-row p,
+.draft-row p,
+.draft-row small,
+.assistant-intro p,
+.assistant-connection p { color: var(--muted); }
+.assistant-suggestions button { border-color: var(--line); color: var(--ink); }
+.assistant-suggestions button:hover { background: var(--hover-surface); }
+.assistant-response { color: var(--ink); }
+.assistant-response:not(:empty) { background: var(--soft-surface); }
+
+/* Opportunity details use neutral emphasis and clear interactive states. */
+.opp-tab,
+.opp-toolbar > p,
+.opp-row-copy > span,
+.opp-row-copy > small,
+.opp-row-meta > small,
+.opp-row-arrow,
+.opp-list-footer,
+.opp-discovery-note,
+.opp-benefit > span,
+.opp-benefit > small,
+.opp-section-heading > span,
+.opp-person strong > small,
+.opp-person > span:not(.avatar) > span,
+.opp-person > svg,
+.opp-no-match,
+.opp-details > summary > small,
+.opp-details > summary > svg,
+.opp-details > div > p,
+.opp-checks li,
+.opp-budget > div { color: var(--muted); }
+.opp-tab > span { background: var(--hover-surface); color: var(--muted); }
+.opp-row-icon { background: var(--soft-surface); color: var(--muted); }
+.opp-row-meta > strong,
+.opp-row-open:hover .opp-row-copy > strong,
+.opp-details > summary:hover { color: var(--ink); }
+.opp-benefit { background: var(--soft-surface); }
+.opp-person:hover { background: var(--hover-surface); }
+.opp-checks li > svg { color: var(--muted); }
+
+/* People sheets retain the same hierarchy, fields, and tab affordances. */
+.people-profile-actions > span,
+.people-tabs [role=tab],
+.people-example-label,
+.people-facts dt,
+.people-consent,
+.people-caption,
+.people-field-label,
+.people-unrecorded,
+.people-availability > svg,
+.people-form-note,
+.people-hours span,
+.people-match small,
+.people-match > svg,
+.people-project p,
+.people-project-empty,
+.people-section-intro,
+.people-history time,
+.people-history p,
+.people-outreach-empty > svg,
+.people-outreach-empty p,
+.people-empty p,
+.people-note-meta,
+.people-notes-actions > span { color: var(--muted); }
+.people-tabs [role=tab][aria-selected=true] { color: var(--ink); }
+.people-tabs [role=tab]:hover { background: var(--hover-surface); color: var(--ink); }
+.people-consent.is-recorded { color: #4b6142; }
+.people-match:hover { background: var(--hover-surface); }
+.people-match:hover strong { color: var(--ink); }
+.people-project { background: var(--soft-surface); }
+.people-history-mark, .people-empty-icon { background: var(--soft-surface); color: var(--muted); }
+
+/* Transient surfaces remain separate, without botanical tint or decorative blur. */
+dialog { background: var(--paper); box-shadow: -12px 0 60px #34363217; }
+dialog::backdrop { background: #34363255; backdrop-filter: none; }
+.dialog-top { background: var(--paper); }
+.fit-line svg { color: var(--muted); }
+.fit-line.gap svg { color: #81562e; }
+.step-list li { color: var(--muted); }
+.step-list li:before { background: var(--hover-surface); color: var(--ink); }
+.audience-chip { background: var(--soft-surface); }
+.draft-preview, .success-panel { background: var(--soft-surface); color: var(--ink); }
+#toast { background: var(--ink); box-shadow: 0 6px 20px #3436321a; }
+
+/* Legacy contextual views share the same material when reached from a record. */
+.metric:hover { border-color: var(--field-line); }
+.metric-top, .metric-top svg, .metric-bottom { color: var(--muted); }
+.trend { background: #edf1e9; color: #4b6142; }
+.recommendation.featured { background: var(--soft-surface); border-color: var(--line); }
+.rec-icon { background: var(--selected-surface); color: var(--muted); }
+.rec-icon.outreach { background: #f5ece1; color: #81562e; }
+.recommendation p, .rec-benefit, .people-indicator small { color: var(--muted); }
+.rec-footer { border-color: var(--line); }
+.community-card { background: var(--soft-surface); }
+.community-card > svg { color: var(--brand-accent); }
+.community-card p { color: var(--muted); }
+
+@media (max-width: 760px) {
+  .sidebar { background: var(--sidebar-surface); border-top-color: var(--line); }
+  .nav-item.active { background: var(--selected-surface); color: var(--ink); }
+  .breadcrumb:before { color: var(--ink); }
+}

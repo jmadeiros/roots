@@ -1,5 +1,6 @@
 """Local-only verification. Provider responses are fakes; these are not live API tests."""
 import importlib.util
+import http.cookiejar
 import json
 from pathlib import Path
 import tempfile
@@ -58,6 +59,21 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(summary["recordedVolunteerHours"], 4)
         self.assertFalse(summary["deliveryConnected"])
         self.assertEqual(bridge.execute_tool(self.store, "find_person", {"query": "maya"})["people"][0]["id"], "p01")
+
+    def test_event_tool_returns_calendar_details_and_validates_query(self):
+        event = {"id": "e01", "title": "Saturday garden", "date": "2026-10-31", "time": "9:00 AM", "category": "Community gardening", "capacity": 18, "attendees": 12}
+        self.state.update(events=[event], metadata={"asOf": "2026-10-24"})
+        self.store.save(self.state)
+        result = bridge.execute_tool(self.store, "list_events", {"query": "GARDEN"})
+        self.assertEqual(result["events"], [event])
+        self.assertEqual(result["asOf"], "2026-10-24")
+        self.assertEqual(result["totalMatches"], 1)
+        self.assertEqual(result["snapshotVersion"], 2)
+        self.assertEqual(bridge.execute_tool(self.store, "list_events", {})["events"], [event])
+        self.assertEqual(bridge.execute_tool(self.store, "list_events", {"query": "grant"})["events"], [])
+        for args in ({"query": []}, {"query": "x" * 101}, {"send": True}):
+            with self.subTest(args=args), self.assertRaises(bridge.Invalid):
+                bridge.execute_tool(self.store, "list_events", args)
 
     def test_unknown_tools_and_invalid_arguments_are_rejected(self):
         for name, args in [("send_sms", {}), ("get_overview", {"execute": "code"}), ("find_person", {}), ("find_person", {"query": []}), ("draft_message", {"person_id": "missing", "channel": "sms", "body": "Hello"}), ("draft_message", {"person_id": "p01", "channel": "telegram", "body": "Hello"})]:
@@ -136,7 +152,7 @@ class BridgeTests(unittest.TestCase):
     def test_telegram_roots_prefix_and_natural_text_reach_assistant(self):
         bot, calls = self.telegram()
         seen = []
-        bot.assistant.chat = lambda message: seen.append(message) or {"reply": "Local test reply"}
+        bot.assistant.chat = lambda message, **kwargs: seen.append(message) or {"reply": "Local test reply"}
         for identifier, value in enumerate(("/roots Who is Maya?", "Who is Maya?", "/roots\nWho is Maya?"), 1):
             update = self.update(identifier)
             update["message"]["text"] = value
@@ -288,6 +304,178 @@ class BridgeTests(unittest.TestCase):
             except urllib.error.HTTPError as error:
                 with error:
                     self.assertEqual(error.code, 403)
+        finally:
+            server.shutdown()
+            server.server_close()
+            worker.join()
+
+    def test_followup_keeps_recipient_and_prior_draft_context(self):
+        requests = []
+        def fake(url, payload, headers):
+            requests.append(json.loads(json.dumps(payload)))
+            last = payload["contents"][-1]["parts"][0]
+            if "functionResponse" in last:
+                return {"candidates": [{"content": {"parts": [{"text": "Your draft is ready."}]}}]}
+            channel = "sms" if "SMS" in last["text"] else "email"
+            if channel == "sms":
+                previous = payload["contents"][-2]["parts"][0]["text"]
+                self.assertIn('"personId": "p01"', previous)
+                self.assertIn("Join us in the garden", previous)
+            return {"candidates": [{"content": {"parts": [{"functionCall": {"name": "draft_message", "args": {"person_id": "p01", "channel": channel, "body": "Join us in the garden"}}}]}}]}
+        assistant = bridge.Assistant(self.store, "fake-test-key", request=fake)
+        first = assistant.chat("Draft an email to Maya", owner="web:session-one")
+        second = assistant.chat("Turn that into an SMS", first["conversationId"], owner="web:session-one")
+        self.assertEqual(first["conversationId"], second["conversationId"])
+        self.assertEqual(second["drafts"][0]["personId"], "p01")
+        self.assertEqual(second["drafts"][0]["channel"], "sms")
+        self.assertEqual(second["actions"][0]["type"], "message_draft")
+        self.assertEqual(len(requests[2]["contents"]), 3)
+
+    def test_conversations_are_private_bounded_and_expire(self):
+        requests = []
+        def fake(url, payload, headers):
+            requests.append(json.loads(json.dumps(payload["contents"])))
+            return {"candidates": [{"content": {"parts": [{"text": "Test reply"}]}}]}
+        assistant = bridge.Assistant(self.store, "fake-test-key", request=fake)
+        result = assistant.chat("Private web question", owner="web:first")
+        identifier = result["conversationId"]
+        with self.assertRaises(bridge.ConversationUnavailable):
+            assistant.chat("Read another person's history", identifier, owner="web:second")
+        with self.assertRaises(bridge.ConversationUnavailable):
+            assistant.chat("Read web history", identifier, owner="telegram:42")
+        telegram = assistant.chat("Telegram question", owner="telegram:42", continue_latest=True)
+        self.assertEqual(len(requests[-1]), 1)
+        telegram_followup = assistant.chat("Telegram follow-up", owner="telegram:42", continue_latest=True)
+        self.assertEqual(telegram["conversationId"], telegram_followup["conversationId"])
+        self.assertNotIn("Private web question", json.dumps(requests[-1]))
+        for index in range(8):
+            assistant.chat(f"Follow-up {index}", identifier, owner="web:first")
+        _, history = self.store.conversation("web:first", identifier)
+        self.assertEqual(len(history), bridge.MAX_HISTORY_MESSAGES)
+        self.assertNotIn("Private web question", json.dumps(history))
+        with self.store.connect() as db:
+            db.execute("UPDATE conversations SET updated=? WHERE id=?", ("2000-01-01T00:00:00+00:00", identifier))
+        with self.assertRaises(bridge.ConversationUnavailable):
+            assistant.chat("Expired follow-up", identifier, owner="web:first")
+
+    def test_insights_are_evidence_based_and_prioritize_actionable_connections(self):
+        self.state.update({
+            "people": [
+                {"id": "p01", "name": "Maya", "visits": 1, "interests": ["Community gardening", "Service hours"], "availability": "Saturday mornings", "consent": True},
+                {"id": "p02", "name": "Daniel", "visits": 2, "interests": ["Service hours"], "availability": "Weekday afternoons", "consent": False},
+                {"id": "p03", "name": "Priya", "visits": 1, "interests": ["Community gardening"], "availability": "Tuesday evenings", "consent": True},
+            ],
+            "events": [{"id": "e01", "title": "Saturday garden", "capacity": 18, "attendees": 12, "category": "Community gardening"}],
+            "opportunities": [{"id": "o01", "title": "School service", "interests": ["Service hours"], "candidate": True}],
+            "projects": [{"id": "project-1", "title": "Learning garden", "status": "Draft plan", "team": [{"personId": "p01"}, {"personId": "p02"}], "checks": ["Confirm interest"]}],
+            "metadata": {"illustrative": True, "asOf": "2026-10-24"},
+        })
+        self.store.save(self.state)
+        result = self.store.insights()
+        self.assertEqual(result["source"], "snapshot-rules")
+        self.assertTrue(result["illustrative"])
+        self.assertEqual(result["asOf"], "2026-10-24")
+        self.assertEqual([i["type"] for i in result["insights"][:3]], ["event_capacity", "service_hours_pathway", "project_team_coordination"])
+        event = result["insights"][0]
+        self.assertEqual(event["title"], "A garden invitation for 2 new volunteers.")
+        self.assertEqual(event["summary"], "Maya and Priya share an interest in community gardening. Saturday garden has 6 open places.")
+        self.assertEqual(event["sourceIds"]["people"], ["p01", "p03"])
+        self.assertEqual(event["evidence"][-1]["label"], "What to confirm")
+        self.assertIn("RSVP status", event["evidence"][-1]["value"])
+        service = result["insights"][1]
+        self.assertEqual(service["title"], "Service hours could give people a reason to return.")
+        self.assertEqual(service["summary"], "2 people list service hours, including 1 who has visited once. A clearer pathway could help them choose their next step.")
+        self.assertEqual(service["evidence"][0]["value"], 2)
+        self.assertEqual(service["evidence"][1]["value"], 1)
+        self.assertEqual(service["evidence"][-1]["label"], "What to confirm")
+        self.assertIn("School approval", service["evidence"][-1]["value"])
+        known = {record["id"] for key in ("people", "events", "opportunities", "projects") for record in self.state[key]}
+        for insight in result["insights"]:
+            self.assertTrue(set(sum(insight["sourceIds"].values(), [])).issubset(known))
+            for fact in insight["evidence"]:
+                self.assertTrue(set(fact["sourceIds"]).issubset(known))
+        self.assertEqual(bridge.execute_tool(self.store, "get_insights", {})["checkedAt"], result["checkedAt"])
+
+    def test_insights_cache_ignores_version_and_activity_but_refreshes_changed_evidence(self):
+        first = self.store.insights()
+        self.store.save({**self.state, "activity": [{"text": "Opened dashboard"}]})
+        cached = self.store.insights()
+        self.assertTrue(cached["cached"])
+        self.assertEqual(cached["checkedAt"], first["checkedAt"])
+        self.assertEqual(cached["snapshotVersion"], first["snapshotVersion"])
+        reloaded_store = bridge.Store(self.store.path)
+        self.assertTrue(reloaded_store.insights()["cached"])
+        self.state["people"][0]["visits"] = 2
+        self.store.save(self.state)
+        changed = self.store.insights()
+        self.assertFalse(changed["cached"])
+        self.assertFalse(any(i["type"] == "people_followup" for i in changed["insights"]))
+        with self.store.connect() as db:
+            db.execute("UPDATE insights SET checked=?", ("2000-01-01T00:00:00+00:00",))
+        self.assertFalse(self.store.insights()["cached"])
+        self.assertFalse(self.store.insights(force=True)["cached"])
+
+    def test_draft_readiness_and_safe_edit_preserve_action_identity(self):
+        draft = bridge.execute_tool(self.store, "draft_message", {"person_id": "p01", "channel": "sms", "body": "Original"})["draft"]
+        self.assertEqual(draft["recipient"], "Maya Chen")
+        self.assertIsNone(draft["phone"])
+        self.assertTrue(draft["consent"]["recorded"])
+        self.assertFalse(draft["readiness"]["canSend"])
+        self.assertEqual({b["code"] for b in draft["readiness"]["blockers"]}, {"PHONE_MISSING", "DELIVERY_NOT_CONNECTED"})
+        updated = self.store.edit_draft(draft["id"], {"body": "Edited invitation", "subject": ""})
+        for field in ("id", "personId", "channel", "sent", "status"):
+            self.assertEqual(updated[field], draft[field])
+        self.assertEqual(updated["body"], "Edited invitation")
+        for values in ({"body": "bad", "channel": "email"}, {"body": ""}, {"body": "x" * 4001}, {"body": "bad", "sent": True}):
+            with self.assertRaises(bridge.Invalid):
+                self.store.edit_draft(draft["id"], values)
+        self.state["people"][0].update(phone="+15555550123", smsConsentRecorded=False)
+        self.store.save(self.state)
+        refreshed = self.store.activity()["drafts"][0]
+        self.assertEqual(refreshed["phone"], "+15555550123")
+        self.assertFalse(refreshed["consent"]["recorded"])
+        self.assertEqual({b["code"] for b in refreshed["readiness"]["blockers"]}, {"CONSENT_NOT_RECORDED", "DELIVERY_NOT_CONNECTED"})
+        with self.store.connect() as db:
+            db.execute("UPDATE drafts SET data=? WHERE id=?", (json.dumps({**updated, "sent": True, "status": "sent"}), draft["id"]))
+        with self.assertRaises(bridge.Conflict):
+            self.store.edit_draft(draft["id"], {"body": "Cannot change sent message"})
+
+    def test_http_conversation_cookie_insights_and_draft_edit_contract(self):
+        def fake(url, payload, headers):
+            return {"candidates": [{"content": {"parts": [{"text": "Test reply"}]}}]}
+        server = bridge.make_server(self.store, bridge.Assistant(self.store, "fake-test-key", request=fake), port=0)
+        worker = threading.Thread(target=server.serve_forever, daemon=True)
+        worker.start()
+        base = f"http://127.0.0.1:{server.server_address[1]}"
+        jar = http.cookiejar.CookieJar()
+        client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+        def request(path, payload=None, opener=client):
+            req = urllib.request.Request(base + path, data=json.dumps(payload).encode() if payload is not None else None, headers={"Content-Type": "application/json"})
+            try:
+                with opener.open(req) as response:
+                    return response.status, json.load(response), response.headers
+            except urllib.error.HTTPError as error:
+                with error:
+                    return error.code, json.load(error), error.headers
+        try:
+            status, first, headers = request("/api/chat", {"message": "Who is Maya?"})
+            self.assertEqual(status, 200)
+            self.assertIn("HttpOnly", headers["Set-Cookie"])
+            self.assertIn("SameSite=Strict", headers["Set-Cookie"])
+            status, second, _ = request("/api/chat", {"message": "Follow up", "conversationId": first["conversationId"]})
+            self.assertEqual(status, 200)
+            self.assertEqual(first["conversationId"], second["conversationId"])
+            other = urllib.request.build_opener()
+            status, denied, _ = request("/api/chat", {"message": "Read another session", "conversationId": first["conversationId"]}, other)
+            self.assertEqual(status, 403)
+            self.assertEqual(denied["code"], "CONVERSATION_UNAVAILABLE")
+            self.assertEqual(request("/api/insights")[1]["source"], "snapshot-rules")
+            self.assertFalse(request("/api/insights/refresh", {})[1]["cached"])
+            draft = bridge.execute_tool(self.store, "draft_message", {"person_id": "p01", "channel": "sms", "body": "Before"})["draft"]
+            status, result, _ = request(f"/api/drafts/{draft['id']}/edit", {"body": "After"})
+            self.assertEqual(status, 200)
+            self.assertEqual(result["draft"]["body"], "After")
+            self.assertFalse(result["draft"]["sent"])
         finally:
             server.shutdown()
             server.server_close()
