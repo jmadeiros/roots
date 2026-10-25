@@ -77,7 +77,7 @@
       <p class="opp-programme-status">${e(displayedStatus(record))}</p>
       <p class="opp-connection-summary">${e(item.summary)}</p>
       <p class="opp-proposed-benefit"><strong>Next step</strong> ${e(record.action)}</p>
-      <div class="finding-next"><button class="briefing-action" data-opp-discuss="${e(record.id)}">${record.category==='benefits'?'Tell the people':record.stage==='open'?'Prepare application':'Plan next steps'} ${api.icon('arrow')}</button><button class="opp-requirements-link" data-opp-open="${e(record.id)}">Requirements & sources</button></div>
+      <div class="finding-next"><button class="briefing-action" data-opp-discuss="${e(record.id)}">${record.category==='benefits'||record.tellMessage?'Tell the people':record.stage==='open'?'Prepare application':'Plan next steps'} ${api.icon('arrow')}</button><button class="opp-requirements-link" data-opp-open="${e(record.id)}">Requirements & sources</button></div>
       <p class="opp-source-stamp">${e(record.provider)}${record.sourceCheckedAt?` · Source checked ${new Date(`${record.sourceCheckedAt}T12:00:00`).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}`:' · Local partnership proposal'}</p>
     </div><aside class="opp-people-evidence" aria-label="People and programme requirements">
       <h3>${record.matchKind==='watchlist'?'Fit awaits published criteria':`${item.peopleCount} ${e(countLabel)}`}</h3>${avatarCluster(item)}
@@ -88,7 +88,7 @@
   }
   function communityContent(findings) {
     const shown=findings.slice(0,view.connectionLimit);
-    return `<div class="opp-route-filters" role="group" aria-label="Programme type">${[['all','All routes'],['benefits','Volunteer benefits'],['grants','Grants'],['placements','Funded placements'],['service','School partnerships']].map(([id,label])=>`<button data-opp-filter="${id}" aria-pressed="${view.filter===id}">${label}</button>`).join('')}</div>
+    return `<div class="opp-route-filters" role="group" aria-label="Programme type">${[['all','All routes'],['benefits','Volunteer benefits'],['employer','Employer matching'],['grants','Grants'],['placements','Funded placements'],['service','School partnerships']].map(([id,label])=>`<button data-opp-filter="${id}" aria-pressed="${view.filter===id}">${label}</button>`).join('')}</div>
       <p class="opp-priority-note">Benefits that give volunteers a reason to come back first, then open funding, funded placements and partnerships. Matches use what people chose to record, never interests.</p>
       <div class="opp-connections">${shown.length?shown.map(connectionMarkup).join(''):'<p class="people-groups-empty">No programmes in this category yet.</p>'}</div>
       ${shown.length<findings.length?`<div class="opp-more-connections"><button class="text-button" data-opp-connections-more>Show ${findings.length-shown.length} more routes ${api.icon('chevron-down')}</button><span>${shown.length} of ${findings.length}</span></div>`:''}`;
@@ -149,7 +149,7 @@
     const p=item.program;
     api.closeDialog?.();
     // A benefit is something to tell the matched volunteers about, so this opens the Tell the people window.
-    if(p.category==='benefits'){tell({heading:`Tell them about ${p.title}.`,personIds:item.personIds,message:p.insight?.sms||`Hi {first_name}, ${benefit(item)}.`});return;}
+    if(p.category==='benefits'||p.tellMessage){tell({heading:p.tellMessage?`Ask them to log their hours with ${p.employer}.`:`Tell them about ${p.title}.`,personIds:item.personIds,message:p.tellMessage||p.insight?.sms||`Hi {first_name}, ${benefit(item)}.`});return;}
     window.RootsChat.setPrompt(`Prepare a practical application or partnership plan for ${p.title}. Published benefit: ${benefit(item)}. Current source status: ${displayedStatus(p)}. Our community fit: ${item.summary} Evidence: ${item.facts.map(f=>`${f.label}: ${f.value}`).join('; ')}. Gaps: ${item.gaps.join('; ')}. Next step: ${p.action}. Use the programme sources saved in this dashboard, researched 24 October 2026. Clearly label the ages, student needs and capacity as fictional demo assumptions. Do not imply a new web search, guaranteed eligibility, funding or attendance. Draft only; do not submit applications or send messages.`);
   }
   function updateResults(){const target=document.getElementById('opp-results');if(target)target.innerHTML=results();}

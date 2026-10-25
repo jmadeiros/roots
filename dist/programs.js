@@ -375,7 +375,7 @@
       type: 'Partnership',
       category: 'employer',
       matchKind: 'employer',
-      priority: 6,
+      priority: 0.5,
       stage: 'policy',
       provider: 'Microsoft employee giving',
       headlineBenefit: '$25 per eligible volunteer hour to the nonprofit',
@@ -400,6 +400,7 @@
       sourceCheckedAt: '2026-10-24',
       statusLabel: 'Public policy · Eligibility to confirm',
       employer: 'Microsoft',
+      tellMessage: 'Hi {first_name}, Microsoft gives the garden $25 for every hour you volunteer with us. Could you log your hours in Microsoft Give after your next shift?',
       policyRate: 25,
       policyAnnualLimit: 15000,
       interests: []

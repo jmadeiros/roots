@@ -202,7 +202,7 @@
 
   function rank(state, programs, scenario, profileAdapter, options = {}) {
     options = record(options) ? options : {};
-    const filter = ['benefits', 'grants', 'placements', 'service'].includes(options.filter) ? options.filter : 'all';
+    const filter = ['benefits', 'employer', 'grants', 'placements', 'service'].includes(options.filter) ? options.filter : 'all';
     const seen = new Set(), results = [];
     for (const program of Array.isArray(programs) ? programs : []) {
       if (!record(program) || seen.has(text(program.id))) continue;

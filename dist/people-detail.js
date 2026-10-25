@@ -124,10 +124,10 @@
       ...context,
       personContextSource,
       availability: validText(stored.availability, 160) || person.availability,
-      declaredSkills: Array.isArray(stored.skills) ? stored.skills.filter(skill => typeof skill === 'string').slice(0, 12).map(skill => skill.slice(0, 60)) : [],
-      communicationPreference: ['Email', 'SMS', 'Either'].includes(stored.channel) ? stored.channel : 'Not recorded',
-      phone: null,
-      emailConsentRecorded: false,
+      declaredSkills: (Array.isArray(stored.skills) ? stored.skills : Array.isArray(person.skills) ? person.skills : []).filter(skill => typeof skill === 'string').slice(0, 12).map(skill => skill.slice(0, 60)),
+      communicationPreference: ['Email', 'SMS', 'Either'].includes(stored.channel) ? stored.channel : ['Email', 'SMS', 'Either'].includes(person.contactPreference) ? person.contactPreference : 'Not recorded',
+      phone: validText(person.phone, 40) || null,
+      emailConsentRecorded: person.emailConsent === true,
       smsConsentRecorded: Boolean(person.consent),
       lastVisit: activity[0]?.date || null,
       lastVisitIsIllustrative: Boolean(activity.length),
@@ -194,6 +194,17 @@
     return `<div class="people-field-group"><div class="people-section-heading"><h3>Participation context</h3>${isDemo ? '<span class="people-example-label">Demo context</span>' : ''}</div><dl class="people-facts">${facts.map(([label, value]) => `<div><dt>${escapeText(label)}</dt><dd>${escapeText(value)}</dd></div>`).join('')}</dl>${isDemo ? '<p class="people-caption">Age, education and capacity are fictional scenario details for exploring program fit. They are not verified facts about a real person.</p>' : ''}</div>`;
   }
 
+  // Onboarding answers: what someone's hours could count for, and what would bring them back.
+  const FREQUENCY_LABELS = { weekly: 'Every week', monthly: 'Once a month', occasionally: 'Now and then' };
+  const BENEFIT_LABELS = { 'ffa-sae': 'FFA placement hours', 'calfresh-hours': 'CalFresh work hours', 'cc-work-experience': 'College work-experience credit', 'civic-seal': 'State Seal of Civic Engagement' };
+  function hoursCountFor(person, profile) {
+    const labels = (person.benefitTags || []).map(tag => BENEFIT_LABELS[tag]).filter(Boolean);
+    if (profile.serviceRequirementHours) labels.unshift(`${numberLabel(profile.serviceRequirementHours)} school service hours`);
+    if (/\bmicrosoft\b/i.test(profile.employer || '')) labels.push('Microsoft gives the garden $25 an hour');
+    const tags = labels.length ? `<div class="people-field-group"><span class="people-field-label">Their hours could count for</span><div class="tags">${labels.map(label => `<span class="tag">${escapeText(label)}</span>`).join('')}</div></div>` : '';
+    const goals = profile.goals ? `<div class="people-field-group"><span class="people-field-label">What would bring them back</span><p>${escapeText(profile.goals)}</p></div>` : '';
+    return tags + goals;
+  }
   function profilePanel(person) {
     const profile = profileData(person);
     const matches = matchesFor(person, profile);
@@ -201,13 +212,14 @@
     const projectSkills = String(project?.skills || '').toLowerCase();
     const sharedProjectInterests = person.interests.filter(interest => projectSkills.includes(interest.toLowerCase()));
     return `<section class="people-section"><div class="people-section-heading"><h3>Contact & communication</h3></div>
-      <dl class="people-facts"><div><dt>Email</dt><dd>${escapeText(person.email)}</dd></div><div><dt>Phone</dt><dd class="people-unrecorded">Not recorded</dd></div><div><dt>Contact preference</dt><dd>${escapeText(profile.communicationPreference)}</dd></div><div><dt>SMS permission</dt><dd><span class="people-consent ${person.consent ? 'is-recorded' : ''}">${api.icon(person.consent ? 'check' : 'info')}${person.consent ? 'Recorded in demo' : 'Not recorded'}</span></dd></div></dl>
-      <p class="people-caption">Email permission is not recorded. ${person.consent ? 'A phone number is still needed for SMS.' : 'SMS outreach stays excluded until permission is recorded.'}</p>
+      <dl class="people-facts"><div><dt>Email</dt><dd>${escapeText(person.email)}</dd></div><div><dt>Phone</dt>${profile.phone ? `<dd>${escapeText(profile.phone)}</dd>` : '<dd class="people-unrecorded">Not recorded</dd>'}</div><div><dt>Contact preference</dt><dd>${escapeText(profile.communicationPreference)}</dd></div><div><dt>SMS permission</dt><dd><span class="people-consent ${person.consent ? 'is-recorded' : ''}">${api.icon(person.consent ? 'check' : 'info')}${person.consent ? 'Recorded in demo' : 'Not recorded'}</span></dd></div></dl>
+      <p class="people-caption">Email permission ${profile.emailConsentRecorded ? 'recorded' : 'is not recorded'}. ${person.consent ? (profile.phone ? 'Their number and SMS permission came from the sign-up form.' : 'A phone number is still needed for SMS.') : 'SMS outreach stays excluded until permission is recorded.'}</p>
     </section>
     <section class="people-section"><h3>What they bring</h3><div class="people-field-group"><span class="people-field-label">Interests</span><div class="tags">${person.interests.map(interest => `<span class="tag">${escapeText(interest)}</span>`).join('')}</div></div>
       <div class="people-field-group"><span class="people-field-label">Declared skills</span>${profile.declaredSkills.length ? `<div class="tags">${profile.declaredSkills.map(skill => `<span class="tag">${escapeText(skill)}</span>`).join('')}</div>` : '<p class="people-unrecorded">Skills haven’t been recorded yet.</p>'}</div>
       <div class="people-availability">${api.icon('clock')}<div><span class="people-field-label">Usually available</span><p>${escapeText(profile.availability)}</p></div></div>
-      <dl class="people-facts"><div><dt>Student status</dt><dd>${escapeText(profile.studentStatus)}</dd></div><div><dt>School / college</dt><dd>${escapeText(profile.school || 'Not recorded')}</dd></div><div><dt>Employer</dt><dd>${escapeText(profile.employer || 'Not recorded')}</dd></div></dl>
+      <dl class="people-facts"><div><dt>Student status</dt><dd>${escapeText(profile.studentStatus)}</dd></div><div><dt>School / college</dt><dd>${escapeText(profile.school || 'Not recorded')}</dd></div><div><dt>Work</dt><dd>${escapeText([profile.jobTitle, profile.employer].filter(Boolean).join(' at ') || 'Not recorded')}</dd></div>${profile.linkedinUrl ? `<div><dt>LinkedIn</dt><dd>${escapeText(profile.linkedinUrl.replace(/^https:\/\/(www\.)?/, ''))} <span class="people-example-label">Demo link</span></dd></div>` : ''}${FREQUENCY_LABELS[profile.frequency] ? `<div><dt>How often</dt><dd>${FREQUENCY_LABELS[profile.frequency]}</dd></div>` : ''}</dl>
+      ${hoursCountFor(person, profile)}
       ${participationContext(profile)}
       ${preferenceForm(person)}
     </section>
