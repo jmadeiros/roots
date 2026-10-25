@@ -58,7 +58,8 @@ body[data-view="briefing"] main { padding-bottom: 0; }
 .today-feed-icon svg { width: 14px; height: 14px; margin-top: 3px; }
 .today-feed p { margin: 0; font-size: 13px; line-height: 1.5; }
 .today-feed p a, .today-feed p button { padding: 0; border: 0; background: none; color: var(--accent); font: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent); cursor: pointer; }
-.today-columns .today-section-head { min-height: 40px; }
+.today-columns .today-section-head { height: 44px; min-height: 0; margin-bottom: 6px; }
+.today-columns .overview-chart-tabs { margin: 0; }
 .today-patterns { padding-top: 12px; border-top: 1px solid var(--line); }
 .today-patterns .overview-chart-note { display: none; }
 
