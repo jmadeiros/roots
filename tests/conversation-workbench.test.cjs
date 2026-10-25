@@ -9,7 +9,7 @@ const first='a'.repeat(32), second='b'.repeat(32);
 const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
 const makeDraft=(id, personId, name)=>({id,personId,personName:name,channel:'sms',body:`Hi ${name}, would you like to volunteer again?`,sent:false,status:'draft',contactConsent:true,phone:null,readiness:{canSend:false,blockers:[{code:'PHONE_MISSING',message:'No phone number is recorded.'},{code:'DELIVERY_NOT_CONNECTED',message:'SMS delivery is not connected.'}]}});
 function harness({connected=true,drafts=[makeDraft(first,'p01','Maya'),makeDraft(second,'p02','Leo')],preview=true,storage:stored}={}) {
-  const listeners=new Map(),windowListeners=new Map(),storage=stored||new Map(),requests=[],toasts=[],calls={init:0,activity:0,chats:[]};let identifier=0;
+  const listeners=new Map(),windowListeners=new Map(),storage=stored||new Map(),requests=[],toasts=[],dialogs=[],calls={init:0,activity:0,chats:[]};let identifier=0;
   const state={view:'chat',people:[{id:'p01',name:'Maya',visits:1,consent:true},{id:'p02',name:'Leo',visits:1,consent:false},{id:'p03',name:'Ari',visits:2,consent:true}]};
   const node=id=>({id,value:'',innerHTML:'',textContent:'',style:{},scrollHeight:60,classList:{toggle(){}},closest:()=>null,focus(){},scrollIntoView(){}});
   const nodes=new Map(['roots-conversation-input','chat-transcript','chat-connection','chat-composer-note'].map(id=>[id,node(id)]));
@@ -18,12 +18,12 @@ function harness({connected=true,drafts=[makeDraft(first,'p01','Maya'),makeDraft
   const window={RootsBridge:bridge,RootsPeople:{profileData:p=>p},addEventListener(type,fn){if(!windowListeners.has(type))windowListeners.set(type,[]);windowListeners.get(type).push(fn);}};
   const context=vm.createContext({window,document,location:{hash:'#chat'},crypto:{randomUUID:()=>`12345678-1234-1234-1234-${String(++identifier).padStart(12,'0')}`},localStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)}});
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../dist/conversation.js'),'utf8'),context);
-  window.RootsChat.configure({getState:()=>state,esc:escape,icon:()=>'',render(){nodes.get('chat-transcript').innerHTML=window.RootsChat.render();},toast:message=>toasts.push(message),showPerson(){},openDialog(){}});
+  window.RootsChat.configure({getState:()=>state,esc:escape,icon:()=>'',render(){nodes.get('chat-transcript').innerHTML=window.RootsChat.render();},toast:message=>toasts.push(message),showPerson(){},openDialog(title,html){dialogs.push({title,html});}});
   async function event(type,target){await Promise.all((listeners.get(type)||[]).map(fn=>fn({target,preventDefault(){}})));}
   async function click(action,id,extra={}){const button={disabled:false,dataset:{chat:action,id,...extra}};await event('click',{closest:selector=>selector==='[data-chat]'?button:null});}
   function editForm(id,flowId){const status=node('status'),submit=node('submit'),count=node('count');return {id:'edit-form',dataset:{draftId:id,flowId},matches:selector=>selector==='.chat-edit-form',closest:()=>null,querySelectorAll:()=>[],querySelector:selector=>selector==='.chat-edit-error'?status:selector==='[type=submit]'?submit:count};}
   async function enterDraft(id,flowId,value){const form=editForm(id,flowId);await event('input',{id:`edit-${id}`,name:'body',value,closest:selector=>selector==='.chat-edit-form'?form:null});return form;}
-  return {window,state,bridge,requests,nodes,toasts,calls,storage,event,click,enterDraft,emit(type){for(const listener of windowListeners.get(type)||[])listener({type});},html:()=>window.RootsChat.render(),saved:()=>JSON.parse(storage.get('roots-conversation-v1')),async start(){window.RootsChat.ask('Prepare SMS drafts.');await tick();}};
+  return {window,state,bridge,requests,nodes,toasts,dialogs,calls,storage,event,click,enterDraft,emit(type){for(const listener of windowListeners.get(type)||[])listener({type});},html:()=>window.RootsChat.render(),saved:()=>JSON.parse(storage.get('roots-conversation-v1')),async start(){window.RootsChat.ask('Prepare SMS drafts.');await tick();}};
 }
 
 test('draft replies become one staged plan with selectable people and escaped records',async()=>{
@@ -37,8 +37,8 @@ test('draft replies become one staged plan with selectable people and escaped re
   assert.match(h.html(),/One personal message/);assert.doesNotMatch(h.html(),/<option/);
   await h.click('flow-step',first,{step:'review'});
   assert.match(h.html(),/1 intended recipient/);assert.match(h.html(),/SMS delivery is not connected/);
-  assert.match(h.html(),/Send demo to my Telegram/);assert.doesNotMatch(h.html(),/<button[^>]*>Send message/);
-  assert.match(h.html(),/<details class="chat-send-checks"><summary>/);assert.ok(h.html().indexOf('Send demo to my Telegram')<h.html().indexOf('Before sending to real recipients'));
+  assert.match(h.html(),/Send to demo inbox/);assert.doesNotMatch(h.html(),/<button[^>]*>Send message/);
+  assert.match(h.html(),/<details class="chat-send-checks"><summary>/);assert.ok(h.html().indexOf('Send to demo inbox')<h.html().indexOf('Before sending to real recipients'));
 });
 
 test('unsaved message changes block review, then persist through the real edit endpoint',async()=>{
@@ -61,7 +61,7 @@ test('Telegram tests use selected saved drafts and the CSRF contract, keep SMS u
   assert.equal(h.requests.length,1);assert.equal(h.requests[0].url,'/api/outreach/test');
   assert.equal(h.requests[0].headers['X-Roots-Test-Token'],'test-csrf');
   assert.deepEqual(h.requests[0].body.draftIds,[first]);assert.match(h.requests[0].body.requestId,/^[a-f0-9]{32}$/);
-  assert.match(h.html(),/Demo sent to your Telegram/);assert.match(h.html(),/No SMS or email was sent to the intended recipients/);
+  assert.match(h.html(),/Demo sent to Telegram/);assert.match(h.html(),/No SMS or email was sent to the intended recipients/);
   assert.equal(h.saved().messages[1].drafts[0].sent,false);
 });
 
@@ -99,7 +99,7 @@ test('an in-flight duplicate can read the final activity receipt without posting
   assert.match(h.html(),/Demo delivery is already in progress/);assert.match(h.html(),/existing request is still running/);
   h.bridge.activity.activity=[{kind:'telegram_test_preview',id:'existing-request',status:'sent',sentAt:'2026-10-24T12:00:00Z',deliveredToVolunteers:false}];
   await h.click('check-receipt',first);
-  assert.match(h.html(),/Showing the existing delivery receipt/);assert.match(h.html(),/Demo sent to your Telegram/);assert.equal(h.requests.length,1);
+  assert.match(h.html(),/Showing the existing delivery receipt/);assert.match(h.html(),/Demo sent to Telegram/);assert.equal(h.requests.length,1);
 });
 
 test('an otherwise connected plan cannot preview an empty audience or skip its review step',async()=>{
@@ -176,7 +176,7 @@ test('a pending preview ignores rapid repeated clicks and audience changes until
   await h.event('change',{dataset:{chatRecipient:second,flow:first},checked:false});
   assert.equal(h.requests.length,1);assert.equal(h.saved().messages.length,2);assert.deepEqual(h.saved().messages[1].workbench.selected,[first,second]);
   gate.resolve({testPreview:{id:h.requests[0].body.requestId,status:'sent',deliveredToVolunteers:false}});await sending;
-  assert.match(h.html(),/Demo sent to your Telegram/);assert.equal(h.requests.length,1);
+  assert.match(h.html(),/Demo sent to Telegram/);assert.equal(h.requests.length,1);
 });
 
 test('a reload during preview dispatch restores its pending state and reconciles a completed receipt without resending',async()=>{
@@ -187,7 +187,7 @@ test('a reload during preview dispatch restores its pending state and reconciles
   assert.match(reloaded.html(),/Demo delivery is already in progress/);
   await reloaded.click('test-preview',first);assert.equal(reloaded.requests.length,0);
   reloaded.bridge.activity.activity=[{kind:'telegram_test_preview',id:request,status:'sent',deliveredToVolunteers:false}];reloaded.emit('roots:activity');
-  assert.match(reloaded.html(),/Demo sent to your Telegram/);assert.equal(reloaded.requests.length,0);
+  assert.match(reloaded.html(),/Demo sent to Telegram/);assert.equal(reloaded.requests.length,0);
   gate.resolve({testPreview:{id:request,status:'sent',deliveredToVolunteers:false}});await pending;
 });
 
@@ -198,7 +198,7 @@ test('a lost response can later reconcile the matching server receipt without re
   const requestId=h.requests[0].body.requestId;
   h.bridge.activity.activity=[{kind:'telegram_test_preview',id:'different-request',status:'sent'}];h.emit('roots:activity');assert.match(h.html(),/not confirmed/);
   h.bridge.activity.activity.push({kind:'telegram_test_preview',id:requestId,status:'sent',deliveredToVolunteers:false});h.emit('roots:activity');
-  assert.match(h.html(),/Demo sent to your Telegram/);await h.click('test-preview',first);assert.equal(h.requests.length,1);
+  assert.match(h.html(),/Demo sent to Telegram/);await h.click('test-preview',first);assert.equal(h.requests.length,1);
 });
 
 test('a stale CSRF rejection refreshes the connection once and needs a new explicit click',async()=>{
@@ -222,7 +222,7 @@ test('partial and failed delivery receipts never claim success or offer an autom
   for(const status of ['partial','failed']){
     const h=harness();await h.start();h.html();h.bridge.request=async(url,options)=>{h.requests.push({url});return {testPreview:{id:JSON.parse(options.body).requestId,status,deliveredToVolunteers:false}};};
     await h.click('flow-step',first,{step:'review'});await h.click('test-preview',first);await h.click('test-preview',first);
-    assert.equal(h.requests.length,1);assert.doesNotMatch(h.html(),/Demo sent to your Telegram/);assert.match(h.html(),/Not sent/);
+    assert.equal(h.requests.length,1);assert.doesNotMatch(h.html(),/Demo sent to Telegram/);assert.match(h.html(),/Not sent/);
     assert.match(h.html(),status==='partial'?/Some demo messages reached Telegram/:/Telegram demo delivery was not confirmed/);
   }
 });
@@ -253,8 +253,8 @@ test('SMS permission, missing number and provider checks stay secondary while th
   const draft=makeDraft(first,'p01','Maya');draft.contactConsent=false;draft.phone=null;
   draft.readiness.blockers.unshift({code:'CONSENT_REQUIRED',message:'SMS permission is not recorded.'});
   const h=harness({drafts:[draft]});await h.start();h.html();await h.click('flow-step',first,{step:'review'});
-  assert.match(h.html(),/All messages go to your Telegram/);assert.match(h.html(),/You’ll receive this message, labelled with its intended recipient/);
-  assert.match(h.html(),/<button class="button primary" data-chat="test-preview"[^>]* >Send demo to my Telegram/);
+  assert.match(h.html(),/Your demo inbox on Telegram/);assert.match(h.html(),/You’ll receive this message, labelled with its intended recipient/);
+  assert.match(h.html(),/<button class="button primary" data-chat="test-preview"[^>]* >Send to demo inbox/);
   await h.click('test-preview',first);assert.equal(h.requests.length,1);assert.equal(h.saved().messages[1].drafts[0].sent,false);
 });
 
@@ -270,9 +270,9 @@ test('chat-triggered delivery opens the matching plan on Review with its persist
   const drafts=[makeDraft(first,'p01','Maya'),makeDraft(second,'p02','Leo')],h=harness({drafts});
   h.bridge.chat=async()=>({reply:'Your demo arrived in Telegram.',drafts,testPreviews:[{id:'chat-receipt',draftIds:[first,second],status:'sent',deliveredToVolunteers:false}],actions:[{tool:'send_demo_messages',previewId:'chat-receipt',draftIds:[first,second]}]});
   await h.start();const markup=h.html();
-  assert.match(markup,/Review your demo/);assert.equal((markup.match(/Demo sent to your Telegram/g)||[]).length,1);
-  assert.doesNotMatch(markup,/Send demo to my Telegram/);assert.equal(h.saved().messages[1].actions[0].previewId,'chat-receipt');
-  const restored=harness({storage:h.storage});assert.match(restored.html(),/Demo sent to your Telegram/);
+  assert.match(markup,/Review your demo/);assert.equal((markup.match(/Demo sent to Telegram/g)||[]).length,1);
+  assert.doesNotMatch(markup,/Send to demo inbox/);assert.equal(h.saved().messages[1].actions[0].previewId,'chat-receipt');
+  const restored=harness({storage:h.storage});assert.match(restored.html(),/Demo sent to Telegram/);
   await restored.click('test-preview',first);assert.equal(restored.requests.length,0);
 });
 
@@ -280,7 +280,7 @@ test('chat delivery receipts remain visible without drafts and update from later
   const h=harness();h.bridge.chat=async()=>({reply:'Delivery is still running.',testPreviews:[{id:'pending-chat-receipt',draftIds:[first],status:'sending'}]});
   await h.start();assert.match(h.html(),/Demo delivery is already in progress/);
   h.bridge.activity.activity=[{kind:'telegram_test_preview',id:'pending-chat-receipt',status:'sent',deliveredToVolunteers:false}];h.emit('roots:activity');
-  assert.match(h.html(),/Demo sent to your Telegram/);assert.equal(h.requests.length,0);
+  assert.match(h.html(),/Demo sent to Telegram/);assert.equal(h.requests.length,0);
 });
 
 test('a manually authored group opens as one saved Review plan with all intended recipients',async()=>{
@@ -318,8 +318,8 @@ test('an unconfirmed chat claim preserves its identity without automatically rep
 });
 
 test('a connected assistant without an available owner bot does not claim demo delivery is ready',async()=>{
-  const h=harness({preview:false});assert.match(h.html(),/Connect your dedicated Roots bot/);
-  assert.doesNotMatch(h.html(),/Demo mode · All outgoing messages go to your Telegram/);
+  const h=harness({preview:false});assert.match(h.html(),/Connect Roots Demo Inbox/);
+  assert.doesNotMatch(h.html(),/Demo mode · Outgoing examples go to your separate Roots Demo Inbox on Telegram./);
 });
 
 
@@ -403,16 +403,16 @@ test('editing a shared draft invalidates every affected card receipt and its old
   const plans=h.saved().messages.filter(message=>message.workbench);assert.equal(plans.length,2);
   assert.ok(plans.every(message=>!message.workbench.testPreview&&!message.workbench.requestId));
   assert.ok(plans.every(message=>message.drafts[0].body==='A revised message after delivery.'));
-  assert.doesNotMatch(h.html(),/Demo sent to your Telegram/);assert.doesNotMatch(h.html(),/Showing the existing delivery receipt/);
+  assert.doesNotMatch(h.html(),/Demo sent to Telegram/);assert.doesNotMatch(h.html(),/Showing the existing delivery receipt/);
 });
 
 test('a later activity refresh cannot show revised content under an earlier demo receipt',async()=>{
   const drafts=[makeDraft(first,'p01','Maya')],h=harness({drafts});
   h.bridge.chat=async()=>({reply:'Sent.',drafts,testPreviews:[{id:'prior-body-receipt',draftIds:[first],status:'sent',deliveredToVolunteers:false}]});
-  await h.start();assert.match(h.html(),/Demo sent to your Telegram/);
+  await h.start();assert.match(h.html(),/Demo sent to Telegram/);
   h.bridge.activity.drafts=[{...drafts[0],body:'Updated independently in Telegram.'}];h.emit('roots:activity');
-  assert.match(h.html(),/Updated independently in Telegram/);assert.doesNotMatch(h.html(),/Demo sent to your Telegram/);
-  assert.match(h.html(),/Send demo to my Telegram/);
+  assert.match(h.html(),/Updated independently in Telegram/);assert.doesNotMatch(h.html(),/Demo sent to Telegram/);
+  assert.match(h.html(),/Send to demo inbox/);
 });
 
 test('exact server delivery boilerplate is removed while substantive assistant wording remains',async()=>{
@@ -420,5 +420,31 @@ test('exact server delivery boilerplate is removed while substantive assistant w
   h.bridge.chat=async()=>({reply:'Maya’s invitation is ready.\n\nDraft saved, not sent. Email and SMS delivery are not connected.\n\nDemo messages were sent to your Telegram. No SMS or email was sent to volunteers.',drafts,testPreviews:[{id:'receipt-copy',draftIds:[first],status:'sent',deliveredToVolunteers:false}]});
   await h.start();assert.match(h.html(),/Maya’s invitation is ready/);
   assert.doesNotMatch(h.html(),/Draft saved, not sent\. Email and SMS delivery/);assert.doesNotMatch(h.html(),/Demo messages were sent to your Telegram/);
-  assert.equal((h.html().match(/Demo sent to your Telegram/g)||[]).length,1);
+  assert.equal((h.html().match(/Demo sent to Telegram/g)||[]).length,1);
+});
+
+
+test('assistant and demo inbox links use separate identities, including historical receipts',async()=>{
+  const h=harness();
+  Object.assign(h.bridge.status,{telegramMode:'dedicated',botUsername:'roots_assistant_bot'});
+  h.bridge.status.testPreview.botUsername='roots_demo_inbox_bot';
+  await h.click('connection');
+  const dialog=h.dialogs.at(-1).html;
+  assert.match(dialog,/<h3>Roots Assistant<\/h3>/);assert.match(dialog,/<h3>Roots Demo Inbox<\/h3>/);
+  assert.match(dialog,/href="https:\/\/t.me\/roots_assistant_bot"[^>]*>Open Roots Assistant/);
+  assert.match(dialog,/href="https:\/\/t.me\/roots_demo_inbox_bot"[^>]*>Open Roots Demo Inbox/);
+  await h.start();h.html();await h.click('flow-step',first,{step:'review'});await h.click('test-preview',first);
+  assert.match(h.html(),/href="https:\/\/t.me\/roots_example_bot"[^>]*>Open delivery chat/);
+  assert.doesNotMatch(h.html(),/href="https:\/\/t.me\/roots_assistant_bot"/);
+  assert.doesNotMatch(h.html(),/href="https:\/\/t.me\/roots_demo_inbox_bot"/,'receipt retains actual delivery destination');
+});
+
+test('a missing demo inbox never falls back to the assistant chat',async()=>{
+  const h=harness({preview:false});
+  Object.assign(h.bridge.status,{telegramMode:'dedicated',botUsername:'roots_assistant_bot'});
+  await h.click('connection');
+  const dialog=h.dialogs.at(-1).html;
+  assert.match(dialog,/Open Roots Assistant/);assert.doesNotMatch(dialog,/Open Roots Demo Inbox/);
+  await h.start();h.html();await h.click('flow-step',first,{step:'review'});await h.click('test-preview',first);
+  assert.equal(h.requests.length,0);
 });

@@ -51,15 +51,20 @@ The cache uses relevant record content, not version numbers; identical saves and
 
 ## Test Telegram
 
-Create a **separate Roots bot** through [BotFather](https://t.me/BotFather). Add its `TELEGRAM_BOT_TOKEN` and your numeric `TELEGRAM_ALLOWED_USER_ID` to the local env file, and set `ROOTS_TELEGRAM_DEDICATED=true`. The verified identity must not be a Padel bot. Stop any previous Roots bridge process before starting this one; no existing bot settings are changed. Explicitly enable polling:
+Use **two dedicated Roots bots** created through [BotFather](https://t.me/BotFather):
+
+- **Roots Assistant:** keep the existing `TELEGRAM_BOT_TOKEN`, with `ROOTS_TELEGRAM_DEDICATED=true`. This is the operator's AI conversation, connected to the dashboard.
+- **Roots Demo Inbox:** add a different `TELEGRAM_DEMO_BOT_TOKEN`, with `ROOTS_TELEGRAM_DEMO_DEDICATED=true`. Recipient-facing SMS and email examples arrive here.
+
+Both use the same numeric `TELEGRAM_ALLOWED_USER_ID`. The verified bot IDs must differ, and neither may be a Padel bot. With no inbox token, Assistant chat still works but demo delivery is unavailable; it never falls back to the Assistant chat. Stop any previous Roots bridge process before starting this one; no existing bot settings are changed. Explicitly enable both pollers:
 
 ```sh
 python3 server/bridge.py --env-file server/.env --telegram
 ```
 
-Open the dedicated bot and tap **Start** once. Then just chat: “What needs attention today?”, “Draft an invitation to Maya”, or “Send Maya an SMS invitation.” For this demo, a send request delivers the labelled message only to your own Telegram, never to Maya. No `/roots` prefix is needed. `/start` and `/help` explain the assistant; `/roots` remains accepted for older links. Unknown commands are ignored. Roots and Padel use separate bot identities.
+Open each bot and tap **Start** once. In **Roots Assistant**, just chat: “What needs attention today?”, “Draft an invitation to Maya”, or “Send Maya an SMS invitation.” The Assistant reply stays in that conversation; an explicit send delivers the labelled example to your private **Roots Demo Inbox**, never to Maya. No `/roots` prefix is needed. `/start` and `/help` explain the roles; `/roots` remains accepted for older links. The inbox responds to the owner's messages with fixed instructions pointing back to Assistant. It never invokes Gemini, creates drafts, or treats a reply as a send request. Unknown commands are ignored. Roots and Padel use separate bot identities.
 
-The bridge verifies the bot with `getMe` and refuses to start if a webhook already exists. It does not replace a webhook, rename the bot, broadcast on startup, or reply to anyone except the configured user's private chat. A Telegram 409 conflict immediately stops Roots polling; `/api/status` then reports `polling: false` and `telegramErrorCode: "TELEGRAM_POLLING_CONFLICT"`. It never retries against a competing consumer. Duplicate update IDs are stored before processing to prevent repeated drafts and replies. Update IDs, polling offsets, and conversation owners are namespaced by the verified bot ID, so replacing a shared bot cannot skip the new bot's incoming messages. Existing shared-bot history and drafts remain stored. Failed replies are not automatically resent.
+The bridge verifies both bots with `getMe` and refuses to start if either has a webhook. It does not replace a webhook, rename a bot, broadcast on startup, or reply to anyone except the configured user's private chats. A Telegram 409 conflict immediately stops only the affected poller; `/api/status` reports Assistant state in `polling` / `telegramErrorCode` and inbox state in `demoPolling` / `telegramDemoErrorCode`. It never retries against a competing consumer. Duplicate update IDs are stored before processing to prevent repeated drafts and replies. Update IDs, polling offsets, and conversation owners are namespaced by the verified bot ID, so one bot cannot skip the other's incoming messages. Existing history, drafts, and receipts remain stored. Failed replies and inbox deliveries are not automatically resent or redirected to Assistant.
 
 The dashboard must have synchronized once before Telegram can answer questions about its records. Keep the server running during the test; Ctrl+C stops it. Long polling needs no public URL. A production deployment would need account authentication, hosted storage, managed secrets, per-user authorization, and a secured Telegram webhook.
 
@@ -67,7 +72,7 @@ The dashboard must have synchronized once before Telegram can answer questions a
 
 - Read overview counts, find a person, and list calendar events, opportunities, project plans, notices, and evidence-based insights. Event lookup supplies recorded dates, times, locations, and capacity for invitation drafts.
 - Save an email or SMS **draft** associated with an existing person.
-- On an explicit send request, deliver saved messages to the owner's Telegram as labelled demos and return their receipts.
+- On an explicit send request, deliver saved messages to the owner's separate Roots Demo Inbox as labelled demos and return their receipts.
 - Show draft and assistant activity through the shared API.
 
 Email/SMS delivery and automated workflows are **not connected**. The only outbound action is an explicitly requested Telegram demo to the configured owner, described below. There is no tool capable of delivering to volunteers, modifying people, executing code, fetching arbitrary URLs, or running arbitrary actions. Drafts always remain marked unsent. Treat the included dashboard records as fictional demo data. Messages, bounded conversation context, and synchronized record fields returned by an assistant tool are sent to Gemini.
@@ -78,9 +83,9 @@ The dashboard can edit the `body` and optional `subject` of a shared unsent draf
 
 ## Owner-only Telegram preview
 
-The dashboard can send selected saved drafts to **your own Telegram chat** through the dedicated Roots bot. Each message is headed `ROOTS · TEST PREVIEW` and states that it was not sent to the volunteer. This tests the outbound route without turning fictional contact data into a delivery target. Email/SMS draft `sent` remains false; neither the model nor this endpoint can deliver to a volunteer.
+The dashboard can send selected saved drafts to **your private Roots Demo Inbox** through its separate dedicated bot. Each message is headed `ROOTS · TEST PREVIEW`, names its intended recipient and channel, and states that it was not sent to the volunteer. This tests the outbound route without turning fictional contact data into a delivery target. Email/SMS draft `sent` remains false; neither the model nor this endpoint can deliver to a volunteer.
 
-`GET /api/status` supplies `testPreview` with `available`, `channel: "telegram"`, `recipient: "Your Telegram chat"`, `botUsername`, `reason`, and a session-bound `csrfToken`. This is a local anti-CSRF token, not a provider secret. Availability requires a successfully verified dedicated identity, including `ROOTS_TELEGRAM_DEDICATED=true`; a Padel identity is refused even with that setting.
+`GET /api/status` supplies `testPreview` with `available`, `channel: "telegram"`, `recipient: "Your Telegram demo inbox"`, `botUsername`, `reason`, and a session-bound `csrfToken`. `testPreview.botUsername` identifies the inbox; top-level `botUsername` identifies Assistant. `telegramDemoConfigured` reports inbox configuration and `demoPolling` reports its poller. The CSRF token is a local session token, not a provider secret. Availability requires a successfully verified dedicated inbox identity, `ROOTS_TELEGRAM_DEMO_DEDICATED=true`, and pairing with a different verified Assistant bot for the same owner and dashboard. A missing or invalid inbox disables delivery without an Assistant fallback. Padel identities are refused even with the dedicated setting.
 
 Send `POST /api/outreach/test` with `{draftIds: ["existing draft ID"], requestId: "32-character hex ID"}` and header `X-Roots-Test-Token` from the status response, using the same session cookie. Only one to ten existing unsent drafts may be selected. Destinations, arbitrary message bodies, phone numbers, and channel overrides are rejected. The browser session and token expire after 24 hours; reconnect to obtain a current token. Origin/Host checks still apply.
 
@@ -115,6 +120,6 @@ Supported snapshot keys: `people`, `events`, `opportunities`, `projects`, `notic
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'bridge_test.py' -v
 ```
 
-Tests use temporary SQLite databases, loopback HTTP servers, and fake provider responses. They cover state versions, body limits, credential-field rejection, origin/Host/path protections, validated tools, conversation isolation and expiry, follow-up draft context, independent briefing jobs and deduplication, stale-job rejection, failure preservation, no automatic retry, restart recovery, fact/source validation, cache behavior, safe draft editing and readiness, Telegram allowlisting, bot-scoped updates and offsets, owner-preview authentication and fixed destinations, preview duplicate/failure handling, and webhook/polling coexistence. Passing these tests is not a live Gemini or Telegram connection test.
+Tests use temporary SQLite databases, loopback HTTP servers, and fake provider responses. They cover state versions, body limits, credential-field rejection, origin/Host/path protections, validated tools, conversation isolation and expiry, follow-up draft context, independent briefing jobs and deduplication, stale-job rejection, failure preservation, no automatic retry, restart recovery, fact/source validation, cache behavior, safe draft editing and readiness, Telegram allowlisting, bot-scoped updates and offsets, separate Assistant/inbox routing and identities, inbox messages never invoking AI, no delivery fallback, owner-preview authentication and fixed destinations, preview duplicate/failure handling, and webhook/polling coexistence. Passing these tests is not a live Gemini or Telegram connection test.
 
 Official references: [Gemini key handling](https://ai.google.dev/gemini-api/docs/api-key), [function calling](https://ai.google.dev/gemini-api/docs/function-calling), [Telegram Bot API](https://core.telegram.org/bots/api).

@@ -439,7 +439,7 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(len(bridge.telegram_plain_text("🌱" * 4000).encode("utf-16-le")) // 2, 4000)
 
     def test_telegram_draft_dashboard_edit_and_owner_preview_share_one_record(self):
-        bot, telegram_calls = self.dedicated_bot()
+        bot, assistant_calls, inbox, telegram_calls = self.telegram_pair()
         model_calls = []
         def fake_model(url, payload, headers):
             model_calls.append(payload)
@@ -449,7 +449,7 @@ class BridgeTests(unittest.TestCase):
         update = self.update(100)
         update["message"]["text"] = "Prepare an SMS invitation for Maya Chen"
         self.assertTrue(bot.handle(update))
-        server = bridge.make_server(self.store, bot.assistant, port=0, telegram=bot)
+        server = bridge.make_server(self.store, bot.assistant, port=0, telegram=bot, telegram_demo=inbox)
         worker = threading.Thread(target=server.serve_forever, daemon=True)
         worker.start()
         base = f"http://127.0.0.1:{server.server_address[1]}"
@@ -470,7 +470,8 @@ class BridgeTests(unittest.TestCase):
             status = request("/api/status")
             preview = request("/api/outreach/test", {"draftIds": [draft["id"]], "requestId": "a" * 32}, status["testPreview"]["csrfToken"])["testPreview"]
             self.assertEqual(preview["status"], "sent")
-            self.assertEqual(preview["messageIds"], [2])
+            self.assertEqual(preview["messageIds"], [1])
+            self.assertEqual(len(assistant_calls), 1)
             self.assertEqual(telegram_calls[-1]["chat_id"], 42)
             self.assertIn(reviewed, telegram_calls[-1]["text"])
             activity = request("/api/activity")
@@ -512,21 +513,189 @@ class BridgeTests(unittest.TestCase):
             bot.prepare()
         self.assertEqual(calls, ["getWebhookInfo"])
 
-    def dedicated_bot(self, username="roots_test_bot", fail_after=None):
+    def dedicated_bot(self, username="roots_test_bot", fail_after=None, *, role="inbox", bot_id=123456789, owner=42):
         calls = []
         def fake(url, payload):
             method = url.rsplit("/", 1)[-1]
             if method == "getWebhookInfo":
                 return {"ok": True, "result": {"url": ""}}
             if method == "getMe":
-                return {"ok": True, "result": {"id": 123456789, "is_bot": True, "username": username, "first_name": "Roots"}}
+                return {"ok": True, "result": {"id": bot_id, "is_bot": True, "username": username, "first_name": "Roots"}}
             calls.append(payload)
             if fail_after is not None and len(calls) > fail_after:
                 raise bridge.Unavailable("Provider failed")
-            return {"ok": True, "result": {"message_id": len(calls), "chat": {"id": 42}}}
-        bot = bridge.Telegram("123456789:" + "x" * 30, 42, bridge.Assistant(self.store), request=fake, dedicated=True)
+            return {"ok": True, "result": {"message_id": len(calls), "chat": {"id": owner}}}
+        bot = bridge.Telegram(str(bot_id) + ":" + "x" * 30, owner, bridge.Assistant(self.store), request=fake, dedicated=True, role=role)
         bot.prepare()
         return bot, calls
+
+    def telegram_pair(self):
+        bot, assistant_calls = self.dedicated_bot("roots_assistant_bot", role="assistant", bot_id=987654321)
+        inbox, inbox_calls = self.dedicated_bot("roots_demo_inbox_bot")
+        bot.connect_demo(inbox)
+        return bot, assistant_calls, inbox, inbox_calls
+
+    @contextlib.contextmanager
+    def split_http(self, bot, inbox=None):
+        server = bridge.make_server(self.store, bot.assistant, port=0, telegram=bot, telegram_demo=inbox)
+        worker = threading.Thread(target=server.serve_forever, daemon=True)
+        worker.start()
+        base = f"http://127.0.0.1:{server.server_address[1]}"
+        client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+        def request(path, payload=None, token=None):
+            headers = {"Content-Type": "application/json"}
+            if token:
+                headers["X-Roots-Test-Token"] = token
+            req = urllib.request.Request(base + path, data=json.dumps(payload).encode() if payload is not None else None, headers=headers)
+            try:
+                with client.open(req) as response:
+                    return response.status, json.load(response)
+            except urllib.error.HTTPError as error:
+                with error:
+                    return error.code, json.load(error)
+        try:
+            yield request
+        finally:
+            server.shutdown()
+            server.server_close()
+            worker.join()
+
+    def test_separate_inbox_handles_owner_messages_without_running_ai(self):
+        bot, assistant_calls, inbox, calls = self.telegram_pair()
+        inbox.assistant.chat = lambda *args, **kwargs: self.fail("The demo inbox must never run Gemini")
+        for identifier, value in enumerate(("/start", "/help", "Send an SMS to Maya", "What needs attention?"), 500):
+            update = self.update(identifier)
+            update["message"]["text"] = value
+            self.assertTrue(inbox.handle(update))
+            self.assertIn("@roots_assistant_bot", calls[-1]["text"])
+            self.assertIn("does not run the assistant", calls[-1]["text"])
+            self.assertEqual(calls[-1]["chat_id"], 42)
+        self.assertFalse(inbox.handle(update))
+        self.assertFalse(inbox.handle(self.update(600, user=7)))
+        self.assertFalse(inbox.handle(self.update(601, chat=-99, kind="group")))
+        self.assertEqual(len(calls), 4)
+        self.assertEqual(assistant_calls, [])
+        self.assertEqual(self.store.activity()["drafts"], [])
+
+    def test_pair_requires_distinct_dedicated_bot_identities_and_same_owner(self):
+        invalid = (
+            {"bot_id": 987654321},
+            {"role": "assistant"},
+            {"owner": 99},
+            {"username": "josh_padelwatch_bot"},
+        )
+        for options in invalid:
+            with self.subTest(options=options):
+                bot, _ = self.dedicated_bot("roots_assistant_bot", role="assistant", bot_id=987654321)
+                inbox, calls = self.dedicated_bot(**options)
+                with self.assertRaises((bridge.Invalid, bridge.Forbidden)):
+                    bot.connect_demo(inbox)
+                self.assertIsNone(bot.demo_transport)
+                self.assertEqual(calls, [])
+        bot, _, inbox, _ = self.telegram_pair()
+        inbox.token = bot.token
+        with self.assertRaises(bridge.Invalid):
+            bot.connect_demo(inbox)
+        inbox.token = "123456789:" + "x" * 30
+        inbox.dedicated = False
+        with self.assertRaises(bridge.Forbidden):
+            bot.connect_demo(inbox)
+        bot, _ = self.dedicated_bot("padel_assistant_bot", role="assistant", bot_id=987654321)
+        inbox, _ = self.dedicated_bot()
+        with self.assertRaises(bridge.Forbidden):
+            bot.connect_demo(inbox)
+
+    def test_assistant_without_demo_inbox_never_falls_back_to_its_own_chat(self):
+        bot, calls = self.dedicated_bot(role="assistant")
+        seen = []
+        bot.assistant.chat = lambda value, **kwargs: seen.append(kwargs.get("demo_sender")) or {"reply": "Demo inbox is not connected."}
+        update = self.update(700)
+        update["message"]["text"] = "Send Maya an SMS"
+        self.assertTrue(bot.handle(update))
+        self.assertEqual(seen, [None])
+        self.assertEqual(len(calls), 1)
+        self.assertFalse(bot.preview_capability()["available"])
+        self.assertIsNone(bot.preview_capability()["botUsername"])
+        with self.assertRaises(bridge.Forbidden):
+            bot.send_preview([self.saved_sms()["id"]], "1" * 32)
+        self.assertEqual(len(calls), 1)
+
+    def test_dashboard_routes_examples_only_to_inbox_and_reports_separate_identities(self):
+        bot, assistant_calls, inbox, calls = self.telegram_pair()
+        draft = self.saved_sms("Hi Maya, this is your recipient-facing invitation.")
+        with self.split_http(bot, inbox) as request:
+            code, status = request("/api/status")
+            self.assertEqual(code, 200)
+            self.assertEqual(status["botUsername"], bot.username)
+            self.assertEqual(status["telegramMode"], "dedicated")
+            self.assertEqual(status["testPreview"]["botUsername"], inbox.username)
+            self.assertTrue(status["testPreview"]["available"])
+            self.assertNotIn(bot.token, json.dumps(status))
+            self.assertNotIn(inbox.token, json.dumps(status))
+            token = status["testPreview"]["csrfToken"]
+            body = {"draftIds": [draft["id"]], "requestId": "3" * 32}
+            code, first = request("/api/outreach/test", body, token)
+            self.assertEqual(code, 200)
+            self.assertEqual(first["testPreview"]["botUsername"], inbox.username)
+            self.assertEqual(first["testPreview"]["status"], "sent")
+            code, repeat = request("/api/outreach/test", body, token)
+            self.assertEqual(code, 200)
+            self.assertTrue(repeat["testPreview"]["duplicate"])
+        self.assertEqual(assistant_calls, [])
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0]["chat_id"], 42)
+        self.assertIn(draft["body"], calls[0]["text"])
+
+    def test_missing_inbox_disables_http_preview_without_assistant_fallback(self):
+        bot, calls = self.dedicated_bot(role="assistant")
+        draft = self.saved_sms()
+        with self.split_http(bot) as request:
+            _, status = request("/api/status")
+            self.assertEqual(status["botUsername"], bot.username)
+            self.assertEqual(status["telegramMode"], "dedicated")
+            self.assertFalse(status["testPreview"]["available"])
+            self.assertIsNone(status["testPreview"]["botUsername"])
+            code, result = request("/api/outreach/test", {"draftIds": [draft["id"]], "requestId": "4" * 32}, status["testPreview"]["csrfToken"])
+            self.assertEqual(code, 403)
+            self.assertIn("separate Roots Demo Inbox", result["error"])
+        self.assertEqual(calls, [])
+
+    def test_status_dedicated_mode_requires_verified_assistant_identity(self):
+        for field, value in (("dedicated", False), ("bot_id", None), ("username", None), ("role", "inbox")):
+            with self.subTest(field=field):
+                bot, _ = self.dedicated_bot(role="assistant")
+                setattr(bot, field, value)
+                with self.split_http(bot) as request:
+                    code, status = request("/api/status")
+                    self.assertEqual(code, 200)
+                    self.assertEqual(status["telegramMode"], "unavailable")
+
+    def test_inbox_delivery_failure_does_not_fall_back_to_assistant_transport(self):
+        bot, assistant_calls, inbox, calls = self.telegram_pair()
+        fake, _ = self.demo_model()
+        bot.assistant = bridge.Assistant(self.store, "fake-test-key", request=fake)
+        inbox.request = lambda url, payload: calls.append(payload) or {"ok": False}
+        update = self.update(800)
+        update["message"]["text"] = "Send Maya Chen an SMS"
+        self.assertTrue(bot.handle(update))
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(assistant_calls), 1)
+        self.assertNotIn("TEST PREVIEW", assistant_calls[0]["text"])
+        self.assertIn("could not confirm", assistant_calls[0]["text"])
+        receipt = next(item for item in self.store.activity()["activity"] if item["kind"] == "telegram_test_preview")
+        self.assertEqual(receipt["status"], "failed")
+
+    def test_preview_deduplication_is_scoped_to_verified_inbox_identity(self):
+        draft = self.saved_sms()
+        first_bot, first_calls = self.dedicated_bot("roots_first_inbox_bot")
+        second_bot, second_calls = self.dedicated_bot("roots_second_inbox_bot", bot_id=555555555)
+        first = first_bot.send_preview([draft["id"]], "5" * 32)
+        second = second_bot.send_preview([draft["id"]], "6" * 32)
+        self.assertFalse(first["duplicate"])
+        self.assertFalse(second["duplicate"])
+        self.assertNotEqual(first["botUsername"], second["botUsername"])
+        self.assertTrue(second_bot.send_preview([draft["id"]], "7" * 32)["duplicate"])
+        self.assertEqual((len(first_calls), len(second_calls)), (1, 1))
 
     def saved_sms(self, body="Hello Maya"):
         return bridge.execute_tool(self.store, "draft_message", {"person_id": "p01", "channel": "sms", "body": body})["draft"]
@@ -549,9 +718,9 @@ class BridgeTests(unittest.TestCase):
 
     @contextlib.contextmanager
     def demo_http(self, model):
-        bot, calls = self.dedicated_bot()
+        bot, _, inbox, calls = self.telegram_pair()
         assistant = bridge.Assistant(self.store, "fake-test-key", request=model)
-        server = bridge.make_server(self.store, assistant, port=0, telegram=bot)
+        server = bridge.make_server(self.store, assistant, port=0, telegram=bot, telegram_demo=inbox)
         worker = threading.Thread(target=server.serve_forever, daemon=True)
         worker.start()
         base = f"http://127.0.0.1:{server.server_address[1]}"
@@ -741,18 +910,23 @@ class BridgeTests(unittest.TestCase):
         self.assertIn("sent to your Telegram", result["reply"])
 
     def test_telegram_natural_send_uses_demo_destination(self):
-        bot, calls = self.dedicated_bot()
+        bot, assistant_calls, inbox, calls = self.telegram_pair()
         fake, _ = self.demo_model()
         bot.assistant = bridge.Assistant(self.store, "fake-test-key", request=fake)
         update = self.update(450)
         update["message"]["text"] = "Send Maya Chen an SMS invitation"
         self.assertTrue(bot.handle(update))
-        self.assertEqual(len(calls), 2)  # labelled preview and assistant reply
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(assistant_calls), 1)
         self.assertTrue(all(call["chat_id"] == 42 for call in calls))
         self.assertIn("TEST PREVIEW", calls[0]["text"])
-        self.assertIn("No SMS or email was sent to volunteers", calls[1]["text"])
+        self.assertIn("No SMS or email was sent to volunteers", assistant_calls[0]["text"])
+        self.assertNotIn("TEST PREVIEW", assistant_calls[0]["text"])
+        receipt = next(item for item in self.store.activity()["activity"] if item["kind"] == "telegram_test_preview")
+        self.assertEqual(receipt["botUsername"], inbox.username)
         self.assertFalse(bot.handle(update))
-        self.assertEqual(len(calls), 2)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(assistant_calls), 1)
 
     def test_manual_draft_batch_validates_every_record_before_atomic_save(self):
         first = {"personId": "p01", "channel": "sms", "body": "Hi Maya"}
@@ -779,10 +953,10 @@ class BridgeTests(unittest.TestCase):
                 restarted.claim_chat_delivery(owner, request_id, message, context)
 
     def test_http_chat_send_and_manual_drafts_require_session_token(self):
-        bot, calls = self.dedicated_bot()
+        bot, _, inbox, calls = self.telegram_pair()
         fake, model_requests = self.demo_model()
         assistant = bridge.Assistant(self.store, "fake-test-key", request=fake)
-        server = bridge.make_server(self.store, assistant, port=0, telegram=bot)
+        server = bridge.make_server(self.store, assistant, port=0, telegram=bot, telegram_demo=inbox)
         worker = threading.Thread(target=server.serve_forever, daemon=True)
         worker.start()
         base = f"http://127.0.0.1:{server.server_address[1]}"
@@ -829,7 +1003,7 @@ class BridgeTests(unittest.TestCase):
         self.assertTrue(self.store.claim_update(50, bot=101))
         self.assertTrue(self.store.claim_update(50, bot=202))
         self.assertFalse(self.store.claim_update(50, bot=101))
-        bot, _ = self.dedicated_bot()
+        bot, _ = self.dedicated_bot(role="assistant")
         seen = []
         bot.assistant.chat = lambda value, **kwargs: seen.append(kwargs["owner"]) or {"reply": "Hello"}
         update = self.update()
@@ -974,8 +1148,8 @@ class BridgeTests(unittest.TestCase):
 
     def test_preview_http_authentication_origin_and_fixed_recipient(self):
         draft = self.saved_sms()
-        bot, calls = self.dedicated_bot()
-        server = bridge.make_server(self.store, bot.assistant, port=0, telegram=bot)
+        bot, _, inbox, calls = self.telegram_pair()
+        server = bridge.make_server(self.store, bot.assistant, port=0, telegram=bot, telegram_demo=inbox)
         worker = threading.Thread(target=server.serve_forever, daemon=True)
         worker.start()
         base = f"http://127.0.0.1:{server.server_address[1]}"
