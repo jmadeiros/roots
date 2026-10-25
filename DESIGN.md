@@ -179,7 +179,7 @@ This documents the implemented expansion of the user's pinned Roots reference. T
 - Fine borders, restrained corners, and consistent outlined SVG icons.
 - Persistent navigation that becomes a bottom bar on phones.
 
-Source of truth: `dist/style.css`, `dist/index.html`, and `dist/app.js`. Desktop and mobile review screenshots confirm composition; the stylesheet includes the final contrast and focus refinements. Frontmatter records recurring implementation values, including values extracted from component rules rather than only CSS variables. The unused declared lime color is intentionally excluded.
+Source of truth: the shared shell in `dist/style.css`, `dist/index.html`, and `dist/app.js`, plus the scoped `opportunities`, `people-detail`, and `notices` modules in `dist/`. The original desktop and mobile review screenshots establish the incumbent composition; the stylesheet includes its contrast and focus refinements. The current expansion preserves that visual authority, typography, palette, and application width. Frontmatter records recurring implementation values, including values extracted from component rules rather than only CSS variables. The unused declared lime color is intentionally excluded.
 
 ## Colors
 
@@ -229,7 +229,7 @@ The typography is friendly and direct. Headlines use medium weight and modest ne
 
 The desktop shell uses a fixed sidebar, a quiet horizontal top bar, and a fluid main area capped at 1400px. The default sidebar is 224px, the top bar is 76px high, and main padding is 38px 40px 20px. Page and footer containers share the same maximum width.
 
-The overview starts with a greeting and month control, followed by three equal metric columns with an 18px gap. Recommendations occupy the wider column of a `minmax(0, 1.7fr) minmax(270px, 1fr)` grid, separated by 28px. The upcoming-event rail and project prompt sit alongside them. This overview composition is a surface pattern, not a requirement for every screen. Funding and event listings use two equal columns; the people view uses a bordered table with local horizontal overflow.
+The overview starts with a greeting and month control, followed by three equal metric columns with an 18px gap. Recommendations occupy the wider column of a `minmax(0, 1.7fr) minmax(270px, 1fr)` grid, separated by 28px. The upcoming-event rail and project prompt sit alongside them. This overview composition is preserved and is not a requirement for every screen. Opportunities and Notices use compact rows separated by fine rules. Events retain their two-column listing, and People retains its bordered table with local horizontal overflow.
 
 | Viewport | Implemented changes |
 | --- | --- |
@@ -240,7 +240,7 @@ The overview starts with a greeting and month control, followed by three equal m
 
 On phones, all three metric columns remain visible with a 9px gap, 10px corners, and final padding of 14px 10px. Metric icons are hidden, trends occupy their own line, and labels can wrap. The greeting/month row may wrap, placing the month selector beneath the greeting. Navigation retains all four destinations; counters, workspace identity, and the desktop profile block are hidden. Table overflow stays inside its own wrapper.
 
-The side sheet occupies `min(540px, 100vw)` and the full dynamic viewport height. It consequently fills phone width. Its header stays sticky while the body scrolls. Two-field form rows remain two columns, with a narrower 12px gap on phones. Toasts sit above the mobile bar at 81px from the bottom.
+The standard side sheet occupies `min(540px, 100vw)` and the full dynamic viewport height. Expanded People profiles use `min(620px, 100vw)` for their additional detail; this does not change the main page width. Sheets fill phone width, with a sticky header while the body scrolls. Standard two-field form rows remain two columns with a narrower 12px gap on phones; the profile preference form stacks at its 520px breakpoint. Toasts sit above the mobile bar at 81px from the bottom.
 
 ## Elevation & Depth
 
@@ -288,13 +288,31 @@ The search field is a separate bordered 7px shell with a 16px search icon and a 
 
 ### Navigation
 
-Desktop navigation is a vertical list of icon-and-label links with 47px rows, 13px gaps, and 8px corners. The current destination uses forest with white content; hover on other destinations uses a pale green background. The active destination has `aria-current="page"`.
+The four primary destinations are Overview, People, Opportunities, and Notices. Events remain accessible through Overview, and the previous Funding route redirects to Opportunities. Desktop navigation is a vertical list of icon-and-label links with 47px rows, 13px gaps, and 8px corners. The current destination uses forest with white content; hover on other destinations uses a pale green background. The active destination has `aria-current="page"`.
 
 At 760px and below, links form a horizontal bottom bar. Each becomes an icon above an 11px label in a 52px row area with at least 65px width. Active navigation uses a pale green fill (`#e6eddd`) and forest content. Preserve the text labels alongside the icons.
 
 ### Upcoming events
 
 Each full-row button pairs a compact date tile with a title, time, and attendance line. Dates use tabular numbers; uppercase month labels are lightly tracked. Fine dividers separate rows, and the final row has no divider. Hover changes the event title color without moving the row. The same event detail opens in the standard side sheet.
+
+### Compact opportunities and project plans
+
+For volunteers, For organization, Projects, and Saved are understated text tabs with a forest selected rule. A search field and short description precede a single bordered list. Each row shows the opportunity's name, potential benefit, type, current uncertainty, and interest-match count where space permits; saving is a separate action. Six results appear initially, with an explicit Show more control. Empty searches and an empty Saved view explain the next action.
+
+The 11 leads and three project plans share the existing side-sheet pattern. Potential benefit and a few matching people are visible first. Additional matches, terms, next steps, budgets, and readiness checks use native collapsible sections. Suggested project teams explain the relevant stated interests; budgets and roles stay labeled drafts. Do not expand every requirement onto the listing page or turn interest matches into eligibility claims.
+
+### Richer people details
+
+Keep the People table as the scan surface. An individual profile opens a 620px sheet with Profile, Activity, and Notes tabs, contribution totals, stated interests, declared skills, availability, contact preferences, and relevant opportunities. Service-hour targets and approved/pending breakdowns use explicit source labels. The Activity view distinguishes illustrative attendance from outreach that has not occurred. Notes and preferences have concrete save actions and local persistence; unfinished edits remain in memory when moving between profile tabs.
+
+Profiles use the same avatars, flat surfaces, forest actions, and fine dividers as the rest of Roots. A preferred channel and permission to send are separate facts. Avoid presenting missing contact or consent data as an actionable delivery channel.
+
+### Notices, drafts, and assistant state
+
+Notices has To review, Drafts, Workflows, and Assistant views. Recommendation rows show a concise reason, relevant people, and an explicit action or reviewed state. Draft rows remain visibly unsent. Workflow rows summarize trigger, timing, and channel; configuration opens a focused form with an audience preview. Saving a rule does not activate it, and the delivery status remains visible.
+
+The Assistant view uses the existing conversational tone and sage emphasis. Telegram and Gemini connection rows distinguish missing configuration, configured credentials, and polling status. The local test can synchronize browser snapshots for Gemini and Telegram, while the published static demo remains separate. Loading, synchronization failure, configuration errors, and returned answers use readable text states. Never imply that configuring a key verifies connectivity, or that preparing a message delivers it.
 
 ### Action sheet and feedback
 
