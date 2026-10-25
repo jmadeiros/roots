@@ -15,7 +15,7 @@
   }
   function snapshot() {
     const state = api.getState();
-    return {organization: {name: 'Greenfield Farm', demo: true}, people: state.people.map(p => ({...p, ...window.RootsPeople.profileData(p)})), events: state.events, opportunities: window.RootsOpportunities.list(), projects: window.RootsOpportunities.projects(), notices: window.RootsNotices.notices(), workflows: window.RootsNotices.workflows(), saved: state.saved, activity: state.activity, metadata: {illustrative: true, asOf: '2026-10-24'}};
+    return {organization: {name: 'Greenfield Farm', demo: true, scenario: window.ROOTS_DATA?.scenario || null}, people: state.people.map(p => ({...p, ...window.RootsPeople.profileData(p)})), events: state.events, opportunities: window.RootsOpportunities.list(), projects: window.RootsOpportunities.projects(), notices: window.RootsNotices.notices(), workflows: window.RootsNotices.workflows(), saved: state.saved, activity: state.activity, metadata: {illustrative: true, asOf: '2026-10-24'}};
   }
   function reportSync(error) {
     status.syncError = error ? error.message : null;

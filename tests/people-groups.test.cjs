@@ -85,7 +85,7 @@ test('malformed records and adapter failures are safe, and source records are no
   assert.deepEqual(compute(state, [], () => { throw new Error('broken'); }).interests[0].personIds, ['a']);
 });
 
-test('current demo groups show eight gardeners and no fabricated age groups', () => {
+test('current demo prioritizes explicit fictional school and college cohorts while retaining participation and interests', () => {
   const context = {window:{}};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../dist/data.js'), 'utf8'), context);
   const result = compute(context.window.ROOTS_DATA);
@@ -93,13 +93,28 @@ test('current demo groups show eight gardeners and no fabricated age groups', ()
   assert.equal(result.interests[0].label, 'Community gardening');
   assert.equal(result.interests[0].count, 8);
   assert.deepEqual(result.participation.map(group => group.count), [8, 27]);
-  assert.equal(result.coverage.ageGroups, 0);
-  assert.deepEqual(result.ageGroups, []);
-  assert.deepEqual(result.goals.map(group => [group.id, group.count]), [['goal-service', 5], ['goal-return', 8]]);
-  assert.equal(result.goals[0].stats.oneVisit, 3);
-  assert.equal(result.goals[0].stats.percent, 14);
-  assert.equal(result.coverage.students, 0);
+  assert.equal(result.coverage.ageGroups, 35);
+  assert.deepEqual(result.ageGroups.map(group => [group.label, group.count]), [['18–24', 12], ['Under 18', 8], ['35–49', 6], ['25–34', 5], ['50–64', 4]]);
+  assert.deepEqual(result.goals.map(group => [group.id, group.count]), [['goal-school', 8], ['goal-undergraduates', 12], ['goal-return', 8], ['goal-service', 5]]);
+  assert.equal(result.goals[0].stats.oneVisit, 8);
+  assert.equal(result.goals[0].stats.percent, 23);
+  assert.deepEqual(result.goals[0].contextFacts, [['Service-hour goals', '320 h total'], ['Weekly capacity', '20 h combined']]);
+  assert.equal(result.goals[1].stats.hours, 332);
+  assert.equal(result.goals[1].label, 'Undergraduates to connect with funded pathways');
+  assert.ok(result.goals.slice(0, 2).every(group => group.demoContext));
+  assert.equal(result.coverage.students, 20);
+  assert.equal(result.coverage.demoContext, 35);
   assert.equal(result.coverage.employers, 0);
+});
+
+test('explicit local clears remove demo membership and untrusted adapters cannot invent a funded cohort', () => {
+  const demo = {id:'demo', studentStatus:'Student', ageBand:'Under 18', educationLevel:'secondary', serviceRequirementHours:40, weeklyHoursAvailable:2, contextSource:'Fictional demo scenario'};
+  const result = compute({people:[demo, {id:'unknown'}]}, [], person => person.id === 'demo'
+    ? {...person, studentStatus:'Not recorded', ageBand:null, educationLevel:null, serviceRequirementHours:null, personContextSource:{studentStatus:'Not recorded', ageBand:'Not recorded', educationLevel:'Not recorded', serviceRequirementHours:'Not recorded'}}
+    : {...person, studentStatus:'Student', educationLevel:'undergraduate', fullTime:true, weeklyHoursAvailable:20, personContextSource:{studentStatus:'Fictional demo scenario', educationLevel:'Fictional demo scenario', fullTime:'Fictional demo scenario', weeklyHoursAvailable:'Fictional demo scenario'}});
+  assert.equal(result.coverage.students, 0);
+  assert.equal(result.coverage.ageGroups, 0);
+  assert.equal(result.goals.some(group => ['goal-school', 'goal-undergraduates', 'goal-students'].includes(group.id)), false);
 });
 
 test('student and employer groups require explicit records and respect locally cleared context', () => {
@@ -141,6 +156,23 @@ test('group facts total valid direct hours and keep unknown records out of the t
   assert.deepEqual(result.interests[0].stats, {hours:4.5, hoursKnown:2, oneVisit:1, visitsKnown:3, percent:100, targetCount:0});
   assert.equal(result.coverage.targets, 0);
   assert.equal(result.goals.some(group => group.id === 'goal-targets'), false);
+});
+
+test('work connections offer only current employer routes matched to a recorded employee in the cohort', () => {
+  const leads = [
+    {id:'o12', title:'Microsoft employee volunteering', matchKind:'employer', matches:[{personId:'microsoft'}]},
+    {id:'other-employer', title:'Another employee programme', matchKind:'employer', matches:[{personId:'not-in-community'}]},
+    {id:'o13', title:'Community event grant', matchKind:'community-event', matches:[{personId:'bakery'}]},
+    {id:'o06', title:'Retired skills partnership', interests:['Data analysis']},
+    {id:'o10', title:'Retired employer partnership', interests:['Community outreach']}
+  ];
+  const state = {people:[{id:'microsoft', employer:'Microsoft'}, {id:'bakery', employer:'Local bakery'}, {id:'unknown'}]};
+  assert.deepEqual(compute(state, leads).goals.find(group => group.id === 'goal-employers').opportunityIds, ['o12']);
+  const unrelatedOnly = compute({people:state.people.slice(1)}, leads);
+  assert.deepEqual(unrelatedOnly.goals.find(group => group.id === 'goal-employers').opportunityIds, []);
+  const cleared = compute(state, leads, person => person.id === 'microsoft'
+    ? {...person, employer:null, personContextSource:{employer:'Not recorded'}} : person);
+  assert.deepEqual(cleared.goals.find(group => group.id === 'goal-employers').opportunityIds, []);
 });
 
 test('only locally recorded positive hour targets form a goal cohort and related pathways remain inspectable', () => {

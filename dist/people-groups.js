@@ -6,6 +6,7 @@
   const text = value => typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : '';
   const validCount = value => Number.isSafeInteger(value) && value >= 0;
   const validHours = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
+  const DEMO_CONTEXT = 'Fictional demo scenario';
   const groupOrder = (a, b) => b.count - a.count || a.label.localeCompare(b.label, 'en');
   const thoughts = {
     'community gardening':'What would this group like to grow, learn or share? Ask before choosing a session or project; a broad interest can mean different things to different people.',
@@ -36,13 +37,16 @@
     return result;
   }
 
-  function recordedContext(original, profile, field) {
+  function contextValue(original, profile, field) {
     const source = profile.personContextSource;
     if (isRecord(source) && Object.prototype.hasOwnProperty.call(source, field)) {
-      return ['Locally recorded', 'Recorded in profile'].includes(source[field]) ? text(profile[field]) : '';
+      const supported = ['Locally recorded', 'Recorded in profile'].includes(source[field]) || source[field] === DEMO_CONTEXT && original.contextSource === DEMO_CONTEXT;
+      return supported ? profile[field] : null;
     }
-    return text(original[field]);
+    return original[field];
   }
+
+  const recordedContext = (original, profile, field) => text(contextValue(original, profile, field));
 
   function compute(state, leads, profileAdapter) {
     const people = [], interestGroups = new Map(), ageGroups = new Map();
@@ -52,7 +56,7 @@
       {id:'participation-zero', label:'No recorded visits', nextThought:'A simple conversation about interests and availability could help shape a first invitation.'},
       {id:'participation-unknown', label:'Visits not recorded', nextThought:'Check the attendance record before making assumptions about participation.'}
     ].map(group => ({...group, count:0, personIds:[], opportunityIds:[]}));
-    const coverage = {people:0, interests:0, visits:0, ageGroups:0, students:0, employers:0, targets:0};
+    const coverage = {people:0, interests:0, visits:0, ageGroups:0, students:0, employers:0, targets:0, demoContext:0};
     for (const [id, original] of records(isRecord(state) ? state.people : null)) {
       let profile = original;
       if (typeof profileAdapter === 'function') {
@@ -62,15 +66,20 @@
         } catch { /* Keep the direct record when profile enrichment is unavailable. */ }
       }
       const interests = interestLabels(profile.interests);
-      // Demographic groups must come from an explicit source record, never
-      // profile enrichment, illustrative history or another inferred field.
-      const ageGroup = text(original.ageGroup) || text(original.ageBand);
+      // Explicit source values (including labelled demo context) or local edits
+      // are allowed. Unattributed enrichment must never invent demographics.
+      const ageGroup = recordedContext(original, profile, 'ageGroup') || recordedContext(original, profile, 'ageBand');
       const visits = profile.visits;
       const name = text(original.name) || 'Unnamed person';
       const studentStatus = recordedContext(original, profile, 'studentStatus');
       const employer = recordedContext(original, profile, 'employer');
       const target = profile.serviceHours?.targetSource === 'Locally recorded' && validHours(profile.serviceHours.target) && profile.serviceHours.target > 0 ? profile.serviceHours.target : null;
-      people.push({id, name, initials:text(original.initials) || name.split(' ').slice(0, 2).map(part => part[0]).join(''), color:text(original.color) || 'sage', interests:[...interests.values()], visits, hours:validHours(original.hours) ? original.hours : null, availability:text(profile.availability), studentStatus, employer, target});
+      const educationLevel = studentStatus === 'Student' ? recordedContext(original, profile, 'educationLevel') : '';
+      const fullTime = studentStatus === 'Student' ? contextValue(original, profile, 'fullTime') === true : false;
+      const weeklyCapacity = contextValue(original, profile, 'weeklyHoursAvailable');
+      const requirement = studentStatus === 'Student' ? contextValue(original, profile, 'serviceRequirementHours') : null;
+      const demoContext = original.contextSource === DEMO_CONTEXT;
+      people.push({id, name, initials:text(original.initials) || name.split(' ').slice(0, 2).map(part => part[0]).join(''), color:text(original.color) || 'sage', interests:[...interests.values()], visits, hours:validHours(original.hours) ? original.hours : null, availability:text(profile.availability), studentStatus, employer, target, educationLevel, fullTime, school:recordedContext(original, profile, 'school'), weeklyHoursAvailable:validHours(weeklyCapacity) ? weeklyCapacity : null, serviceRequirementHours:validHours(requirement) && requirement > 0 ? requirement : null, demoContext});
       coverage.people++;
       if (interests.size) coverage.interests++;
       if (validCount(visits)) coverage.visits++;
@@ -78,6 +87,7 @@
       if (studentStatus === 'Student') coverage.students++;
       if (employer) coverage.employers++;
       if (target !== null) coverage.targets++;
+      if (demoContext) coverage.demoContext++;
       for (const [key, label] of interests) {
         if (!interestGroups.has(key)) interestGroups.set(key, {id:`interest-${encodeURIComponent(key)}`, label, count:0, personIds:[], opportunityIds:[], nextThought:thoughts[key] || `Ask what people would like to do with their shared interest in ${label.toLowerCase()}.`});
         const group = interestGroups.get(key);
@@ -105,18 +115,26 @@
     const servicePeople = people.filter(person => service?.personIds.includes(person.id));
     const firstPeople = people.filter(person => person.visits === 1);
     const students = people.filter(person => person.studentStatus === 'Student');
+    const schoolStudents = students.filter(person => person.educationLevel === 'secondary' && person.serviceRequirementHours !== null);
+    const undergraduates = students.filter(person => person.educationLevel === 'undergraduate');
+    const otherStudents = students.filter(person => !schoolStudents.includes(person) && !undergraduates.includes(person));
     const employed = people.filter(person => person.employer);
+    const employedIds = new Set(employed.map(person => person.id));
+    const employerRoutes = [...records(leads).values()].filter(lead => lead.matchKind === 'employer'
+      && Array.isArray(lead.matches) && lead.matches.some(match => employedIds.has(match?.personId))).map(lead => lead.id);
     const targets = people.filter(person => person.target !== null);
     const goals = [
-      goalGroup('goal-service', 'Working toward service hours', servicePeople, `${servicePeople.length} ${servicePeople.length === 1 ? 'person lists' : 'people list'} service hours as an interest.`, 'A recurring supervised shift could give this group a clear way to plan and record hours. Ask what experience and approval each person needs.', service?.opportunityIds || []),
+      {...goalGroup('goal-school', 'School students with service goals', schoolStudents, `${schoolStudents.length} secondary-school students have a service-hour requirement in their profile.`, 'Build a school-approved programme of supervised garden shifts. Agree safeguarding, attendance sign-off and which hours count before offering places.', ['o05']), contextFacts:[['Service-hour goals', `${schoolStudents.reduce((total, person) => total + person.serviceRequirementHours, 0)} h total`], ['Weekly capacity', `${schoolStudents.reduce((total, person) => total + (person.weeklyHoursAvailable ?? 0), 0)} h combined`]]},
+      {...goalGroup('goal-undergraduates', 'Undergraduates to connect with funded pathways', undergraduates, `${undergraduates.length} undergraduates · ${undergraduates.filter(person => person.fullTime).length} full-time · ${new Set(undergraduates.map(person => person.school).filter(Boolean)).size} campuses.`, 'Explore a College Corps host partnership with the participating campuses. Match a supervised role to study schedules, then check individual eligibility and the next placement cycle.', ['o01']), contextFacts:[['At least 12 h / week', `${undergraduates.filter(person => person.weeklyHoursAvailable >= 12).length} people`], ['Full-time students', `${undergraduates.filter(person => person.fullTime).length} people`]]},
       goalGroup('goal-return', 'A reason to come back', firstPeople, `${firstPeople.length} ${firstPeople.length === 1 ? 'person has' : 'people have'} one recorded visit.`, 'Ask what they enjoyed and what would make a next visit worthwhile. A visit total does not tell us when someone attended or whether they plan to return.'),
-      goalGroup('goal-students', 'Students shaping their next step', students, `${students.length} ${students.length === 1 ? 'person has' : 'people have'} shared that they are students.`, 'Explore a project that connects with their learning or service goals, then confirm school approval and supervision.', ['o01', 'o05']),
-      goalGroup('goal-employers', 'Connections through work', employed, `${employed.length} ${employed.length === 1 ? 'person has' : 'people have'} an employer recorded.`, 'Ask whether they want to explore a team activity, volunteer time or matching gifts through work. An employer name does not establish a benefit.', ['o06', 'o10']),
-      goalGroup('goal-targets', 'Recorded hour goals to plan around', targets, `${targets.length} ${targets.length === 1 ? 'person has' : 'people have'} a locally recorded service-hour target.`, 'Agree a manageable schedule and how hours will be verified. Recorded totals do not establish approved progress toward a school requirement.', ['o05'])
+      goalGroup('goal-students', 'Students shaping their next step', otherStudents, `${otherStudents.length} ${otherStudents.length === 1 ? 'person has' : 'people have'} student status recorded; education and requirements need more detail.`, 'Explore a project that connects with their learning or service goals, then confirm school approval and supervision.', ['o01', 'o05']),
+      goalGroup('goal-employers', 'Connections through work', employed, `${employed.length} ${employed.length === 1 ? 'person has' : 'people have'} an employer recorded.`, 'Ask whether they want to explore a team activity, volunteer time or matching gifts through work. An employer name does not establish a benefit.', employerRoutes),
+      goalGroup('goal-targets', 'Recorded hour goals to plan around', targets, `${targets.length} ${targets.length === 1 ? 'person has' : 'people have'} a locally recorded service-hour target.`, 'Agree a manageable schedule and how hours will be verified. Recorded totals do not establish approved progress toward a school requirement.', ['o05']),
+      goalGroup('goal-service', 'An interest in service hours', servicePeople, `${servicePeople.length} ${servicePeople.length === 1 ? 'person lists' : 'people list'} service hours as an interest.`, 'This is an interest rather than a confirmed requirement. Ask what experience and approval each person needs before planning a pathway.', service?.opportunityIds || [])
     ].filter(group => group.count);
     const groupStats = group => {
       const members = people.filter(person => group.personIds.includes(person.id));
-      return {...group, stats:{
+      return {...group, demoContext:members.some(person => person.demoContext), stats:{
         hours:members.reduce((sum, person) => sum + (person.hours ?? 0), 0),
         hoursKnown:members.filter(person => person.hours !== null).length,
         oneVisit:members.filter(person => person.visits === 1).length,
@@ -151,8 +169,10 @@
     const count = `${group.count} ${group.count === 1 ? 'person' : 'people'}`;
     const description = group.description || (view.grouping === 'interests' ? `${count} ${group.count === 1 ? 'lists' : 'list'} this interest.` : view.grouping === 'ageGroups' ? `${count} ${group.count === 1 ? 'has' : 'have'} this age range recorded.` : `${count} in the current records.`);
     const stats = group.stats;
+    const facts = group.contextFacts || [['Recorded hours', stats.hoursKnown ? number(stats.hours) : '—'], ['With one visit', stats.visitsKnown ? stats.oneVisit : '—'], ...(stats.targetCount ? [['Recorded hour goals', stats.targetCount]] : [])];
+    const demoLabel = group.demoContext && (view.grouping === 'ageGroups' || ['goal-school', 'goal-undergraduates', 'goal-students'].includes(group.id)) ? '<span class="people-example-label">Demo context</span>' : '';
     const coverageNote = [stats.hoursKnown < group.count ? `Hours recorded for ${stats.hoursKnown} of ${group.count}.` : '', stats.visitsKnown < group.count ? `Visits recorded for ${stats.visitsKnown} of ${group.count}.` : ''].filter(Boolean).join(' ');
-    return `<article class="people-group"><div class="people-group-story"><h2>${e(group.label)}</h2><p class="people-group-description">${e(description)}</p><p class="people-group-thought">${e(group.nextThought)}</p>${group.label.toLowerCase() === 'community gardening' ? '<p class="people-group-qualification">This records who named the interest, not everyone who might enjoy gardening.</p>' : ''}</div><aside class="people-group-evidence" aria-label="People and recorded facts">${clusterMarkup(members, group)}<p class="people-group-count">${group.count} of ${result.coverage.people} people <span>· ${stats.percent}% of the community</span></p><dl class="people-group-stats"><div><dt>Recorded hours</dt><dd>${stats.hoursKnown ? e(number(stats.hours)) : '—'}</dd></div><div><dt>With one visit</dt><dd>${stats.visitsKnown ? stats.oneVisit : '—'}</dd></div>${stats.targetCount ? `<div><dt>Recorded hour goals</dt><dd>${stats.targetCount}</dd></div>` : ''}</dl>${coverageNote ? `<p class="people-group-coverage">${e(coverageNote)}</p>` : ''}</aside><details id="people-details-${e(group.id)}" class="people-group-details" data-people-group-id="${e(group.id)}"${view.expanded.has(group.id) ? ' open' : ''}><summary>See ${e(count)}${leads.length ? ' and related leads' : ''}${api.icon('chevron-down')}</summary><div class="people-group-expanded"><ul class="people-group-members">${members.map(person => `<li><button type="button" data-people-group-person="${e(person.id)}">${api.avatar(person)}<span><strong>${e(person.name)}</strong><small>${e(person.availability || 'Availability not recorded')}</small></span>${api.icon('arrow')}</button></li>`).join('')}</ul>${leads.length ? `<section class="people-group-leads"><h3>Possible next steps</h3><p>Leads to explore with this group. Participation and current program terms still need checking.</p><ul>${leads.map(lead => `<li><button type="button" data-people-group-lead="${e(lead.id)}"><span>${e(lead.title)}</span>${api.icon('arrow')}</button></li>`).join('')}</ul></section>` : ''}</div></details></article>`;
+    return `<article class="people-group"><div class="people-group-story"><h2>${e(group.label)}</h2>${demoLabel}<p class="people-group-description">${e(description)}</p><p class="people-group-thought">${e(group.nextThought)}</p>${group.label.toLowerCase() === 'community gardening' ? '<p class="people-group-qualification">This records who named the interest, not everyone who might enjoy gardening.</p>' : ''}</div><aside class="people-group-evidence" aria-label="People and recorded facts">${clusterMarkup(members, group)}<p class="people-group-count">${group.count} of ${result.coverage.people} people <span>· ${stats.percent}% of the community</span></p><dl class="people-group-stats">${facts.map(([label, value]) => `<div><dt>${e(label)}</dt><dd>${e(value)}</dd></div>`).join('')}</dl>${coverageNote ? `<p class="people-group-coverage">${e(coverageNote)}</p>` : ''}</aside><details id="people-details-${e(group.id)}" class="people-group-details" data-people-group-id="${e(group.id)}"${view.expanded.has(group.id) ? ' open' : ''}><summary>See ${e(count)}${leads.length ? ' and related leads' : ''}${api.icon('chevron-down')}</summary><div class="people-group-expanded"><ul class="people-group-members">${members.map(person => `<li><button type="button" data-people-group-person="${e(person.id)}">${api.avatar(person)}<span><strong>${e(person.name)}</strong><small>${e(person.availability || 'Availability not recorded')}</small></span>${api.icon('arrow')}</button></li>`).join('')}</ul>${leads.length ? `<section class="people-group-leads"><h3>Possible next steps</h3><p>Leads to explore with this group. Participation and current program terms still need checking.</p><ul>${leads.map(lead => `<li><button type="button" data-people-group-lead="${e(lead.id)}"><span>${e(lead.title)}</span>${api.icon('arrow')}</button></li>`).join('')}</ul></section>` : ''}</div></details></article>`;
   }
 
   function groupsMarkup(result) {
@@ -169,12 +189,12 @@
             : '<p class="people-groups-empty">Add people to start exploring participation.</p>';
     }
     const note = view.grouping === 'goals'
-      ? 'Groups can overlap. These are starting points for a conversation, not commitments to participate. Fictional demo records.'
+      ? `Groups can overlap. ${result.coverage.demoContext ? 'Age, education, weekly capacity and school requirements are labelled fictional demo context. ' : ''}Use confirmed requirements and programme rules before making commitments.`
       : view.grouping === 'interests'
       ? `Groups use stated interests, so a person can appear in more than one. ${result.coverage.people - result.coverage.interests ? `${result.coverage.people - result.coverage.interests} ${result.coverage.people - result.coverage.interests === 1 ? 'person has' : 'people have'} no interests recorded. ` : ''}Fictional demo records.`
       : view.grouping === 'participation'
         ? 'These are total recorded visits, not a measure of recent attendance or retention. Fictional demo records.'
-        : `Only explicitly recorded age ranges appear here.${groups.length && result.coverage.people > result.coverage.ageGroups ? ` ${result.coverage.people - result.coverage.ageGroups} ${result.coverage.people - result.coverage.ageGroups === 1 ? 'person has' : 'people have'} no age range recorded.` : ''}`;
+        : `Age ranges come from explicit profile context${result.coverage.demoContext ? ' and include fictional demo ages' : ''}.${groups.length && result.coverage.people > result.coverage.ageGroups ? ` ${result.coverage.people - result.coverage.ageGroups} ${result.coverage.people - result.coverage.ageGroups === 1 ? 'person has' : 'people have'} no age range recorded.` : ''}`;
     const missingContext = [!result.coverage.students ? 'Student' : '', !result.coverage.employers ? 'employer' : ''].filter(Boolean);
     const contextNote = view.grouping === 'goals' && missingContext.length ? `<p class="people-groups-context">${e(missingContext.join(' and '))} groups appear when people share that context. Open a profile and use <strong>People context</strong> to record it.</p>` : '';
     return `<div class="people-grouping-controls" role="group" aria-label="Group people by">${groupingNames.map(([id,label]) => `<button type="button" id="people-grouping-${id}" data-people-grouping="${id}" aria-pressed="${view.grouping === id}">${label}</button>`).join('')}</div><div class="people-group-list">${content}</div>${view.grouping === 'interests' && groups.length > 4 ? `<button type="button" class="people-groups-more" data-people-groups-all aria-expanded="${view.all}">${view.all ? 'Show fewer groups' : `Show all ${groups.length} groups`}</button>` : ''}${contextNote}<p class="people-groups-note">${e(note)}</p>`;

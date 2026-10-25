@@ -8,8 +8,13 @@ const source = fs.readFileSync(path.join(__dirname, '../dist/people-detail.js'),
 const storageKey = 'roots-people-details-v1';
 const plain = value => JSON.parse(JSON.stringify(value));
 const person = values => ({id:'p01', name:'Avery Green', email:'avery@example.test', interests:[], availability:'Weekends', visits:1, hours:3, status:'New', ...values});
+function demoData() {
+  const context = {window:{}};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../dist/data.js'), 'utf8'), context);
+  return plain(context.window.ROOTS_DATA);
+}
 
-function harness({people = [person()], edits = {}, storage = new Map(), bridge = true} = {}) {
+function harness({people = [person()], edits = {}, storage = new Map(), bridge = true, opportunityList} = {}) {
   if (!storage.has(storageKey)) storage.set(storageKey, JSON.stringify(edits));
   const listeners = new Map(), events = [], panel = {innerHTML:'', setAttribute() {}};
   let renderCount = 0, syncCount = 0;
@@ -17,6 +22,7 @@ function harness({people = [person()], edits = {}, storage = new Map(), bridge =
     ROOTS_DATA:{opportunities:[]},
     dispatchEvent(event) { events.push(event.type); }
   };
+  if (opportunityList) window.RootsOpportunities = {list:opportunityList};
   if (bridge) window.RootsBridge = {sync() { syncCount++; window.dispatchEvent({type:'roots:records-changed'}); }};
   const document = {
     addEventListener(type, callback) { listeners.set(type, callback); },
@@ -67,12 +73,93 @@ test('student and employment facts are unrecorded even when names, interests, em
   assert.equal(result.serviceHours.targetSource, 'Illustrative target');
   for (const field of ['age', 'ageGroup', 'ethnicity', 'religion', 'income', 'gender']) assert.equal(Object.hasOwn(result, field), false);
 
-  const context = {window:{}};
-  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../dist/data.js'), 'utf8'), context);
-  assert.ok(context.window.ROOTS_DATA.people.every(value => {
-    const profile = h.profiles.profileData(value);
-    return profile.studentStatus === 'Not recorded' && profile.school === null && profile.employer === null;
-  }), 'the current demo has no recorded student, school, or employer facts');
+  const unknown = h.profiles.profileData(person({id:'new-person', name:'New volunteer'}));
+  assert.equal(unknown.studentStatus, 'Not recorded');
+  assert.equal(unknown.school, null);
+  for (const field of ['age', 'ageBand', 'educationLevel', 'fullTime', 'weeklyHoursAvailable', 'serviceRequirementHours']) assert.equal(Object.hasOwn(unknown, field), false, `${field} is not filled from the demo scenario`);
+});
+
+test('fictional scenario supplies bounded school and college cohorts without changing participation records', () => {
+  const data = demoData(), h = harness();
+  const profiles = data.people.map(value => h.profiles.profileData(value));
+  const school = profiles.filter(value => value.educationLevel === 'secondary');
+  const college = profiles.filter(value => value.educationLevel === 'undergraduate');
+  assert.equal(data.people.length, 35);
+  assert.equal(profiles.filter(value => value.studentStatus === 'Student').length, 20);
+  assert.equal(school.length, 8);
+  assert.ok(school.every(value => [16, 17].includes(value.age) && value.ageBand === 'Under 18' && value.serviceRequirementHours === 40 && value.serviceRequirementDue === '2027-05-31'));
+  assert.ok(school.every(value => value.serviceHours.target === 40 && value.serviceHours.targetSource === 'Fictional demo scenario'));
+  assert.equal(college.length, 12);
+  assert.ok(college.every(value => value.age >= 18 && value.age <= 24 && value.fullTime && value.weeklyHoursAvailable >= 12));
+  assert.deepEqual([...new Set(college.map(value => value.school))], ['UC Davis', 'Sacramento State']);
+  assert.ok(profiles.every(value => value.contextSource === 'Fictional demo scenario' && value.personContextSource.age === 'Fictional demo scenario' && value.employer === null));
+  assert.equal(profiles.reduce((sum, value) => sum + value.hours, 0), 893);
+  assert.equal(profiles.reduce((sum, value) => sum + value.visits, 0), 224);
+  assert.equal(data.scenario.source, 'Fictional demo scenario');
+  assert.equal(data.scenario.fellowHostCapacity, 2);
+  assert.ok(data.scenario.supervisorIds.every(id => profiles.some(value => value.id === id && value.age >= 18 && value.studentStatus === 'Not a student')));
+});
+
+test('local unknowns and edits take precedence over all seeded eligibility context', () => {
+  const people = demoData().people;
+  const h = harness({people, edits:{
+    p01:{studentStatus:'Not recorded', school:null, target:null, age:null},
+    p02:{studentStatus:'Not a student', weeklyHoursAvailable:0},
+    p06:{target:60}
+  }});
+  const cleared = h.profiles.profileData(people.find(value => value.id === 'p01'));
+  assert.equal(cleared.studentStatus, 'Not recorded');
+  assert.equal(cleared.school, null);
+  for (const field of ['age', 'ageBand', 'educationLevel', 'fullTime', 'serviceRequirementHours', 'serviceRequirementDue']) assert.equal(cleared[field], null, `${field} remains unknown after a clear`);
+  const former = h.profiles.profileData(people.find(value => value.id === 'p02'));
+  assert.equal(former.educationLevel, null);
+  assert.equal(former.fullTime, null);
+  assert.equal(former.weeklyHoursAvailable, 0);
+  assert.equal(former.personContextSource.weeklyHoursAvailable, 'Locally recorded');
+  const adjusted = h.profiles.profileData(people.find(value => value.id === 'p06'));
+  assert.equal(adjusted.serviceRequirementHours, 60);
+  assert.equal(adjusted.personContextSource.serviceRequirementHours, 'Locally recorded');
+});
+
+test('profiles label demo context and unrelated preference edits do not promote it to a confirmed record', () => {
+  const people = [demoData().people[0]], h = harness({people});
+  h.profiles.open(people[0].id);
+  assert.match(h.panel.innerHTML, /Demo context/);
+  assert.match(h.panel.innerHTML, /fictional scenario details/);
+  assert.match(h.panel.innerHTML, /40 hours by May 31, 2027/);
+  assert.match(h.panel.innerHTML, /Demo goal\. Replace it with a confirmed requirement\./);
+  h.submit({studentStatus:people[0].studentStatus, school:people[0].school, target:'40', channel:'Email'});
+  const saved = JSON.parse(h.storage.get(storageKey)).p01;
+  for (const field of ['studentStatus', 'school', 'target']) assert.equal(Object.hasOwn(saved, field), false, `${field} keeps the original provenance when unchanged`);
+  const profile = harness({people, storage:h.storage}).profiles.profileData(people[0]);
+  assert.equal(profile.personContextSource.studentStatus, 'Fictional demo scenario');
+  assert.equal(profile.serviceHours.targetSource, 'Fictional demo scenario');
+});
+
+test('profile programme routes use current criteria: school service for Sofia, college for undergraduates, no interest inference', () => {
+  const {evaluate} = require('../dist/program-fit.js');
+  const data = demoData();
+  const catalogueContext = {window:{}};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../dist/programs.js'), 'utf8'), catalogueContext);
+  const catalogue = plain(catalogueContext.window.ROOTS_PROGRAMS);
+  const unknown = person({id:'new', name:'New volunteer', interests:['Community gardening', 'Service hours']});
+  const people = [...data.people, unknown];
+  const h = harness({people, opportunityList:() => catalogue.map(programme => ({...programme, matches:evaluate({people}, programme, data.scenario, h.profiles.profileData).matches}))});
+  h.profiles.open('p06');
+  assert.match(h.panel.innerHTML, /Programme routes/);
+  assert.match(h.panel.innerHTML, /data-opportunity-id="o05"/);
+  assert.doesNotMatch(h.panel.innerHTML, /data-opportunity-id="o01"/);
+  assert.doesNotMatch(h.panel.innerHTML, /Interest matches|Connects with/);
+  const schoolRoute = catalogue.find(programme => programme.id === 'o05');
+  const schoolReason = evaluate({people}, schoolRoute, data.scenario, h.profiles.profileData).matches.find(match => match.personId === 'p06').reason;
+  assert.ok(h.panel.innerHTML.includes(schoolReason));
+  assert.equal(h.panel.innerHTML.match(/data-opportunity-id="([^"]+)"/)[1], 'o05');
+  h.profiles.open('p02');
+  assert.equal(h.panel.innerHTML.match(/data-opportunity-id="([^"]+)"/)[1], 'o01');
+  h.profiles.open('new');
+  assert.match(h.panel.innerHTML, /data-opportunity-id="o13"/);
+  assert.doesNotMatch(h.panel.innerHTML, /data-opportunity-id="o01"/);
+  assert.doesNotMatch(h.panel.innerHTML, /data-opportunity-id="o05"/);
 });
 
 test('direct context fields are read literally, validated, and bounded without inventing student status', () => {

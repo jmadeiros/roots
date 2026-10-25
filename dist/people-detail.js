@@ -5,6 +5,7 @@
   const STORAGE_KEY = 'roots-people-details-v1';
   const tabNames = ['Profile', 'Activity', 'Notes'];
   const studentStatuses = ['Not recorded', 'Student', 'Not a student'];
+  const DEMO_CONTEXT = 'Fictional demo scenario';
   let api = null;
   let activeId = null;
   let activeTab = 'Profile';
@@ -72,14 +73,52 @@
       const value = validText(isLocal ? stored[field] : person[field], 160).trim();
       context[field] = field === 'studentStatus' ? (studentStatuses.includes(value) ? value : 'Not recorded') : (value || null);
       const recorded = field === 'studentStatus' ? context[field] !== 'Not recorded' : Boolean(context[field]);
-      personContextSource[field] = recorded ? (isLocal ? 'Locally recorded' : 'Recorded in profile') : 'Not recorded';
+      personContextSource[field] = recorded ? (isLocal ? 'Locally recorded' : person.contextSource === DEMO_CONTEXT ? DEMO_CONTEXT : 'Recorded in profile') : 'Not recorded';
+    }
+    const contextFields = {
+      age: value => Number.isInteger(value) && value >= 0 && value <= 120 ? value : null,
+      ageBand: value => validText(value, 40).trim() || null,
+      educationLevel: value => ['secondary', 'undergraduate'].includes(value) ? value : null,
+      fullTime: value => typeof value === 'boolean' ? value : null,
+      weeklyHoursAvailable: value => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 168 ? value : null,
+      serviceRequirementHours: value => typeof value === 'number' && Number.isFinite(value) && value > 0 && value <= 1000 ? value : null,
+      serviceRequirementDue: value => /^\d{4}-\d{2}-\d{2}$/.test(validText(value, 10)) ? value : null
+    };
+    for (const [field, normalize] of Object.entries(contextFields)) {
+      const isLocal = Object.prototype.hasOwnProperty.call(stored, field);
+      if (!isLocal && !Object.prototype.hasOwnProperty.call(person, field)) continue;
+      context[field] = normalize(isLocal ? stored[field] : person[field]);
+      personContextSource[field] = context[field] === null ? 'Not recorded' : isLocal ? 'Locally recorded' : person.contextSource === DEMO_CONTEXT ? DEMO_CONTEXT : 'Recorded in profile';
+    }
+    // A cleared or changed student status must not leave a hidden school-based
+    // eligibility assertion behind from the demonstration record.
+    if (context.studentStatus !== 'Student') {
+      for (const field of ['educationLevel', 'fullTime', 'serviceRequirementHours', 'serviceRequirementDue']) {
+        if (Object.prototype.hasOwnProperty.call(context, field)) {
+          context[field] = null;
+          personContextSource[field] = 'Not recorded';
+        }
+      }
+    }
+    if (Object.prototype.hasOwnProperty.call(stored, 'age') && context.age === null && !Object.prototype.hasOwnProperty.call(stored, 'ageBand')) {
+      context.ageBand = null;
+      personContextSource.ageBand = 'Not recorded';
     }
     const activity = sampleHistory(person);
     const pending = activity.find(item => item.approval === 'Pending review')?.hours || 0;
-    const sampleTarget = person.interests?.includes('Service hours') ? 40 : null;
+    const scenarioTarget = context.serviceRequirementHours ?? null;
+    const sampleTarget = scenarioTarget === null && person.interests?.includes('Service hours') ? 40 : null;
     const hasTarget = Object.prototype.hasOwnProperty.call(stored, 'target');
     const suppliedTarget = stored.target === null ? null : Number(stored.target);
-    const target = hasTarget ? (Number.isFinite(suppliedTarget) && suppliedTarget > 0 && suppliedTarget <= 1000 ? suppliedTarget : null) : sampleTarget;
+    const target = hasTarget ? (Number.isFinite(suppliedTarget) && suppliedTarget > 0 && suppliedTarget <= 1000 ? suppliedTarget : null) : scenarioTarget ?? sampleTarget;
+    if (hasTarget && Object.prototype.hasOwnProperty.call(context, 'serviceRequirementHours')) {
+      context.serviceRequirementHours = context.studentStatus === 'Student' ? target : null;
+      personContextSource.serviceRequirementHours = context.serviceRequirementHours === null ? 'Not recorded' : 'Locally recorded';
+      if (context.serviceRequirementHours === null) {
+        context.serviceRequirementDue = null;
+        personContextSource.serviceRequirementDue = 'Not recorded';
+      }
+    }
     return {
       ...person,
       ...context,
@@ -98,7 +137,7 @@
         approved: Math.max(0, Math.round(((Number(person.hours) || 0) - pending) * 10) / 10),
         pending,
         target,
-        targetSource: hasTarget ? 'Locally recorded' : (sampleTarget ? 'Illustrative target' : 'Not recorded'),
+        targetSource: hasTarget ? 'Locally recorded' : scenarioTarget !== null ? personContextSource.serviceRequirementHours : (sampleTarget ? 'Illustrative target' : 'Not recorded'),
         approvalSource: activity.length ? 'Illustrative breakdown of recorded hours' : 'No approval records'
       },
       notes: validText(stored.notes),
@@ -108,20 +147,15 @@
     };
   }
 
-  function matchesFor(person) {
-    const interests = person.interests || [];
-    const rules = [
-      ['o01', ['Service hours', 'Environmental education', 'Community gardening']],
-      ['o02', ['Climate action', 'Composting', 'Ecosystem restoration', 'Environmental science']],
-      ['o03', ['Community gardening', 'Native plants', 'Carpentry']],
-      ['o04', ['Environmental education', 'Youth mentoring']],
-      ['o05', ['Service hours', 'Youth mentoring']],
-      ['o06', ['Data analysis', 'GIS mapping', 'Photography', 'Web development', 'Community outreach']]
-    ];
-    return rules.map(([id, keywords]) => ({
-      opportunity: window.ROOTS_DATA.opportunities.find(item => item.id === id),
-      shared: interests.filter(interest => keywords.includes(interest))
-    })).filter(match => match.opportunity && match.shared.length).sort((a, b) => b.shared.length - a.shared.length).slice(0, 2);
+  function matchesFor(person, profile) {
+    const programmes = window.RootsOpportunities?.list?.() || [];
+    const routePriority = opportunity => profile.educationLevel === 'secondary' && opportunity.matchKind === 'school-service'
+      || profile.educationLevel === 'undergraduate' && opportunity.matchKind === 'college' ? 0 : 1;
+    return programmes.flatMap(opportunity => {
+      const match = opportunity.matches?.find(value => value.personId === person.id);
+      return match ? [{opportunity, reason:match.reason}] : [];
+    }).sort((a, b) => routePriority(a.opportunity) - routePriority(b.opportunity)
+      || (a.opportunity.priority ?? 100) - (b.opportunity.priority ?? 100)).slice(0, 2);
   }
 
   function preferenceForm(person) {
@@ -130,7 +164,7 @@
       availability: profile.availability,
       skills: profile.declaredSkills.join(', '),
       channel: profile.communicationPreference,
-      target: profile.serviceHours.targetSource === 'Locally recorded' ? (profile.serviceHours.target ?? '') : '',
+      target: ['Locally recorded', 'Recorded in profile', DEMO_CONTEXT].includes(profile.serviceHours.targetSource) ? (profile.serviceHours.target ?? '') : '',
       studentStatus: profile.studentStatus,
       school: profile.school || '',
       employer: profile.employer || ''
@@ -139,7 +173,7 @@
       <form id="people-preferences-form" class="people-edit-form">
         <div class="form-field"><label for="people-declared-skills">Declared skills</label><input id="people-declared-skills" name="skills" value="${escapeText(draft.skills)}" maxlength="600" placeholder="e.g. Gardening, photography"><p class="hint">Add skills the volunteer has shared, separated by commas. Interests are kept separately.</p></div>
         <div class="form-field"><label for="people-availability">Availability</label><input id="people-availability" name="availability" value="${escapeText(draft.availability)}" maxlength="160" required></div>
-        <div class="form-row"><div class="form-field"><label for="people-preferred-channel">Preferred contact method</label><select id="people-preferred-channel" name="channel">${['Not recorded', 'Email', 'SMS', 'Either'].map(channel => `<option${draft.channel === channel ? ' selected' : ''}>${channel}</option>`).join('')}</select></div><div class="form-field"><label for="people-hour-target">Service-hour target</label><input id="people-hour-target" name="target" type="number" min="1" max="1000" step="1" value="${escapeText(draft.target)}" placeholder="Not recorded"><p class="hint">Optional. Add a confirmed target.</p></div></div>
+        <div class="form-row"><div class="form-field"><label for="people-preferred-channel">Preferred contact method</label><select id="people-preferred-channel" name="channel">${['Not recorded', 'Email', 'SMS', 'Either'].map(channel => `<option${draft.channel === channel ? ' selected' : ''}>${channel}</option>`).join('')}</select></div><div class="form-field"><label for="people-hour-target">Service-hour target</label><input id="people-hour-target" name="target" type="number" min="1" max="1000" step="1" value="${escapeText(draft.target)}" placeholder="Not recorded"><p class="hint">${profile.serviceHours.targetSource === DEMO_CONTEXT ? 'Demo goal. Replace it with a confirmed requirement.' : 'Optional. Add a confirmed target.'}</p></div></div>
         <p class="hint">Student and employer details are optional. Record only what this person has shared.</p>
         <div class="form-field"><label for="people-student-status">Student status</label><select id="people-student-status" name="studentStatus">${studentStatuses.map(status => `<option${draft.studentStatus === status ? ' selected' : ''}>${status}</option>`).join('')}</select></div>
         <div class="form-row"><div class="form-field"><label for="people-school">School / college (optional)</label><input id="people-school" name="school" value="${escapeText(draft.school)}" maxlength="160" placeholder="Not recorded"></div><div class="form-field"><label for="people-employer">Employer (optional)</label><input id="people-employer" name="employer" value="${escapeText(draft.employer)}" maxlength="160" placeholder="Not recorded"></div></div>
@@ -148,9 +182,21 @@
       </form></details>`;
   }
 
+  function participationContext(profile) {
+    const facts = [
+      ['Age', profile.age === undefined || profile.age === null ? null : `${profile.age} · ${profile.ageBand || 'Age range not recorded'}`],
+      ['Education', profile.educationLevel ? `${profile.fullTime ? 'Full-time ' : ''}${profile.educationLevel === 'secondary' ? 'secondary-school student' : 'undergraduate'}` : null],
+      ['Weekly capacity', profile.weeklyHoursAvailable === undefined || profile.weeklyHoursAvailable === null ? null : `${numberLabel(profile.weeklyHoursAvailable)} hours`],
+      ['School service goal', profile.serviceRequirementHours ? `${numberLabel(profile.serviceRequirementHours)} hours${profile.serviceRequirementDue ? ` by ${dateLabel(profile.serviceRequirementDue)}` : ''}` : null]
+    ].filter(([, value]) => value !== null);
+    if (!facts.length) return '';
+    const isDemo = Object.values(profile.personContextSource).includes(DEMO_CONTEXT);
+    return `<div class="people-field-group"><div class="people-section-heading"><h3>Participation context</h3>${isDemo ? '<span class="people-example-label">Demo context</span>' : ''}</div><dl class="people-facts">${facts.map(([label, value]) => `<div><dt>${escapeText(label)}</dt><dd>${escapeText(value)}</dd></div>`).join('')}</dl>${isDemo ? '<p class="people-caption">Age, education and capacity are fictional scenario details for exploring program fit. They are not verified facts about a real person.</p>' : ''}</div>`;
+  }
+
   function profilePanel(person) {
     const profile = profileData(person);
-    const matches = matchesFor(person);
+    const matches = matchesFor(person, profile);
     const project = api.getState().project;
     const projectSkills = String(project?.skills || '').toLowerCase();
     const sharedProjectInterests = person.interests.filter(interest => projectSkills.includes(interest.toLowerCase()));
@@ -162,14 +208,15 @@
       <div class="people-field-group"><span class="people-field-label">Declared skills</span>${profile.declaredSkills.length ? `<div class="tags">${profile.declaredSkills.map(skill => `<span class="tag">${escapeText(skill)}</span>`).join('')}</div>` : '<p class="people-unrecorded">Skills haven’t been recorded yet.</p>'}</div>
       <div class="people-availability">${api.icon('clock')}<div><span class="people-field-label">Usually available</span><p>${escapeText(profile.availability)}</p></div></div>
       <dl class="people-facts"><div><dt>Student status</dt><dd>${escapeText(profile.studentStatus)}</dd></div><div><dt>School / college</dt><dd>${escapeText(profile.school || 'Not recorded')}</dd></div><div><dt>Employer</dt><dd>${escapeText(profile.employer || 'Not recorded')}</dd></div></dl>
+      ${participationContext(profile)}
       ${preferenceForm(person)}
     </section>
     <section class="people-section"><div class="people-section-heading"><h3>Service hours</h3><span class="people-example-label">Example tracking</span></div>
       <div class="people-hours"><div><strong>${numberLabel(profile.serviceHours.approved)}<small> h</small></strong><span>Approved</span></div><div><strong>${numberLabel(profile.serviceHours.pending)}<small> h</small></strong><span>Pending review</span></div><div><strong>${profile.serviceHours.target === null ? '—' : numberLabel(profile.serviceHours.target)}${profile.serviceHours.target === null ? '' : '<small> h</small>'}</strong><span>${profile.serviceHours.targetSource === 'Illustrative target' ? 'Example target' : 'Target'}</span></div></div>
-      <p class="people-caption">The approval split is illustrative and adds up to the ${numberLabel(person.hours)} hours in this profile. ${profile.serviceHours.targetSource === 'Illustrative target' ? 'The 40-hour target is an example, not a school requirement.' : profile.serviceHours.target === null ? 'No service-hour target has been recorded.' : 'The target was saved locally for this profile.'}</p>
+      <p class="people-caption">The approval split is illustrative and adds up to the ${numberLabel(person.hours)} hours in this profile. ${profile.serviceHours.targetSource === DEMO_CONTEXT ? 'The school service goal belongs to the fictional demo scenario; recorded hours are not automatically approved toward it.' : profile.serviceHours.targetSource === 'Illustrative target' ? 'The 40-hour target is an example, not a school requirement.' : profile.serviceHours.target === null ? 'No service-hour target has been recorded.' : profile.serviceHours.targetSource === 'Recorded in profile' ? 'The target is recorded in this profile.' : 'The target was saved locally for this profile.'}</p>
     </section>
-    <section class="people-section"><div class="people-section-heading"><h3>A possible next step</h3><span class="people-example-label">Interest matches</span></div>
-      ${matches.length ? `<div class="people-matches">${matches.map(({opportunity, shared}) => `<button class="people-match" data-people-action="opportunity" data-opportunity-id="${escapeText(opportunity.id)}"><span><strong>${escapeText(opportunity.title)}</strong><small>Connects with ${escapeText(shared.map(interest => interest.toLowerCase()).join(' and '))}.</small></span>${api.icon('arrow')}</button>`).join('')}</div><p class="people-caption">Potential fit by interest; eligibility and availability still need confirmation.</p>` : '<p class="people-unrecorded">Add interests to explore relevant opportunities.</p>'}
+    <section class="people-section"><div class="people-section-heading"><h3>Programme routes</h3><span class="people-example-label">Recorded context</span></div>
+      ${matches.length ? `<div class="people-matches">${matches.map(({opportunity, reason}) => `<button class="people-match" data-people-action="opportunity" data-opportunity-id="${escapeText(opportunity.id)}"><span><strong>${escapeText(opportunity.title)}</strong><small>${escapeText(reason)}</small></span>${api.icon('arrow')}</button>`).join('')}</div><p class="people-caption">These routes use the same criteria and profile context as Opportunities. Review programme requirements before making a commitment.</p>` : '<p class="people-unrecorded">No programme route matches this profile’s recorded context yet.</p>'}
       ${project ? `<div class="people-project"><span class="people-field-label">Your project plan</span><strong>${escapeText(project.title)}</strong><p>${sharedProjectInterests.length ? `Their interest in ${escapeText(sharedProjectInterests.map(interest => interest.toLowerCase()).join(' and '))} could contribute to this plan.` : 'Review the project’s roles and availability with this volunteer before assigning them.'}</p><button class="text-button" data-action="project">Review project plan ${api.icon('arrow')}</button></div>` : '<p class="people-project-empty">No project placement recorded.</p>'}
     </section>`;
   }
@@ -311,7 +358,14 @@
       const studentStatus = studentStatuses.includes(fields.get('studentStatus')) ? fields.get('studentStatus') : 'Not recorded';
       const school = validText(fields.get('school'), 160).trim() || null;
       const employer = validText(fields.get('employer'), 160).trim() || null;
-      const saved = saveEntry(person.id, {skills, availability, channel: String(fields.get('channel')), target, studentStatus, school, employer, preferencesUpdatedAt: new Date().toISOString()});
+      const previous = profileData(person);
+      const changedContext = {};
+      for (const [field, value] of Object.entries({studentStatus, school, employer})) {
+        if (previous[field] !== value) changedContext[field] = value;
+      }
+      const previousTarget = ['Locally recorded', 'Recorded in profile', DEMO_CONTEXT].includes(previous.serviceHours.targetSource) ? previous.serviceHours.target : null;
+      if (previousTarget !== target) changedContext.target = target;
+      const saved = saveEntry(person.id, {skills, availability, channel: String(fields.get('channel')), ...changedContext, preferencesUpdatedAt: new Date().toISOString()});
       const draft = drafts.get(person.id) || {};
       delete draft.preferences;
       drafts.set(person.id, draft);

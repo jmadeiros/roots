@@ -133,6 +133,8 @@ test('profile adaptation uses current direct fields without changing source iden
 test('current demo records yield three traceable connections, including five service-hour interests', () => {
   const context = {window:{}, document:{addEventListener() {}}};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../dist/data.js'), 'utf8'), context);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../dist/programs.js'), 'utf8'), context);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../dist/program-fit.js'), 'utf8'), context);
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../dist/opportunities.js'), 'utf8'), context);
   const source = context.window.ROOTS_DATA;
   context.window.RootsOpportunities.configure({getState:() => source});
