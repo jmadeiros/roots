@@ -28,6 +28,7 @@ details[open] > summary .today-chev, .today-card[aria-expanded="true"] .today-ch
 .today-layouts { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; }
 .today-layouts button { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 var(--t3); border: 0; border-radius: 999px; background: none; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; }
 .today-layouts button b { font-weight: 600; }
+.today-layouts button { white-space: nowrap; }
 .today-layouts button:hover { color: var(--ink); }
 .today-layouts button[aria-pressed="true"] { background: var(--hover-surface); color: var(--ink); }
 
@@ -143,6 +144,32 @@ main:has(.today-page[data-layout="a"]) { max-width: none; margin: 0; padding-rig
 .today-latest-text { overflow: hidden; color: var(--ink); white-space: nowrap; text-overflow: ellipsis; }
 .today-latest-time { flex: none; font-size: 12px; }
 
+/* Layout D: three headings in one row, no boxes; the open one shows its content underneath. */
+.today-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--t6); border-bottom: 1px solid var(--line); }
+.today-tab { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: var(--t2); padding: 0 0 var(--t4); border: 0; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.today-tab::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; border-radius: 2px; background: transparent; transition: background .15s ease; }
+.today-tab:hover::after { background: var(--line); }
+.today-tab[aria-expanded="true"]::after { background: var(--accent); }
+.today-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+.today-tab-title { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.today-tab:hover .today-tab-title, .today-tab[aria-expanded="true"] .today-tab-title { color: var(--ink); }
+.today-tab[aria-expanded="true"] .today-chev { transform: rotate(180deg); }
+.today-tab-figure { display: flex; align-items: baseline; gap: var(--t2); }
+.today-tab-figure strong { font-size: 30px; font-weight: 500; line-height: 1.1; letter-spacing: -.02em; }
+.today-tab-figure span { font-size: 13px; color: var(--muted); }
+.today-tab-visual { display: flex; flex-wrap: wrap; align-items: center; gap: var(--t1) var(--t3); min-height: 22px; font-size: 12px; color: var(--muted); }
+.today-tab-feed { display: contents; }
+.today-tab-visual.today-latest { flex-wrap: nowrap; }
+.today-tab-visual.is-new { animation: today-flash 1.6s ease-out both; }
+@keyframes today-flash { 0% { color: var(--accent); } 100% { color: var(--muted); } }
+.today-mini b { font-weight: 600; color: var(--ink); }
+.today-mini.is-benefit b { color: var(--positive); }
+.today-mini.is-funding b { color: var(--warning); }
+.today-tab-panel { padding-top: var(--t5); }
+.today-tab-panel[hidden] { display: none; }
+.today-tab-note { margin: var(--t3) 0 0; font-size: 12px; color: var(--muted); }
+.today-tab-panel .trend-head { display: none; }
+
 /* Coming back. */
 .trend-head { display: flex; align-items: center; gap: var(--t3); margin-bottom: var(--t2); }
 .trend-head strong { font-size: 30px; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
@@ -179,7 +206,7 @@ main:has(.today-page[data-layout="a"]) { max-width: none; margin: 0; padding-rig
 .today-send svg { width: 16px; height: 16px; transform: rotate(-90deg); }
 
 @media (prefers-reduced-motion: reduce) {
-  .today-live i, .feed-item.is-new > summary { animation: none; }
+  .today-live i, .feed-item.is-new > summary, .today-tab-visual.is-new { animation: none; }
   .today-chev { transition: none; }
 }
 @media (max-width: 1180px) {
@@ -195,6 +222,7 @@ main:has(.today-page[data-layout="a"]) { max-width: none; margin: 0; padding-rig
 @media (max-width: 760px) {
   main:has(.today-page[data-layout="a"]) { padding-right: 20px; }
   .today-head h1 { flex-direction: column; gap: var(--t1); }
+  .today-layout-name { display: none; }
   .today-page[data-layout="b"] .today-columns { grid-template-columns: 1fr; }
   .today-fold > summary { grid-template-columns: minmax(0, 1fr) 16px; padding-left: var(--t4); }
   .today-fold-title { grid-column: 1; }
@@ -202,6 +230,9 @@ main:has(.today-page[data-layout="a"]) { max-width: none; margin: 0; padding-rig
   .today-fold[open] > summary .today-fold-preview { display: none; }
   .today-fold-body { padding: 0 var(--t4) var(--t4); }
   .today-notice-more { padding-left: var(--t4); }
+  .today-row { grid-template-columns: 1fr; gap: 0; }
+  .today-tab { padding: var(--t3) 0; border-bottom: 1px solid var(--line); }
+  .today-tab:last-child { border-bottom: 0; }
   .today-chips button:nth-child(n+3) { display: none; }
   .trend-interests button { grid-template-columns: 110px minmax(0, 1fr) 64px; }
 }

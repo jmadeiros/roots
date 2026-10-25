@@ -88,8 +88,8 @@
   const ago=at=>{const mins=Math.floor((Date.now()-at)/60000);return mins<1?'just now':mins<60?`${mins} min ago`:`${Math.round(mins/60)} h ago`;};
   const CHEV='<svg class="today-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
   // Three layouts to compare; the switcher goes once one is chosen.
-  const LAYOUTS=[['a','Side panel'],['b','Side by side'],['c','Folded']];
-  let layout=(()=>{try{const asked=new URLSearchParams(location.search).get('layout')||localStorage.getItem('roots-today-layout');return LAYOUTS.some(([key])=>key===asked)?asked:'a';}catch{return 'a';}})();
+  const LAYOUTS=[['a','Side panel'],['b','Side by side'],['c','Folded'],['d','In a row']];
+  let layout=(()=>{try{const asked=new URLSearchParams(location.search).get('layout')||localStorage.getItem('roots-today-layout');return LAYOUTS.some(([key])=>key===asked)?asked:'d';}catch{return 'd';}})();
   // Drop-downs the viewer has opened stay open when the page refreshes its numbers.
   const opened=new Set(['fold-noticed']);
   function peopleStack(ids) {
@@ -224,6 +224,28 @@
     const model=todayModel();
     const feed=document.getElementById('today-feed');if(feed)feed.innerHTML=feedMarkup(model);
     const latest=document.getElementById('today-feed-latest');if(latest)latest.innerHTML=latestMarkup(model);
+    const tab=document.getElementById('today-tab-feed-body');if(tab)tab.innerHTML=feedTabMarkup(model);
+  }
+  const chartTabs=()=>`<div class="overview-chart-tabs" role="group" aria-label="Coming back chart"><button data-dashboard-tab="trend" aria-pressed="${analyticsTab==='trend'}">By month</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">By interest</button></div>`;
+  // Layout D: three headings in one row; the open one shows its content underneath.
+  let rowOpen='noticed';
+  function feedTabMarkup(model) {
+    const items=feedItems(model), latest=items[0], fresh=latest&&Date.now()-latest.at<4000;
+    return `<span class="today-tab-figure"><strong>${items.length}</strong><span>updates today</span></span><span class="today-tab-visual today-latest${fresh?' is-new':''}"><span class="today-live" aria-hidden="true"><i></i></span><span class="today-latest-text">${latest?e(latest.text):'Nothing yet today'}</span>${latest?`<span class="today-latest-time">${e(ago(latest.at))}</span>`:''}</span>`;
+  }
+  function rowMarkup(a,model) {
+    const items=(current().insights||[]).slice(0,4), t=trendHeadline();
+    const tab=(key,title,inner)=>`<button class="today-tab" id="today-tab-${key}" data-today-tab="${key}" aria-expanded="${rowOpen===key}" aria-controls="today-tab-panel"><span class="today-tab-title">${title}${CHEV}</span>${inner}</button>`;
+    const panels={
+      noticed:()=>`<div id="briefing-insights">${insightsMarkup()}</div><p class="today-tab-note" id="today-checked">Checked ${e(time(checkedLocally))}</p>`,
+      coming:()=>`<div class="today-fold-tabs">${chartTabs()}</div><div id="overview-patterns" class="today-patterns" data-chart="${analyticsTab}">${patternsMarkup(a)}</div>`,
+      feed:()=>`<ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol>`
+    };
+    return `<div class="today-row">
+      ${tab('noticed','What Roots noticed',`<span class="today-tab-figure"><strong>${items.length}</strong><span>worth a look</span></span><span class="today-tab-visual">${items.map(item=>`<span class="today-mini is-${e(item.kind||'return')}"><b>${e(item.count??'')}</b> ${e(item.chip||'')}</span>`).join('')}</span>`)}
+      ${tab('coming','Coming back',`<span class="today-tab-figure"><strong>${t.lastBack}</strong><span>came back in October</span></span><span class="today-tab-visual">${sparkMarkup()}<span>up from ${t.firstBack} in May</span></span>`)}
+      ${tab('feed','Today’s feed',`<span id="today-tab-feed-body" class="today-tab-feed">${feedTabMarkup(model)}</span>`)}
+    </div><div id="today-tab-panel" class="today-tab-panel" role="region"${rowOpen?` aria-labelledby="today-tab-${rowOpen}"`:' hidden'}>${rowOpen?panels[rowOpen]():''}</div>`;
   }
   const fold=(key,title,preview,body)=>`<details class="today-fold" data-open-key="${key}"${opened.has(key)?' open':''}><summary><span class="today-fold-title">${title}</span><span class="today-fold-preview">${preview}</span>${CHEV}</summary><div class="today-fold-body">${body}</div></details>`;
   function render() {
@@ -233,15 +255,16 @@
     const chips=[benefit&&[`Message the ${benefit.insight?.noun?.[1]||'people'}`,`Draft a short SMS telling the matched volunteers about ${benefit.title} and what they get. Keep every message unsent for my review.`],
       ['Invite first-timers back','Prepare SMS invitation drafts for first-time volunteers with recorded SMS permission. Build a short friendly invitation, and let me review each message before any sending.'],
       ['Start the CalAgPlate proposal','Help build a practical proposal for the CalAgPlate education grant. Use its current requirements and our recorded students. Explain the gaps before applying.']].filter(Boolean);
-    const switcher=`<div class="today-layouts" role="group" aria-label="Try a layout">${LAYOUTS.map(([key,label])=>`<button data-today-layout="${key}" aria-pressed="${layout===key}"><b>${key.toUpperCase()}</b>${e(label)}</button>`).join('')}</div>`;
+    const switcher=`<div class="today-layouts" role="group" aria-label="Try a layout">${LAYOUTS.map(([key,label])=>`<button data-today-layout="${key}" aria-pressed="${layout===key}"><b>${key.toUpperCase()}</b><span class="today-layout-name">${e(label)}</span></button>`).join('')}</div>`;
     const head=`<header class="today-head"><div class="today-head-top"><h1 id="today-title">Today <span class="today-date">${e(date)}</span></h1>${switcher}</div><p class="today-summary" id="today-summary">${model.summary}</p></header>`;
-    const tabs=`<div class="overview-chart-tabs" role="group" aria-label="Coming back chart"><button data-dashboard-tab="trend" aria-pressed="${analyticsTab==='trend'}">By month</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">By interest</button></div>`;
+    const tabs=chartTabs();
     const patterns=`<div id="overview-patterns" class="today-patterns" data-chart="${analyticsTab}">${patternsMarkup(a)}</div>`;
     const noticed=`<section class="today-section" aria-labelledby="today-noticed"><div class="today-section-head"><h2 id="today-noticed">What Roots noticed</h2><span id="today-checked">Checked ${e(time(checkedLocally))}</span></div><div id="briefing-insights">${insightsMarkup()}</div></section>`;
     const coming=`<section class="today-section" aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Coming back</h2>${tabs}</div>${patterns}</section>`;
     const feed=`<section class="today-feed-panel" aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today’s feed</h2><span class="today-live"><i></i>Live</span></div><ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol></section>`;
     let body;
-    if(layout==='b')body=`<div class="today-columns">${noticed}${feed}</div>${coming}`;
+    if(layout==='d')body=`<div id="today-row-region">${rowMarkup(a,model)}</div>`;
+    else if(layout==='b')body=`<div class="today-columns">${noticed}${feed}</div>${coming}`;
     else if(layout==='c')body=`<div class="today-folds">
         ${fold('fold-noticed','What Roots noticed',items.map(item=>`<span class="today-chip is-${e(item.kind||'return')}"><b>${e(item.count??'')}</b>${e(item.chip||TAGS[item.kind]||'')}</span>`).join(''),`<div id="briefing-insights">${insightsMarkup()}</div>`)}
         ${fold('fold-coming','Coming back',`${sparkMarkup()}<span><b>${t.lastBack}</b> came back in October · up from ${t.firstBack} in May</span>`,`<div class="today-fold-tabs">${tabs}</div>${patterns}`)}
@@ -294,6 +317,13 @@
   }
   document.addEventListener('click',event=>{
     const go=event.target.closest('[data-today-go]');if(go)location.hash=go.dataset.todayGo;
+    const rowTab=event.target.closest('[data-today-tab]');
+    if(rowTab){
+      rowOpen=rowOpen===rowTab.dataset.todayTab?null:rowTab.dataset.todayTab;
+      const region=document.getElementById('today-row-region');
+      if(region){region.innerHTML=rowMarkup(stats(),todayModel());document.getElementById(`today-tab-${rowTab.dataset.todayTab}`)?.focus({preventScroll:true});}
+      return;
+    }
     const pick=event.target.closest('[data-today-layout]');if(pick){layout=pick.dataset.todayLayout;openCard=-1;try{localStorage.setItem('roots-today-layout',layout);}catch{}api.render();return;}
     const card=event.target.closest('[data-today-card]');if(!card)return;
     openCard=openCard===Number(card.dataset.todayCard)?-1:Number(card.dataset.todayCard);
