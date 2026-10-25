@@ -1,6 +1,6 @@
 # Roots
 
-A briefing-first workspace for nonprofit coordinators: a current view of the community, clear records, and concrete next actions, with a separate conversation when needed. The interface uses HTML, CSS, and JavaScript with self-hosted DM Sans and no build dependencies. An optional Python bridge connects the local workspace to Gemini and supports a private Telegram test.
+A simple green workspace for nonprofit coordinators: a Today page with useful ideas, clear records, and concrete next actions, with a separate conversation when needed. The interface uses HTML, CSS, and JavaScript with self-hosted DM Sans and no build dependencies. An optional Python bridge connects the local workspace to Gemini and supports a private Telegram test.
 
 ## Run Roots
 
@@ -22,14 +22,14 @@ Open **http://127.0.0.1:4173**. This mode has the same limits as the published s
 
 ## Included
 
-- **Briefing:** two compact, source-backed suggestions with an optional third, review status, expandable evidence, and direct next actions. A bottom composer opens Ask Roots; the briefing stays independent of chat and does not shrink after a message.
+- **Today:** a short heading, compact freshness line, and two plain idea blocks with an optional third. Each idea has one paragraph, an outlined action, and a **Why this?** disclosure for evidence and suggested next steps. **How Roots finds these ideas** holds the review explanation below the list. A roomy bottom composer opens Ask Roots; the briefing stays independent of chat and does not shrink after a message.
 - **People:** the existing searchable table and richer profiles with Profile, Activity, and Notes views; stated interests, editable declared skills and preferences, service-hour targets, illustrative attendance, and opportunity suggestions.
 - **Opportunities:** 11 candidate leads across volunteer benefits and organization support, plus three project drafts. Compact rows, search, saved items, and collapsed detail sections keep the page manageable. Project plans include suggested teams, budgets, and readiness checks.
 - **Outreach:** Drafts, Workflows, and Delivery views for reviewing unsent messages, configuring rules, and inspecting missing delivery prerequisites.
 - **Secondary tools:** Ask Roots provides conversation and editable inline email/SMS drafts with Edit, Copy, and Refine actions. Calendar provides event details and date-sorted event creation. Assistant connection details remain available within Ask Roots.
 - Responsive sidebar/bottom navigation, reduced-motion support, keyboard focus, and accessible form labels.
 
-The primary destinations are **Briefing, People, Opportunities, and Outreach**. Warm paper, restrained green surfaces and actions, DM Sans, and fine dividers preserve the Roots identity. The desktop sidebar is 178px wide and collapses to 56px; the main briefing and conversation columns are capped at 660px. Deeper information stays in compact lists, collapsible evidence, and focused detail sheets. Old Overview and Funding links redirect to Briefing and Opportunities respectively.
+The primary destinations are **Today, People, Opportunities, and Outreach**. The original simple green concept supplies the composition: warm paper, restrained green surfaces and actions, DM Sans, and fine dividers. The desktop sidebar is 170px wide and collapses to 56px; Today uses a 590px reading column, a 28px heading, 17px idea titles, and 13px explanations. Its composer has a 48px textarea, 15px padding, and a 15px radius. Ask Roots retains its separate 660px conversation column. Today uses the existing `#briefing` route; old Overview and Funding links resolve to Today and Opportunities respectively.
 
 ## Data and delivery boundaries
 
@@ -39,7 +39,7 @@ The published site is a static demo. Its records and changes remain in that brow
 
 The static briefing shows deterministic record matches. With the local Gemini bridge, a background review selects and connects a bounded catalog of those facts and writes short interpretations and suggested next steps. It runs independently of chat. The server validates the selected fact IDs and reconstructs factual summaries, numeric evidence, and source references from the catalog. This checks provenance and structure, not whether every model interpretation is sound. It does not research external sources or verify opportunity terms. Raw phone numbers, email addresses, coordinator notes, and chat history are not included in briefing review.
 
-The open app checks after meaningful record changes, after 30 minutes, when it becomes visible again, or on manual refresh. Briefing generation reports `pending`, `reviewing`, `ready`, or `failed`. Existing suggestions remain visible while a new review runs or fails; retained older evidence is marked stale when appropriate. A failed review retries on explicit refresh or meaningful data change, with a short retry guard. Pending/reviewing motion reflects actual work, has no artificial delay, and respects reduced motion. Stable fact-based IDs and caching prevent repeated checks from becoming fabricated discoveries or activity. The interface does not promise monitoring after the app closes.
+The open app checks after meaningful record changes, after 30 minutes, when it becomes visible again, or on manual refresh. Briefing generation reports `pending`, `reviewing`, `ready`, or `failed`. Existing suggestions remain visible while a new review runs or fails; retained older evidence is marked stale when appropriate. A failed review retries on explicit refresh or meaningful data change, with a short retry guard. Three small dots in the freshness line indicate actual checking work, with no artificial delay and no animation under reduced motion. Stable fact-based IDs and caching prevent repeated checks from becoming fabricated discoveries or activity. The interface does not promise monitoring after the app closes.
 
 When served by the local bridge, the browser synchronizes snapshots to the local SQLite store. The assistant reads that snapshot, and questions wait for a successful sync. Assistant-created drafts and activity return to the interface. This is not a bidirectional multi-user database: snapshots do not import remote records into the browser, and the most recently synchronized browser supplies the current dashboard data. Open the intended local workspace and let it sync before asking Telegram about its records.
 

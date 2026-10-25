@@ -601,8 +601,12 @@ people, calendar events, opportunities, and project coordination over generic wa
 Each item must cite one to three exact catalog IDs in factIds. Do not reuse a fact in another item.
 Put the main observation first; its factual summary appears on the card, with all cited evidence
 available in the details. Prefer distinct useful cards; combine observations only for a clear connection.
-Write an action-oriented title and a suggested next step in one sentence of at most 180 characters.
-These are proposals, not facts.
+Write a short, inviting title of four to eight words, aiming for at most 60 characters.
+Name a concrete possibility, such as 'A garden invitation to bring people back' or
+'A service-hours pathway worth exploring'. Avoid procedural checklists or long instructions
+about reviewing counts and checking details. Keep verification caveats in the suggested next step
+and cited evidence. Write the suggested next step in one sentence of at most 180 characters.
+Titles and suggestions are possibilities and proposals, not established outcomes or new facts.
 Do not put numbers, quantities (including spelled-out numbers), dates, amounts, URLs, or new named
 people/organizations in your title or suggestion. Factual summaries, evidence and counts will be
 inserted by the server from the cited facts. Do not claim approval, funding, RSVP, attendance,

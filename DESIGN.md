@@ -1,6 +1,6 @@
 ---
 name: Roots
-description: A current community briefing with source-backed suggestions and a separate conversation.
+description: A simple green Today page with useful ideas, evidence on demand, and a separate conversation.
 colors:
   charcoal: "#343632"
   forest: "#294b36"
@@ -33,10 +33,10 @@ colors:
 typography:
   display:
     fontFamily: "'DM Sans', sans-serif"
-    fontSize: "29px"
+    fontSize: "28px"
     fontWeight: 500
     lineHeight: 1.25
-    letterSpacing: "-0.75px"
+    letterSpacing: "-0.8px"
   headline:
     fontFamily: "'DM Sans', sans-serif"
     fontSize: "28px"
@@ -51,10 +51,10 @@ typography:
     letterSpacing: "-0.3px"
   recommendation-title:
     fontFamily: "'DM Sans', sans-serif"
-    fontSize: "18px"
+    fontSize: "17px"
     fontWeight: 500
-    lineHeight: 1.45
-    letterSpacing: "-0.3px"
+    lineHeight: 1.4
+    letterSpacing: "-0.2px"
   body:
     fontFamily: "'DM Sans', sans-serif"
     fontSize: "14px"
@@ -62,7 +62,7 @@ typography:
     lineHeight: 1.5
   supporting:
     fontFamily: "'DM Sans', sans-serif"
-    fontSize: "12px"
+    fontSize: "13px"
     fontWeight: 400
     lineHeight: 1.8
   label:
@@ -79,6 +79,7 @@ rounded:
   compact-card: "10px"
   preview: "12px"
   card: "14px"
+  composer: "15px"
   circle: "50%"
 spacing:
   micro: "5px"
@@ -169,21 +170,21 @@ components:
 
 ## Direction and authority
 
-**Creative North Star: “Your community, right now.”**
+**Creative North Star: “Two things worth a look.”**
 
-Roots opens on a current briefing for nonprofit coordinators. Warm paper, dark green text and actions, restrained sage surfaces, open space, and fine dividers make the information calm and readable. The sprout and green palette remain part of the product identity.
+Roots opens on Today, a simple current briefing for nonprofit coordinators. A short heading, compact freshness line, two plain ideas, and a roomy composer form the first screen. Warm paper, dark green text and actions, restrained sage surfaces, open space, and fine dividers preserve the original green concept.
 
-The user's latest selection is Briefing plus chat: restore green, keep the sidebar small, and let insights change with new information independently of conversation. This supersedes the earlier neutral conversation-first direction and its shrinking insight rows. Keep the quieter composition; do not restore the old metric-heavy Overview.
+The user preferred the first green “Roots Quieter Workspace” concept and rejected the expanded production briefing. That concept's simple, effective composition is the visual authority. More capability should emerge through useful ideas, actions, and opened detail. Retain independent AI review beneath the surface. Neither the later large status treatment nor the older full metrics dashboard is the restoration target.
 
 Implementation authority is the shared shell in `dist/style.css` and `dist/app.js`, the existing neutral and conversation styles, and the final overrides in `dist/briefing.css`. The independent front page lives in `dist/briefing.js`; Ask Roots lives in `dist/conversation.js`. The briefing stylesheet supplies the current palette and shell dimensions, overriding earlier neutral token values. `opportunities`, `people-detail`, and `notices` remain scoped modules for deeper work.
 
 ## Color and material
 
 - **Paper `#fafaf6`** is the page ground; **white** defines fields and contained work such as message drafts.
-- **Ink `#293a30`** carries primary text and general primary buttons. **Forest `#294b36`** carries active navigation, briefing actions, and composer send controls. **Deep `#203b2a`** is the stronger hover state.
+- **Ink `#293a30`** carries primary text, general primary buttons, and the text of outlined idea actions. **Forest `#294b36`** carries active navigation, discussion links, and composer send controls. **Deep `#203b2a`** is the stronger hover state.
 - **Muted `#667060`**, **Line `#e0e5d8`**, and **Field Line `#cbd5c2`** give secondary content and controls a clear hierarchy.
 - **Sidebar `#f0f2eb`**, **Soft Surface `#f3f5ed`**, **Hover `#e9eee1`**, **Selected `#e3ead9`**, and **Sage `#e7eddf`** introduce restrained green material without turning every section into a colored card.
-- **Brand Accent `#52764a`** supports the identity. Evidence disclosures use a pale `#f0f3e9` surface; the composer boundary is `#ced8c3`.
+- **Brand Accent `#52764a`** supports the identity and the small checking indicator. Opened evidence uses Soft Surface; the Today composer and outlined actions use the fine Line boundary.
 - Warm amber status styling remains available for an actual warning or prerequisite. Avatar accents identify people without competing with navigation.
 
 The `--forest` and `--sage` variables now resolve to green again. Do not apply the previous neutral-only interpretation to new work. Ordinary surfaces stay flat; sheets retain a restrained side shadow and backdrop. Carets, focus, selection, hover, and active states should read as part of the same green-and-paper system.
@@ -192,43 +193,47 @@ The `--forest` and `--sage` variables now resolve to green again. Do not apply t
 
 Self-hosted DM Sans remains the sole UI family. Use medium weight for page greetings and briefing titles; stronger weight should identify information worth scanning rather than decorate the page.
 
-The desktop briefing heading is 29px with a 1.25 line height and −0.75px tracking, stepping to 27px on short desktop screens and 26px on phones. Briefing titles are 18px with a 1.45 line height; explanations and suggested next steps are 12px with generous spacing. Desktop navigation is 12px, and briefing metadata and evidence controls are 11px. Ask Roots uses a 28px greeting and the existing comfortable conversation text. Composer input reaches 16px on phones to avoid browser zoom.
+The desktop Today heading is 28px with a 1.25 line height and −0.8px tracking, stepping to 26px on phones. Idea titles are 17px with a 1.4 line height and −0.2px tracking. Each visible explanation is 13px with a 1.8 line height. Desktop navigation is 13px, outlined actions are 12px, and freshness and disclosure controls are 11px. Ask Roots uses a 28px greeting and the existing comfortable conversation text. Composer input reaches 16px on phones to avoid browser zoom.
 
 Air comes from fewer visible controls and better spacing, not shrinking reading text. Keep body contrast at least 4.5:1 and maintain visible focus on every interactive control. Existing record pages retain their practical 12–14px text hierarchy.
 
 ## Navigation and layout
 
-Primary navigation contains **Briefing, People, Opportunities, Outreach**. **Ask Roots** and **Calendar** are secondary links. Assistant connection details open within Ask Roots. Old Overview links resolve to Briefing; old Funding links resolve to Opportunities. The underlying Notices route is labeled Outreach in the interface.
+Primary navigation contains **Today, People, Opportunities, Outreach**. Today keeps the `#briefing` route. **Ask Roots** and **Calendar** are secondary links. Assistant connection details open within Ask Roots. Old Overview links resolve to Today; old Funding links resolve to Opportunities. The underlying Notices route is labeled Outreach in the interface.
 
-The desktop sidebar is **178px** wide and collapses to a **56px** icon rail. Use small 36px navigation rows, a simple workspace label, and a compact profile. Hide labels when collapsed while preserving accessible names. The topbar is 49px high and visually quiet. This replaces the earlier bulky sidebar treatment.
+The desktop sidebar is **170px** wide and collapses to a **56px** icon rail. Use small 36px navigation rows, the 26px Roots wordmark, and a compact profile. Hide labels when collapsed while preserving accessible names. The topbar is 49px high, with the workspace name presented quietly. Keep this shared shell in the original green palette.
 
-The briefing has a centered **660px maximum reading column**. It contains a short heading, actual review status, coverage and an explanation disclosure, two suggestions with an optional third, a calendar link, and a bottom composer. The composer is pushed toward the bottom by the column layout, while long content still scrolls normally. It opens the separate conversation; the briefing does not shrink, disappear, or change its density because messages exist.
+Today has a centered **590px maximum reading column**. Its heading reads “Two things worth a look.”, adapting to one idea or an empty state. A compact freshness line sits directly below. Two plain idea blocks follow, with a third available on demand, then a quiet explanation disclosure. The content area grows to keep the roomy composer toward the bottom; long content still scrolls normally. Opening Ask Roots does not shrink, replace, or determine the briefing.
 
-Ask Roots also uses a 660px conversation column, within a 920px workspace. Its transcript and inline actions have their own layout and a clear route back to Briefing. Record pages may use the broader shared container. Tables scroll within their own wrappers rather than widening the page.
+The Today composer uses a **48px textarea**, **15px padding**, **15px corner radius**, and a 31px forest send button. Leave 32px above it on desktop. Its placeholder invites the coordinator to ask Roots or take an idea further. Preserve this comfortable input area rather than reducing it to a shallow toolbar.
+
+Ask Roots retains a separate 660px conversation column within a 920px workspace. Its transcript and inline actions have their own layout and a route back to Today. Record pages may use the broader shared container. Tables scroll within their own wrappers rather than widening the page.
 
 On phones the sidebar becomes a four-item bottom navigation with visible labels and safe-area spacing. The briefing uses the available width with 20px side gutters. The desktop collapse control is hidden. Forms, draft controls, and evidence wrap without forcing horizontal scrolling.
 
-## Briefing, evidence, and freshness
+## Today, evidence, and freshness
 
-Start with two useful connections; **One more connection** reveals the third when available. Each row has a concrete title, a short factual summary, an optional **Possible next step** interpretation, a direct review action, and an **Evidence and things to check** disclosure. The disclosure links source people, events, opportunities, and projects, names unknowns, and offers **Discuss this with Roots**. Keep evidence accessible without expanding the whole page.
+Start with two useful ideas; **One more idea** reveals the third when available. Each block has a concrete title, one short factual paragraph, and a simple outlined action with an adjacent **Why this?** disclosure. Use 22px vertical spacing, fine dividers, and a 34px minimum desktop action height. The disclosure contains the model's **Suggested next step**, evidence, unknowns, source links, and **Discuss this with Roots**. Keep the extra interpretation inside the disclosure rather than repeating it as another visible paragraph.
+
+Below the ideas, **How Roots finds these ideas** explains the review source, available records, cadence, and limitations. This replaces the expanded status panel and visible coverage strip. The first screen should read as a useful pair of ideas, not a description of the machinery producing them.
 
 Current record matches connect first-visit gardeners to an event with remaining capacity, service-hour interests to a school-partnership lead, and a draft project team to different recorded availability. All source records are illustrative. An interest match does not establish eligibility; aggregate attendance does not identify individual RSVPs; a suggested role does not mean someone has accepted it.
 
 In a static preview, the briefing uses deterministic record matches. With the local bridge, an independent Gemini review selects and combines a bounded derived fact catalog and proposes short interpretations. It does not depend on conversation or research external sources. Strict fact IDs are validated; summaries, numeric evidence, and source references are reconstructed server-side from the catalog. Validation establishes reference integrity and output structure, not the truth of every interpretation. Keep model suggestions distinguishable from record facts.
 
-The coverage line describes available records; its explanation must distinguish those totals from the smaller reviewed fact catalog. Raw phone numbers, email addresses, coordinator notes, and chat history are excluded from briefing synthesis. A model response must not imply that an external benefit, eligibility rule, deadline, partnership, or application has been verified.
+Record totals belong in **How Roots finds these ideas**. They describe available records, not a claim that every record was reviewed; Gemini receives a bounded derived fact catalog. Raw phone numbers, email addresses, coordinator notes, and chat history are excluded from briefing synthesis. A model response must not imply that an external benefit, eligibility rule, deadline, partnership, or application has been verified.
 
 Check after meaningful record changes, after 30 minutes while the app is open, when it becomes visible again, or on manual refresh. Activity-only or version-only saves do not count as new evidence. Cached results use IDs derived from selected facts. Rechecking must not create fabricated discoveries, novelty indicators, or activity.
 
 Generation exposes **pending, reviewing, ready, and failed** states. Pending/reviewing means real queued or running work. Keep the previous successful briefing visible during a review or a failure; label older retained evidence when stale. If no successful review exists, show the record-match fallback with its source stated. Discard a result generated against superseded records and review the latest snapshot. Failures retry on explicit refresh or a meaningful record change, with the server's retry guard. There is no dismiss feature or promised continuous monitoring after the app closes.
 
-Animate the connection mark and scan indicator only during actual pending/reviewing work. Do not add an artificial thinking delay, animate an idle briefing, or use motion to imply a discovery. Under reduced motion, stop the repeating animation and retain a static status cue. Empty records and failed reviews need clear text and a useful retry or next step.
+Use three small dots within the freshness line during actual checking or pending/reviewing work. The line then returns to its checked/reviewed time, or explains a failure and offers **Try again**. Do not add an artificial delay, large animated mark, scan bar, or idle animation. Under reduced motion, leave the dots static. Empty records and failed reviews need clear text and a useful retry or next step.
 
 ## Ask Roots and inline actions
 
 Ask Roots is a separate conversation, available from the secondary navigation, briefing composer, and evidence disclosures. User messages use a pale green bubble; assistant text sits directly on the page with a small Roots label and sprout. A concise checking state belongs to an actual request. Failures expose recovery rather than a fabricated answer.
 
-The white composer has a fine green boundary, an 11px radius, and a forest send control. Input grows within a bounded range. Nearby text explains whether a local assistant is needed and that email/SMS delivery is unavailable. The published static preview must not pretend to answer with a live model.
+The separate Ask Roots composer has a fine green boundary, an 11px radius, and a forest send control. Input grows within a bounded range. Nearby text explains whether a local assistant is needed and that email/SMS delivery is unavailable. The larger 15px-radius Today composer remains distinct. The published static preview must not pretend to answer with a live model.
 
 An email or SMS draft appears inline with channel, recipient, message, **Not sent**, and explicit readiness blockers. Recipient names open their records. **Edit message** changes the existing unsent backend draft; **Copy** copies text; **Refine in chat** prepares a follow-up instruction. Editing exposes save and cancel controls. None of these actions delivers outreach.
 
@@ -256,4 +261,4 @@ Connection details should distinguish configuration, synchronization, polling, a
 
 Use explicit button labels, native disclosures, accessible tab semantics, and keyboard focus return. Preserve expanded evidence during status updates where possible. Use restrained sheet transitions and only truthful pending-work indicators, with reduced-motion support.
 
-Preserve the useful underlying records while keeping the briefing quiet. Do not restore metric cards as the entry point, turn every insight into a colored tile, expand the sidebar for every capability, or confuse a refresh with new evidence. The interface should make it easy to understand, inspect, ask, and prepare an action without concealing what remains unverified.
+Preserve the original green concept's simple composition while making each idea more useful. Put additional intelligence and controls inside actions, disclosures, and records. Keep the backend's factual checks and review states without turning them into extra front-page furniture. The interface should make it easy to understand, inspect, ask, and prepare an action without concealing what remains unverified.

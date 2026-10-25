@@ -9,8 +9,8 @@ function persist(){window.RootsBridge?.sync();try{localStorage.setItem('roots-de
 function logActivity(text){state.activity.unshift({text,time:'Just now'});persist()}
 function avatar(p,cls=''){return `<span class="avatar ${esc(p.color)} ${cls}">${esc(p.initials)}</span>`}
 function toast(text){const el=$('#toast');el.textContent=text;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),3500)}
-const navs=[['briefing','Briefing','sparkles'],['people','People','users'],['opportunities','Opportunities','leaf'],['notices','Outreach','message']];
-const viewLabel=()=>navs.find(n=>n[0]===state.view)?.[1]||({chat:'Ask Roots',events:'Calendar'}[state.view]||'Briefing');
+const navs=[['briefing','Today','sun'],['people','People','users'],['opportunities','Opportunities','leaf'],['notices','Outreach','message']];
+const viewLabel=()=>navs.find(n=>n[0]===state.view)?.[1]||({chat:'Ask Roots',events:'Calendar'}[state.view]||'Today');
 function renderNav(){$('#navigation').innerHTML=navs.map(([id,label,i])=>`<a href="#${id}" aria-label="${label}" title="${label}" class="nav-item ${state.view===id?'active':''}" ${state.view===id?'aria-current="page"':''}>${icon(i)}<span>${label}</span></a>`).join('');$('#page-label').textContent=viewLabel()}
 function head(title,subtitle,action=''){return `<div class="page-heading"><div><h1>${title}</h1><p>${subtitle}</p></div>${action}</div>`}
 function render(){renderNav();document.body.dataset.view=state.view;$('#main').innerHTML=({briefing:()=>window.RootsBriefing.render(),chat:()=>window.RootsChat.render(),people,opportunities:()=>window.RootsOpportunities.render(),notices:()=>window.RootsNotices.render(),events})[state.view]();document.title=`${viewLabel()} · Roots`;if(state.view==='chat')window.RootsChat.afterRender();}
