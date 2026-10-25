@@ -148,6 +148,12 @@
     const item=connections('all').find(item=>item.id===id);if(!item)return;
     const p=item.program;
     api.closeDialog?.();
+    // A benefit is something to tell the matched volunteers about, so this starts their SMS drafts.
+    if(p.category==='benefits'){
+      const names=item.personIds.map(personId=>api.getState().people.find(person=>person.id===personId)?.name).filter(Boolean);
+      window.RootsChat.ask(`Prepare SMS drafts telling these people about ${p.title}: ${names.join(', ')}. What they get: ${p.insight?.gets||benefit(item)} Only include people with recorded SMS permission. Keep every draft unsent and show a plan I can review.`);
+      return;
+    }
     window.RootsChat.setPrompt(`Prepare a practical application or partnership plan for ${p.title}. Published benefit: ${benefit(item)}. Current source status: ${displayedStatus(p)}. Our community fit: ${item.summary} Evidence: ${item.facts.map(f=>`${f.label}: ${f.value}`).join('; ')}. Gaps: ${item.gaps.join('; ')}. Next step: ${p.action}. Use the programme sources saved in this dashboard, researched 24 October 2026. Clearly label the ages, student needs and capacity as fictional demo assumptions. Do not imply a new web search, guaranteed eligibility, funding or attendance. Draft only; do not submit applications or send messages.`);
   }
   function updateResults(){const target=document.getElementById('opp-results');if(target)target.innerHTML=results();}

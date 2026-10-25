@@ -403,7 +403,7 @@
   function openAction(item) {
     const action=actionFor(item);
     if(action.kind==='opportunity')api.showOpportunity(action.id);
-    else if(action.kind==='draft')window.RootsChat.ask(`Prepare SMS invitation drafts for these people: ${action.ids.map(id=>api.getState().people.find(p=>p.id===id)?.name).filter(Boolean).join(', ')}. Only include people with recorded SMS permission. Context: ${item.summary} Keep every draft unsent and show a plan I can review.`);
+    else if(action.kind==='draft')window.RootsChat.ask(`Prepare SMS invitation drafts for these people: ${action.ids.map(id=>api.getState().people.find(p=>p.id===id)?.name).filter(Boolean).join(', ')}. Only include people with recorded SMS permission. Context: ${item.summary||`${item.title}. ${item.gets||''}`} Keep every draft unsent and show a plan I can review.`);
     else if(action.kind==='people'){
       if(action.ids.length===1)api.showPerson(action.ids[0]);
       else api.openDialog('People behind this connection',`<h2 id="dialog-title">${e(item.title)}</h2><p class="lead">Review the people referenced in this suggestion.</p><div class="briefing-people">${action.ids.map(id=>api.getState().people.find(p=>p.id===id)).filter(Boolean).map(p=>`<button data-briefing="source" data-kind="person" data-id="${e(p.id)}">${api.avatar(p)}<span><strong>${e(p.name)}</strong><small>${e(window.RootsPeople.profileData(p).availability)}</small></span>${api.icon('arrow')}</button>`).join('')}</div>`);
