@@ -126,7 +126,12 @@
     if(!['a','e'].includes(layout))return `<div class="today-notices-list">${items.map(insightFold).join('')}</div>`;
     const open=items[openCard], detail=`<div id="today-detail" class="today-detail"${open?'':' hidden'}>${open?`<div class="today-detail-head">${kindTag(open)}<strong>${e(open.title)}</strong>${layout==='e'&&open.meta?`<small>${e(open.meta)}</small>`:''}</div>${insightBody(open,openCard)}`:''}</div>`;
     if(layout==='e')return `<div class="today-cards today-cards-big">${items.map(insightCard).join('')}</div>${detail}`;
-    return `<div class="today-cards">${items.map(insightTile).join('')}</div>${detail}`;
+    return `<div class="today-cards">${items.map(insightFull).join('')}</div>${detail}`;
+  }
+  // Layout A: the original full boxes, four in a row.
+  function insightFull(item,index) {
+    const ids=item.sourceIds?.people||[];
+    return `<button class="today-card today-card-full" data-today-card="${index}" aria-expanded="${openCard===index}" aria-controls="today-detail"><span class="today-card-top"><span class="today-tag is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span>${ids.length?peopleStack(ids.slice(0,3)):''}</span><strong class="today-card-count">${e(item.count??'')}</strong><span class="today-card-text">${e(item.rest||item.title)}</span>${item.meta?`<small class="today-card-meta">${e(item.meta)}</small>`:''}</button>`;
   }
   // Layout E: bigger boxes, two by two; one opens its detail underneath.
   function insightCard(item,index) {
@@ -144,7 +149,7 @@
     return {lastBack,firstBack,share:Math.round(100*lastBack/(lastBack+lastFirst))};
   }
   function trendMarkup() {
-    const narrow=layout==='e', wide=!narrow&&layout!=='a', W=narrow?340:wide?820:600, H=layout==='b'?108:wide?128:150, top=10, base=H-22, right=78, bw=narrow?28:wide?44:32, step=(W-right-bw)/(HISTORY.length-1);
+    const narrow=layout==='e', wide=!narrow, W=narrow?340:wide?820:600, H=layout==='b'?108:wide?128:150, top=10, base=H-22, right=78, bw=narrow?28:wide?44:32, step=(W-right-bw)/(HISTORY.length-1);
     const max=Math.max(...HISTORY.map(([,first,back])=>first+back)), scale=v=>v/max*(base-top-14);
     const bars=HISTORY.map(([month,first,back],i)=>{
       const x=i*step, hb=scale(back), hf=scale(first);
