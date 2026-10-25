@@ -60,6 +60,7 @@ details[open] > summary .today-chev, .today-card[aria-expanded="true"] .today-ch
 .today-detail[hidden] { display: none; }
 .today-detail-head { display: flex; align-items: baseline; gap: var(--t3); margin-bottom: var(--t4); }
 .today-detail-head strong { font-size: 15px; font-weight: 500; }
+.today-detail-head small { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
 
 /* Detail body, shared by the tiles and the drop-downs. */
 .today-detail-body dl { display: grid; gap: var(--t3); margin: 0; }
@@ -175,7 +176,7 @@ main:has(.today-page[data-layout="a"]) { max-width: none; margin: 0; padding-rig
 .today-page[data-layout="e"] .today-head-top { align-items: baseline; }
 .today-page[data-layout="e"] .today-head h1 { font-size: 30px; }
 .today-page[data-layout="e"] .today-date { flex: none; }
-.today-band { margin-bottom: var(--t6); }
+.today-band { margin-bottom: var(--t5); }
 .today-section-head h2 .today-live { margin-left: var(--t2); font-weight: 400; letter-spacing: 0; }
 .today-feed-wide .feed-text { display: flex; justify-content: space-between; align-items: baseline; gap: var(--t4); }
 .today-feed-wide .feed-text time { flex: none; margin: 0; }
@@ -185,7 +186,7 @@ main:has(.today-page[data-layout="a"]) { max-width: none; margin: 0; padding-rig
 .feed-earlier > details > summary { display: inline-flex; align-items: center; gap: 6px; padding: 6px var(--t2); border-radius: var(--t2); font-size: 12.5px; color: var(--muted); }
 .feed-earlier > details > summary:hover { background: var(--hover-surface); color: var(--ink); }
 .feed-earlier .today-feed { margin-top: 2px; }
-.today-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--t7); padding-top: var(--t6); border-top: 1px solid var(--line); }
+.today-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--t7); padding-top: var(--t5); border-top: 1px solid var(--line); }
 .today-split .today-section + .today-section { margin-top: 0; }
 .today-metrics { display: flex; flex-wrap: wrap; align-items: center; gap: var(--t1) var(--t2); margin: 0 0 var(--t5); font-size: 12.5px; color: var(--muted); }
 .today-metrics button, .today-metrics a { padding: 0; border: 0; background: none; color: var(--ink); font: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); cursor: pointer; }
@@ -195,8 +196,8 @@ main:has(.today-page[data-layout="a"]) { max-width: none; margin: 0; padding-rig
 .today-glance .trend-head strong { font-size: 26px; }
 .today-glance .trend-interests button { grid-template-columns: 104px minmax(0, 1fr) 60px; gap: var(--t2); }
 .today-cards-big { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.today-card-big { gap: var(--t2); padding: var(--t4); min-height: 172px; }
-.today-card-big .today-card-top { align-items: center; margin-bottom: var(--t1); }
+.today-card-big { gap: var(--t2); padding: var(--t4); }
+.today-card-big .today-card-top { align-items: center; margin-bottom: var(--t2); }
 .today-card-big .today-card-count { font-size: 30px; line-height: 1; }
 .today-card-big .today-card-text { padding-right: 0; font-size: 13.5px; }
 .today-card-big .today-chev { position: static; }

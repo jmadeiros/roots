@@ -122,14 +122,13 @@
     if(openCard>=items.length)openCard=-1;
     if(!items.length)return `<p class="today-empty">Add people and opportunities, then Roots can look for useful connections.</p>`;
     if(!['a','e'].includes(layout))return `<div class="today-notices-list">${items.map(insightFold).join('')}</div>`;
-    const open=items[openCard], detail=`<div id="today-detail" class="today-detail"${open?'':' hidden'}>${open?`<div class="today-detail-head">${kindTag(open)}<strong>${e(open.title)}</strong></div>${insightBody(open,openCard)}`:''}</div>`;
+    const open=items[openCard], detail=`<div id="today-detail" class="today-detail"${open?'':' hidden'}>${open?`<div class="today-detail-head">${kindTag(open)}<strong>${e(open.title)}</strong>${layout==='e'&&open.meta?`<small>${e(open.meta)}</small>`:''}</div>${insightBody(open,openCard)}`:''}</div>`;
     if(layout==='e')return `<div class="today-cards today-cards-big">${items.map(insightCard).join('')}</div>${detail}`;
     return `<div class="today-cards">${items.map(insightTile).join('')}</div>${detail}`;
   }
   // Layout E: bigger boxes, two by two; one opens its detail underneath.
   function insightCard(item,index) {
-    const ids=item.sourceIds?.people||[];
-    return `<button class="today-card today-card-big" data-today-card="${index}" aria-expanded="${openCard===index}" aria-controls="today-detail"><span class="today-card-top"><span class="today-tag is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span>${ids.length?peopleStack(ids.slice(0,3)):''}</span><strong class="today-card-count">${e(item.count??'')}</strong><span class="today-card-text">${e(item.rest||item.title)}</span><span class="today-card-foot"><small class="today-card-meta">${e(item.meta||'')}</small>${CHEV}</span></button>`;
+    return `<button class="today-card today-card-big" data-today-card="${index}" aria-expanded="${openCard===index}" aria-controls="today-detail"><span class="today-card-top"><span class="today-tag is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span>${CHEV}</span><strong class="today-card-count">${e(item.count??'')}</strong><span class="today-card-text">${e(item.rest||item.title)}</span></button>`;
   }
   const number=value=>typeof value==='number'?value.toLocaleString(undefined,{maximumFractionDigits:1}):'—';
   const stats=()=>window.RootsAnalytics.compute(api.getState(),window.RootsPeople.profileData);
@@ -152,7 +151,7 @@
     const [,lastFirst,lastBack]=HISTORY.at(-1), lx=(HISTORY.length-1)*step+bw+8;
     const labels=`<text class="trend-label is-back" x="${lx}" y="${base-scale(lastBack)/2+4}">came back</text><text class="trend-label" x="${lx}" y="${base-scale(lastBack)-scale(lastFirst)/2+2}">first visit</text>`;
     const t=trendHeadline();
-    return `<div class="trend-head"><strong>${t.lastBack}</strong><span>came back in October<small>up from ${t.firstBack} in May · ${t.share}% of this month’s volunteers</small></span></div><svg class="trend-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Volunteers who came back each month, May to October">${bars}${labels}</svg>`;
+    return `<div class="trend-head"><strong>${t.lastBack}</strong><span>came back in October<small>up from ${t.firstBack} in May${narrow?'':` · ${t.share}% of this month’s volunteers`}</small></span></div><svg class="trend-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Volunteers who came back each month, May to October">${bars}${labels}</svg>`;
   }
   function sparkMarkup() {
     const max=Math.max(...HISTORY.map(([,,back])=>back));
@@ -218,15 +217,16 @@
     const link=(attrs,text)=>`<button class="today-inline" ${attrs}>${text}</button>`;
     const drafts=link('data-today-go="notices"','2 drafts');
     const summary=`Since yesterday, ${link(`data-briefing="daily-people" data-ids="${e(joined.map(p=>p.id).join(','))}"`,`${joined.length} people joined`)} and Roots found ${link('data-today-go="opportunities"',`${benefitPeople.size} volunteers who could gain a benefit`)} by coming back. ${nextGrant?`${link(`data-briefing="source" data-kind="opportunity" data-id="${e(nextGrant.id)}"`,e(nextGrant.title))} closes in ${daysUntil(nextGrant.deadlineAt)} days, and ${drafts} are`:`There are ${drafts}`} waiting for your review.`;
-    return {benefits,grants,joined,first,feed,week,summary};
+    const brief=`Since yesterday, ${link(`data-briefing="daily-people" data-ids="${e(joined.map(p=>p.id).join(','))}"`,`${joined.length} people joined`)} and ${drafts} are waiting for your review.`;
+    return {benefits,grants,joined,first,feed,week,summary,brief};
   }
   function feedItems(model=todayModel()) {
     const day=dailySnapshot(), real=(day?.entries||[]).slice(0,3).map((item,i)=>({id:`d-${item.at}-${i}`,at:Date.parse(item.at),icon:'check',text:item.title,more:item.personIds?.length?personLinks(item.personIds):'<p>Recorded in this browser.</p>'}));
-    return [...real,...arrived,...model.feed,...(feedPeriod==='week'?model.week:[])].sort((x,y)=>y.at-x.at);
+    return [...real,...arrived,...model.feed,...(feedPeriod==='week'||layout==='e'?model.week:[])].sort((x,y)=>y.at-x.at);
   }
   const feedItemMarkup=item=>`<li><details class="feed-item${Date.now()-item.at<4000?' is-new':''}" data-open-key="${e(item.id)}"${opened.has(item.id)?' open':''}><summary><span class="today-feed-icon" aria-hidden="true">${api.icon(item.icon)}</span><span class="feed-text">${e(item.text)}<time>${e(ago(item.at))}</time></span>${CHEV}</summary><div class="feed-more">${item.more}</div></details></li>`;
-  // Layout E shows the latest four; the rest sit behind one drop-down.
-  function feedMarkup(model,cap=layout==='e'?4:Infinity) {
+  // Layout E shows the latest three; the rest of the week sits behind one drop-down.
+  function feedMarkup(model,cap=layout==='e'?3:Infinity) {
     const items=feedItems(model), shown=items.slice(0,cap), rest=items.slice(cap);
     return shown.map(feedItemMarkup).join('')+(rest.length?`<li class="feed-earlier"><details data-open-key="feed-earlier"${opened.has('feed-earlier')?' open':''}><summary>${CHEV}Show ${rest.length} earlier</summary><ol class="today-feed">${rest.map(feedItemMarkup).join('')}</ol></details></li>`:'');
   }
@@ -276,13 +276,14 @@
     const noticed=`<section class="today-section" aria-labelledby="today-noticed"><div class="today-section-head"><h2 id="today-noticed">What Roots noticed</h2><span id="today-checked">Checked ${e(time(checkedLocally))}</span></div><div id="briefing-insights">${insightsMarkup()}</div></section>`;
     const coming=`<section class="today-section" aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Coming back</h2>${tabs}</div>${patterns}</section>`;
     const feed=`<section class="today-feed-panel" aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today’s feed</h2><span class="today-live"><i></i>Live</span></div><ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol></section>`;
-    const dock=`<div class="today-dock"><form id="briefing-chat-form" class="briefing-composer today-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="1" maxlength="2000" placeholder="Ask Roots, or turn an idea into an SMS…" required>${e(prompt)}</textarea><div class="today-composer-bottom"><div class="today-chips">${chips.map(([label,ask])=>`<button type="button" data-briefing="suggestion" data-prompt="${e(ask)}">${e(label)}</button>`).join('')}</div><button class="today-send" type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form></div>`;
+    const shown=layout==='e'?chips.slice(0,2):chips;
+    const dock=`<div class="today-dock"><form id="briefing-chat-form" class="briefing-composer today-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="1" maxlength="2000" placeholder="Ask Roots, or turn an idea into an SMS…" required>${e(prompt)}</textarea><div class="today-composer-bottom"><div class="today-chips">${shown.map(([label,ask])=>`<button type="button" data-briefing="suggestion" data-prompt="${e(ask)}">${e(label)}</button>`).join('')}</div><button class="today-send" type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form></div>`;
     if(layout==='e')return `<div class="today-page" data-layout="e">
-      <header class="today-head"><div class="today-head-top"><h1 id="today-title">${e(briefingTitle())}</h1><span class="today-date">${e(date)}</span></div><p class="today-summary" id="today-summary">${model.summary}</p></header>
-      <section class="today-band" aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today <span class="today-live"><i></i>Live</span></h2><div class="overview-chart-tabs" role="group" aria-label="Feed period"><button data-today-period="today" aria-pressed="${feedPeriod==='today'}">Today</button><button data-today-period="week" aria-pressed="${feedPeriod==='week'}">Last 7 days</button></div></div><ol class="today-feed today-feed-wide" id="today-feed">${feedMarkup(model)}</ol></section>
+      <header class="today-head"><div class="today-head-top"><h1 id="today-title">${e(briefingTitle())}</h1><span class="today-date">${e(date)}</span></div><p class="today-summary" id="today-summary">${model.brief}</p></header>
+      <section class="today-band" aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today <span class="today-live"><i></i>Live</span></h2></div><ol class="today-feed today-feed-wide" id="today-feed">${feedMarkup(model)}</ol></section>
       <div class="today-split">
-        <section class="today-glance" aria-labelledby="today-glance-title"><div class="today-section-head"><h2 id="today-glance-title">Community at a glance</h2></div><p class="today-metrics" id="overview-metrics">${snapshotMarkup(a)}</p><div class="today-sub-head"><h3>Coming back</h3>${tabs}</div>${patterns}</section>
-        ${noticed}
+        <section class="today-glance" aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Coming back</h2>${tabs}</div>${patterns}</section>
+        <section class="today-section" aria-labelledby="today-noticed"><div class="today-section-head"><h2 id="today-noticed">What Roots noticed</h2></div><div id="briefing-insights">${insightsMarkup()}</div></section>
       </div>
       ${dock}
     </div>`;
