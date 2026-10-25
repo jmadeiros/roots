@@ -231,6 +231,7 @@ main:has(.today-page[data-layout="a"][data-rail="open"]) { padding-right: calc(v
 .today-coming-both { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--t7); align-items: start; }
 .today-mini-label { margin: 0 0 var(--t4); font-size: 12px; color: var(--muted); }
 .today-coming-both .trend-interests { gap: var(--t3); }
+.today-coming-both .trend-interests button { grid-template-columns: 150px minmax(0, 1fr) 44px; }
 .trend-head { display: flex; align-items: center; gap: var(--t3); margin-bottom: var(--t2); }
 .trend-head strong { font-size: 30px; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
 .trend-head span { font-size: 13.5px; }
