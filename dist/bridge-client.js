@@ -92,10 +92,10 @@
     })();
     return insightRequest;
   }
-  async function chat(message, conversationId) {
+  async function chat(message, conversationId, requestId) {
     if (!status?.geminiConfigured) throw new Error('Configure Gemini on the local test server to ask Roots.');
     await flush();
-    return request('/api/chat', {method: 'POST', body: JSON.stringify({message, ...(conversationId ? {conversationId} : {})})});
+    return request('/api/chat', {method: 'POST', headers:status.testPreview?.csrfToken?{'X-Roots-Test-Token':status.testPreview.csrfToken}:{}, body: JSON.stringify({message, ...(conversationId ? {conversationId} : {}), ...(requestId ? {requestId} : {})})});
   }
   window.addEventListener('focus', () => { loadActivity().catch(() => {}); });
   window.RootsBridge = {configure(callbacks) { api = callbacks; }, init, sync, flush, chat, loadActivity, loadInsights, request, status, activity, insights:null, insightError:null};

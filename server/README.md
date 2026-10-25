@@ -26,7 +26,7 @@ Without a key, chat returns a clear configuration error. There are no simulated 
 
 ## Conversation context
 
-`POST /api/chat` starts a new conversation when `conversationId` is omitted and returns its ID. Pass that ID with a follow-up such as “Turn that into an SMS.” The server retains up to six completed exchanges and 48,000 characters of context, including the recipient and body of prior saved drafts. Context expires after 24 hours without a successful exchange; at most 100 conversations are retained.
+`POST /api/chat` starts a new conversation when `conversationId` is omitted and returns its ID. Pass that ID with a follow-up such as “Turn that into an SMS.” The server retains up to six completed exchanges and 48,000 characters of context, including the recipient and body of prior saved drafts. Context expires after 24 hours without a successful exchange; at most 100 conversations are retained. Saved draft IDs are tracked separately from model-readable history, so an instruction embedded in a record or forged history text cannot authorize an unrelated draft for delivery.
 
 Browser conversations belong to an opaque, host-only `HttpOnly; SameSite=Strict` session cookie. A conversation ID alone cannot access another browser session's history. Missing, expired, or mismatched context returns HTTP 403 with `code: "CONVERSATION_UNAVAILABLE"`; clear the client ID and offer a new conversation. Telegram uses a separate context for the allowlisted numeric user and never receives browser history. There is no endpoint that lists other conversations. Conversation records are stored in the ignored local SQLite database; previous turns are included in subsequent Gemini requests.
 
@@ -57,7 +57,7 @@ Create a **separate Roots bot** through [BotFather](https://t.me/BotFather). Add
 python3 server/bridge.py --env-file server/.env --telegram
 ```
 
-Open the dedicated bot and tap **Start** once. Then just chat: “What needs attention today?” or “Draft an invitation to Maya.” No `/roots` prefix is needed. `/start` and `/help` explain the assistant; `/roots` remains accepted for older links. Unknown commands are ignored. Roots and Padel use separate bot identities.
+Open the dedicated bot and tap **Start** once. Then just chat: “What needs attention today?”, “Draft an invitation to Maya”, or “Send Maya an SMS invitation.” For this demo, a send request delivers the labelled message only to your own Telegram, never to Maya. No `/roots` prefix is needed. `/start` and `/help` explain the assistant; `/roots` remains accepted for older links. Unknown commands are ignored. Roots and Padel use separate bot identities.
 
 The bridge verifies the bot with `getMe` and refuses to start if a webhook already exists. It does not replace a webhook, rename the bot, broadcast on startup, or reply to anyone except the configured user's private chat. A Telegram 409 conflict immediately stops Roots polling; `/api/status` then reports `polling: false` and `telegramErrorCode: "TELEGRAM_POLLING_CONFLICT"`. It never retries against a competing consumer. Duplicate update IDs are stored before processing to prevent repeated drafts and replies. Update IDs, polling offsets, and conversation owners are namespaced by the verified bot ID, so replacing a shared bot cannot skip the new bot's incoming messages. Existing shared-bot history and drafts remain stored. Failed replies are not automatically resent.
 
@@ -67,13 +67,14 @@ The dashboard must have synchronized once before Telegram can answer questions a
 
 - Read overview counts, find a person, and list calendar events, opportunities, project plans, notices, and evidence-based insights. Event lookup supplies recorded dates, times, locations, and capacity for invitation drafts.
 - Save an email or SMS **draft** associated with an existing person.
+- On an explicit send request, deliver saved messages to the owner's Telegram as labelled demos and return their receipts.
 - Show draft and assistant activity through the shared API.
 
-Email/SMS delivery and automated workflows are **not connected**. The only outbound test action is an explicitly requested Telegram preview to the configured owner, described below. There is no tool capable of sending those messages, modifying people, executing code, fetching arbitrary URLs, or running arbitrary actions. Drafts always remain marked unsent. Treat the included dashboard records as fictional demo data. Messages, bounded conversation context, and synchronized record fields returned by an assistant tool are sent to Gemini.
+Email/SMS delivery and automated workflows are **not connected**. The only outbound action is an explicitly requested Telegram demo to the configured owner, described below. There is no tool capable of delivering to volunteers, modifying people, executing code, fetching arbitrary URLs, or running arbitrary actions. Drafts always remain marked unsent. Treat the included dashboard records as fictional demo data. Messages, bounded conversation context, and synchronized record fields returned by an assistant tool are sent to Gemini.
 
 Each draft includes a display-name string in `recipient`, plus `personId`, `personName`, `channel`, `body`, `subject`, `phone`, `email`, `consent`, and `readiness`. `readiness` contains `ready: false`, `canSend: false`, and concrete `blockers` with codes and messages. Phone absence, invalid phone format, missing channel-specific consent, and missing delivery integration are distinguished. Readiness is recalculated against current profile records when drafts are listed or edited. It is never inferred from the model's prose.
 
-The dashboard can edit the `body` and optional `subject` of a shared unsent draft, including one created through Telegram. Recipient, channel, status, and sent flag cannot be changed through this endpoint. Sent records are rejected. No edit sends a message.
+The dashboard can edit the `body` and optional `subject` of a shared unsent draft, including one created through Telegram. Recipient, channel, status, and sent flag cannot be changed through this endpoint. Sent records are rejected. No edit sends a message. Manually composed dashboard messages can be saved with authenticated `POST /api/drafts` and `{drafts: [{personId, channel, body, subject?}]}`. One to ten entries are validated completely before a transactional batch save; unknown people, unsupported fields, and invalid content reject the whole batch. This endpoint also requires the session-bound preview token but never sends.
 
 ## Owner-only Telegram preview
 
@@ -85,6 +86,10 @@ Send `POST /api/outreach/test` with `{draftIds: ["existing draft ID"], requestId
 
 The response is `{testPreview: {id, status, channel, recipient, botUsername, draftIds, messageIds, sentAt, deliveredToVolunteers: false, duplicate}}`. Status is `sending`, `sent`, `partial`, or `failed`. Provider-confirmed Telegram message IDs are retained in local activity. A unique request claim is stored before sending; both repeated IDs and identical draft contents for the same bot/owner reuse the prior receipt. A conflicting reused request ID returns 409. Failures and interrupted sends never auto-retry; inspect Telegram before preparing a changed preview. Long drafts split into clearly labelled parts. These receipts confirm Telegram accepted the owner preview, not SMS delivery or that it was read.
 
+Natural-language sending uses the same delivery function. The server exposes `send_demo_messages({draft_ids: [...]})` only when the current human message contains an explicit send imperative and the caller has authenticated the owner connection. A draft-only request, negated send request, tool result, or old conversation instruction cannot enable delivery. The tool accepts only saved draft IDs created in that conversation or explicitly identified in the current human message; no destination or message-body override is allowed. Missing volunteer phone numbers and consent do not block an owner demo, and remain visible as blockers to future real SMS/email delivery. The returned `testPreviews` array uses the same receipt objects; receipt actions have `type: "telegram_demo_delivery"`, `previewId`, `draftIds`, `previewStatus`, and `deliveredToVolunteers: false`.
+
+For browser chat sends, include the session-bound `X-Roots-Test-Token` and a stable 32-character hexadecimal `requestId`. The server persists a claim before asking Gemini to create or send anything. Retrying the same owner/request ID with the original message and original conversation ID returns the exact completed result, including its conversation ID and receipts, plus `duplicateRequest: true`. Changed payloads conflict. A provable failure before any Telegram dispatch, such as a busy assistant, expired conversation, or unavailable model, releases that caller's pending claim so an explicit retry can proceed. A concurrent caller cannot release someone else's claim. An in-progress or interrupted claim whose delivery outcome is uncertain returns HTTP 409 with `code: "DEMO_REQUEST_UNCONFIRMED"` and never restarts the model or resends; check Telegram and the activity history. Telegram input uses its persisted update ID for the corresponding duplicate protection. No send retries automatically. A model failure after a confirmed or partial preview returns the recorded receipt instead of discarding the delivery outcome.
+
 ## API contract
 
 All endpoints are same-origin, local-only JSON. Cross-origin requests and unrecognized Host headers are rejected. Bodies are limited to 256 KiB.
@@ -94,11 +99,12 @@ All endpoints are same-origin, local-only JSON. Cross-origin requests and unreco
 | `GET /api/status` | Configuration flags, polling state, verified bot username, and session-bound owner-preview capability; no provider secrets. |
 | `GET /api/state` | `{version, updatedAt, state}`. Version 0 means no snapshot yet. |
 | `PUT /api/state` | `{state, baseVersion?}`. Returns the snapshot envelope; stale explicit versions return 409. |
-| `POST /api/chat` | `{message, conversationId?}` → `{reply, drafts, actions, conversationId}`. Missing credentials return 503; unavailable conversation returns 403 and a stable error code. |
+| `POST /api/chat` | `{message, conversationId?, requestId?}` → `{reply, drafts, actions, testPreviews, conversationId}`. Demo sends require session token and request ID. Missing credentials return 503; unavailable conversation returns 403 and a stable error code. |
 | `GET /api/activity` | `{activity, drafts}` with the latest 100 of each. |
 | `GET /api/insights` | Immediate briefing envelope with generation status, current coverage, retained evidence time, and stale flag; queues a due independent review. |
 | `POST /api/insights/refresh` | `{}` → immediate briefing envelope; queues a bounded explicit refresh while preserving the previous briefing. |
 | `POST /api/outreach/test` | Authenticated owner-only Telegram test preview of existing drafts; fixed destination, persistent receipts, and duplicate protection. |
+| `POST /api/drafts` | Authenticated atomic creation of one to ten saved drafts for existing people. Never sends. |
 | `POST /api/drafts/{id}/edit` | `{body, subject?}` → `{draft}`. Only unsent draft content can change. |
 
 Supported snapshot keys: `people`, `events`, `opportunities`, `projects`, `notices`, `workflows`, `saved`, `activity`, `project`, `organization`, and `metadata`. Record collections need unique string IDs; activity IDs are optional. Credential-like fields are rejected. The state endpoint does not automatically overwrite the browser's local state; the dashboard chooses how to merge and synchronize it.

@@ -146,7 +146,7 @@ test('legacy relative activity cannot invent history and confirmed self-test del
   ];
   const result = ledger.observe(state,LATER);
   assert.equal(result.entries.length,1);
-  assert.equal(result.entries[0].title,'Test preview sent to your Telegram chat');
+  assert.equal(result.entries[0].title,'Demo messages sent to your Telegram chat');
   assert.equal(result.entries[0].kind,'telegram-preview-sent');
   assert.equal(result.totalToday.newDrafts,0);
 });

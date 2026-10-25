@@ -79,6 +79,18 @@ typography:
     fontSize: "11px"
     fontWeight: 500
     lineHeight: 1.5
+  overview-heading:
+    fontFamily: "'DM Sans', sans-serif"
+    fontSize: "30px"
+    fontWeight: 500
+    lineHeight: 1.3
+    letterSpacing: "-0.6px"
+  overview-finding:
+    fontFamily: "'DM Sans', sans-serif"
+    fontSize: "19px"
+    fontWeight: 500
+    lineHeight: 1.45
+    letterSpacing: "-0.2px"
 rounded:
   tag: "4px"
   badge: "5px"
@@ -136,8 +148,8 @@ components:
   navigation:
     textColor: "{colors.muted}"
     rounded: "{rounded.navigation}"
-    padding: "9px 11px"
-    height: "38px"
+    padding: "10px 13px"
+    height: "43px"
   navigation-active:
     backgroundColor: "{colors.selected}"
     textColor: "{colors.ink}"
@@ -162,12 +174,25 @@ components:
     backgroundColor: "transparent"
     textColor: "{colors.ink}"
     rounded: "{rounded.insight-row}"
-    padding: "0 0 28px"
+    padding: "0 0 26px"
   dated-finding:
     backgroundColor: "transparent"
     textColor: "{colors.ink}"
     rounded: "{rounded.insight-row}"
     padding: "22px 0"
+  overview-shell:
+    width: "1020px"
+  sidebar-shell:
+    backgroundColor: "{colors.sidebar}"
+    width: "204px"
+  message-workbench:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.card}"
+  people-initial:
+    rounded: "{rounded.circle}"
+    width: "40px"
+    height: "40px"
   event-date:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
@@ -182,11 +207,11 @@ components:
 
 **Creative North Star: “What could we make happen?”**
 
-Roots is a deep-green intelligence workspace. Connected findings and practical proposals expose the records behind them and offer a useful next step. Overview uses one reading column; People Groups and Opportunities pair a narrative with avatar clusters and evidence. Native disclosures, light text, pale sage actions, self-hosted DM Sans, and restrained dividers keep the interface calm. Conversation follows the Overview findings.
+Roots is a deep-green intelligence workspace. Connected findings and practical proposals expose the records behind them and offer a useful next step. Overview now pairs visible analytics on the left with two dated findings on the right, beneath a greeting and observed daily changes. Conversation follows both columns. People Groups and Opportunities retain narrative beside tightly overlapping initials and evidence. Native disclosures, light text, pale sage actions, self-hosted DM Sans, and restrained dividers keep the interface calm.
 
-The DARK rendition of the earlier Roots concept remains the palette authority. Overview retains its 680px reading column and composer. People Groups and Opportunities use open paired rows in 1000px containers: narrative on the left, avatar clusters and recorded evidence on the right, stacked on mobile. People begins with Ways to take part; Opportunities begins with open funding and funded host programmes. Deeper evidence and member lists expand when requested. Notices retains its dated Notes feed; Everyone keeps the searchable table. Profiles add optional context the person has shared.
+The DARK rendition of the earlier Roots concept remains the palette authority. The approved layout expands Overview to 1020px and the desktop sidebar to 204px. People Groups and Opportunities retain open paired rows in 1000px containers: narrative on the left, initials and recorded evidence on the right, stacked on mobile. People begins with Ways to take part; Opportunities begins with open funding and funded host programmes. Deeper evidence and member lists expand when requested. Notices retains its dated Notes feed; Everyone keeps the searchable table. Profiles add optional context the person has shared.
 
-Implementation authority is the shared shell in `dist/style.css` and `dist/app.js`, the composition in `dist/briefing.css`, and the global theme in `dist/dark.css`, which loads last. `dist/briefing.js` renders Overview, `dist/analytics.js` computes current-record arithmetic, `dist/connections.js` derives Overview possibilities, `dist/programs.js` stores researched terms, `dist/program-fit.js` evaluates programme criteria, and `dist/journal.js` records local observation and check dates. The opportunities styles define programme rows and the source library, while people-groups defines Groups and its Everyone table wrapper. Notices retains the dated Notes feed; supporting conversation and people-detail modules share the dark theme. `dist/neutral.css` is no longer loaded.
+Implementation authority is the shared shell in `dist/style.css` and `dist/app.js`, the composition in `dist/briefing.css`, and the global theme in `dist/dark.css`, which loads last. `dist/briefing.js` renders Overview, `dist/analytics.js` computes current-record arithmetic, `dist/connections.js` derives Overview possibilities, `dist/programs.js` stores researched terms, `dist/program-fit.js` evaluates programme criteria, `dist/journal.js` records local finding observation and check dates, and `dist/daily.js` maintains the separate local change ledger. The opportunities styles define programme rows and the source library, while people-groups defines Groups and its Everyone table wrapper. Notices retains the dated Notes feed; supporting conversation and people-detail modules share the dark theme. `dist/neutral.css` is no longer loaded.
 
 ## Color and material
 
@@ -200,11 +225,11 @@ Focus, caret, selection, and active states use the pale accent. Sheets share the
 
 ## Typography
 
-Self-hosted DM Sans remains the sole UI family. Overview, Opportunities, and People Groups use left-aligned 28px medium page headings with −0.6px tracking, reduced to 26px on phones. Overview finding and People group titles use 18px medium text, 1.45 line height, and −0.2px tracking. Opportunity programme titles use 20px medium text, 1.45 line height, and −0.3px tracking. Explanatory paragraphs use 14px text at 1.8 line height, with a measure up to 72ch. Keep that paragraph size on phones.
+Self-hosted DM Sans remains the sole UI family. Overview uses a 30px medium greeting with 1.3 line height and −0.6px tracking, reduced to 27px on phones. Opportunities and People Groups retain left-aligned 28px medium page headings, reduced to 26px on phones. Overview findings use 19px medium titles with 1.45 line height and −0.2px tracking; People group titles retain 18px. Daily section titles use 16px medium text. Opportunity programme titles use 20px medium text, 1.45 line height, and −0.3px tracking. Explanatory paragraphs retain 14px text and a measure up to 72ch; Overview findings use 1.75 line height, while People and programme descriptions retain 1.8. Keep that paragraph size on phones.
 
-Visible source links, actions, review status, and evidence controls use 12px text. Expanded evidence uses 13px; local observation dates remain quiet 11px metadata inside the disclosure. Collapsed supporting rows use 13px labels. The participation figure is 29px with tabular numerals; inline record totals are 11px.
+Visible source links, actions, review status, and evidence controls use 12px text. Expanded evidence uses 13px; local observation dates appear as quiet 11px metadata directly below each Overview finding title, with the fuller timestamp repeated inside its disclosure. Collapsed supporting rows use 13px labels. The Overview participation figure is 30px with tabular numerals; inline record totals are 11px. Its compact denominator note is 10px; retain the explicit wording rather than implying retention.
 
-Navigation is 13px, standard buttons 12px. The composer uses 14px text on desktop and 16px on phones. Ask Roots retains a 30px greeting and comfortable conversation text. Source-library lead titles remain 15px with 12px descriptions, increasing to 16px and 13px on phones. Notices titles remain 16px with 13px descriptions and 11px date labels.
+Primary navigation is 14px on desktop and 12px on phones; secondary navigation is 13px. Standard buttons remain 12px. The composer uses 14px text on desktop and 16px on phones. Ask Roots retains a 30px greeting and comfortable conversation text. Source-library lead titles remain 15px with 12px descriptions, increasing to 16px and 13px on phones. Notices titles remain 16px with 13px descriptions and 11px date labels.
 
 Use the hierarchy to establish one clear reading order. Keep body contrast at least 4.5:1 and visible focus on every interactive control. People and detailed record pages retain their practical 12–14px text.
 
@@ -212,23 +237,23 @@ Use the hierarchy to establish one clear reading order. Keep body contrast at le
 
 Primary navigation contains **Overview, People, Opportunities, Notices**. Overview keeps the `#briefing` route; `#overview` is an alias. **Ask Roots** and **Calendar** are secondary links. Old Funding links resolve to Opportunities; `#outreach` resolves to Notices.
 
-The desktop sidebar is **174px** and collapses to a **60px** icon rail. Navigation rows are 38px high with dark selected-surface fill and light ink. The wordmark is 27px; the workspace label is hidden. Collapsed labels retain accessible names. The desktop topbar is 52px high without a bottom border.
+The desktop sidebar is **204px** and collapses to a **60px** icon rail. Navigation rows are 43px high with 10px 13px padding, 19px icons, dark selected-surface fill and light ink. The wordmark is 29px; the workspace label is hidden. Collapsed labels retain accessible names. The desktop topbar remains 52px high without a bottom border.
 
-The shared page container caps at **1184px**. Overview retains a single **680px** reading column, two findings, collapsed supporting rows, and a composer at the same width. People Groups and Opportunities use **1000px** containers; People Everyone retains a **1080px** table container. On the two wider surfaces, open rows put the narrative on the left and people with recorded evidence on the right. These rows use fine dividers and generous space rather than enclosing cards. Overview retains its existing single reading order and has no side column, date rail, or KPI card row.
+The shared page container caps at **1184px**. Overview is **1020px** wide, with a local-time greeting and date, observed changes for Today / Last 7 days, then an analytics-left/findings-right grid. The grid uses `minmax(240px,.85fr) minmax(0,1.7fr)` with a 48px gap. At desktop widths up to 1050px it uses `minmax(190px,.8fr) minmax(0,1.5fr)` with a 28px gap. Two open dated findings and an optional third disclosure occupy the right column. Conversation spans the page below both columns. People Groups and Opportunities remain **1000px**, People Everyone **1080px**, Ask Roots **720px**, and Notices **900px**. These separate surfaces retain their existing open rows and practical evidence hierarchy.
 
-Each finding reads from title to paragraph to visible provenance. Its primary action and evidence disclosure share a consistent next-step row. The action uses a restrained dark surface and visible boundary. Findings have 28px separation without enclosing cards. Supporting rows use fine horizontal dividers.
+Each Overview finding reads from title to visible Noted/Updated date, explanation, connected records, then action and evidence disclosure. The action uses a restrained dark surface and visible boundary. The first finding has 26px bottom padding; later findings add a fine top divider and 24px top padding. The next-step row uses an automatic action column and remaining evidence width with a 14px gap. No feature-card fill is added.
 
-The composer retains a 15px radius, 17px 18px 12px padding, multiline field, context label, and 32px pale send control. Submitting opens the existing Ask Roots conversation, which retains a 720px column. Findings remain available independently of prompts.
+The full-width conversation section begins 34px below the two-column grid with a 24px top inset and fine divider. Its composer retains a 15px radius, 17px 18px 12px padding, multiline field, context label and 32px pale send control, separated from the section heading by 14px. Invitation and student-service suggestions follow. Submitting opens the existing 720px Ask Roots conversation. Findings remain available independently of prompts.
 
-Desktop heights up to 760px tighten vertical spacing. Page gutters become 25px up to 1000px. At the 760px phone breakpoint, gutters are 20px, the composer input is 16px and send control 44×44px, finding actions have 44px targets, and four labeled navigation items form the bottom bar. The single reading order remains intact.
+Page gutters become 25px at desktop widths up to 1000px. At the 760px phone breakpoint, gutters are 20px and the Overview stacks greeting and changes, findings, analytics, then conversation. The greeting is 27px; its date follows beneath. Chart controls, period controls and finding actions have 44px minimum heights, the composer input is 16px and its send control 44×44px. Four labeled navigation items use 54px rows in the bottom bar. Review status moves from right-aligned page footnotes to a left-aligned mobile footer; preserve the existing safe-area allowance.
 
-Opportunities uses four initial programme rows in the existing 1000px paired layout. On the left: programme name, actual benefit, status, short fit explanation, next step and Requirements & sources. On the right: people with clear roles, clickable initials, capacity facts and remaining gaps. Category controls are All routes, Grants, Funded placements and School partnerships. The programme sheet distinguishes who receives money or support and links official sources. Microsoft uses the same catalogue structure. People Groups pairs school or undergraduate pathways with corresponding service-hour or capacity figures. Avatar controls retain initials, accessible names, 44px targets and a full-members entry point. Rows stack on mobile; the source library retains expandable summaries. Notices remains a 900px dated feed, and charts, feeds and disclosures must not force horizontal page scrolling.
+Opportunities uses four initial programme rows in the existing 1000px paired layout. On the left: programme name, actual benefit, status, short fit explanation, next step and Requirements & sources. On the right: people with clear roles, clickable initials, capacity facts and remaining gaps. Category controls are All routes, Grants, Funded placements and School partnerships. The programme sheet distinguishes who receives money or support and links official sources. Microsoft uses the same catalogue structure. People Groups pairs school or undergraduate pathways with corresponding service-hour or capacity figures. Avatar controls use 44px boxes around 40px initials, with −12px sibling overlap and a 2px paper-colored ring. The +N control has the same 44px circle, a 4px paper-colored boundary and selected-surface fill, opening the full member list. Preserve accessible names and focus/hover stacking above adjacent initials. Rows stack on mobile; the source library retains expandable summaries. Notices remains a 900px dated feed, and charts, feeds and disclosures must not force horizontal page scrolling.
 
 ## Snapshot analytics
 
-Inside the collapsed Community patterns row, inline counts show **People**, **Recorded hours**, and **Opportunity leads**. The first two open contributing people; the third opens Opportunities. Seed totals are **35 people**, **893 recorded hours**, and **seven programme and local partnership routes**. Totals are recomputed from saved records.
+The visible left analytics rail begins with Community at a glance and inline **People**, **Recorded hours**, and **Opportunity leads** counts. The first two open contributing people; the third opens Opportunities. Seed totals are **35 people**, **893 recorded hours**, and **seven programme and local partnership routes**. Totals are recomputed from saved records.
 
-Community patterns switches between **Participation**, **Interests**, and **Events**. Participation shows a stacked bar for one visit, repeat visits, zero visits, and unknown counts. Clicking a segment or legend opens its people. Its headline percentage is repeat-visit profiles divided by profiles with at least one recorded visit: **27 / 35**, rounded to **77%**, in the seed snapshot. The bar itself represents all profiles, including zero and unknown groups when present. State the denominator clearly.
+Participation is always visible in the analytics rail. It shows a stacked bar for one visit, repeat visits, zero visits, and unknown counts. Clicking a segment or legend opens its people. Its headline percentage is repeat-visit profiles divided by profiles with at least one recorded visit: **27 / 35**, rounded to **77%**, in the seed snapshot. The bar represents all profiles, including zero and unknown groups when present. **Interests** and **Events** switch the lower chart area; they do not hide Participation.
 
 This is a distribution of accumulated visit counts, not cohort retention, a monthly return rate, or a trend. Do not restore the old hardcoded 42%, month-over-month changes, growth arrows, or invented historical series. Missing values are not zero. Recorded hours sum valid direct profile totals and do not use generated attendance stories or illustrative approved/pending breakdowns.
 
@@ -238,11 +263,13 @@ The Events tab shows up to three event rows with date, title, time, recorded att
 
 Every chart needs readable labels, keyboard-operable groups, honest empty states, and a path to its underlying records. Unknown data, invalid values, and a lack of history must remain distinct from poor performance.
 
+The Today / Last 7 days row is an observation ledger, not a historical analytics series. Existing records establish its starting baseline; only later observed saved changes appear. Today starts at local midnight, and Last 7 days includes today plus six previous local calendar days. Show three entries with See all when needed, an honest empty state, and the browser tracking start date. A recorded assistant draft and an owner Telegram demo receipt remain distinct from a message sent to a volunteer. Repeated observations do not create changes, and late-arriving collections get their own baseline.
+
 ## Recommendations, evidence, and freshness
 
-Show two connected findings in one column. Each follows the same sequence: 18px title, readable explanatory paragraph, visible links to contributing people, events, projects, or leads, then a primary action and **Why this surfaced**. An optional third connection follows as a native disclosure. No finding receives feature-card fill.
+Show two connected findings in the right column. Each follows the same sequence: 19px title, visible Noted/Updated date, readable explanation, links to contributing people, events, projects or leads, then a primary action and **Why this surfaced**. An optional third connection follows as a native disclosure. No finding receives feature-card fill.
 
-**Why this surfaced** reveals the suggested next step, evidence, unknowns, source record links, **Discuss this with Roots**, and the local observation date. Referenced links open their underlying records. **How Roots finds these ideas** explains the review source, bounded fact catalog, cadence, and limitations in the page footnotes. Community patterns is another collapsed row with the existing charts and interpretation inside.
+**Why this surfaced** reveals the suggested next step, evidence, unknowns, source record links, **Discuss this with Roots**, and the local observation date. Referenced links open their underlying records. **How Roots finds these ideas** explains the review source, bounded fact catalog, cadence, and limitations in the page footnotes. Community patterns are visible alongside the findings; only detailed evidence and the optional third connection remain disclosures.
 
 Current matches connect first-visit gardeners to a relevant event, service-hour interests to a school-partnership pathway, and supported proposed project roles to people’s stated interests and a candidate support lead. A positive project possibility replaces a duplicate coordination warning for that project. An interest match is not eligibility or a verified skill; a proposed role is not agreement; recorded capacity does not establish individual RSVPs. Seed people and project records remain illustrative; six programme or policy references have dated official-source research, and the school route remains a local proposal.
 
@@ -252,11 +279,11 @@ Raw phone numbers, email addresses, coordinator notes, and chat history are excl
 
 Recheck after meaningful record changes, after 30 minutes while the app is open, when it becomes visible again, or on manual refresh. Activity-only and version-only saves are not new evidence. Stable fact-based IDs and caching prevent routine checks from becoming invented discoveries or activity.
 
-Local journal dates distinguish first observation, meaningful content change, and a manual check. Overview keeps observation dates inside evidence, and Opportunities shows a community-fit check line and separately dated programme research, without per-lead date rails. Notices retains dated entries. A repeat check may advance checked time but must retain unchanged entry dates. These dates describe local record observations or checks, not external discovery or verification.
+Local journal dates distinguish first observation, meaningful content change, and a manual check. Overview shows Noted/Updated dates beneath finding titles and the fuller local timestamp inside evidence. Opportunities retains its community-fit check line and separately dated programme research, without per-lead date rails. Notices retains dated entries. A repeated check may advance checked time but preserves unchanged finding dates. The separate daily ledger records observed record changes. Neither kind of local timestamp establishes external discovery or verification.
 
 Generation exposes **pending, reviewing, ready, and failed** states. Keep the previous successful recommendations visible during review or failure, identify stale evidence, and discard results produced against superseded records. Without a successful AI review, show the labeled record-match fallback. Failures retry through explicit refresh or meaningful data change, subject to the retry guard. No dismiss feature or monitoring after app closure is promised.
 
-Keep review status beneath the page heading. Three small dots indicate actual checking or pending/reviewing work; reduced motion leaves them static. Show a genuine checked/reviewed time or an error with **Try again**. Never add artificial delay, idle animation, or discovery badges to unchanged ideas.
+Keep independent review status in the Overview footnotes beside How Roots finds these ideas. Three small dots indicate actual checking or pending/reviewing work; reduced motion leaves them static. Show a genuine checked/reviewed time or an error with **Try again**. Never add artificial delay, idle animation, or discovery badges to unchanged ideas.
 
 ## Ask Roots and inline actions
 
@@ -264,7 +291,9 @@ Ask Roots is accessible through secondary navigation, the Overview composer bene
 
 The conversation composer uses the dark surface with a fine boundary and pale sage send control. Nearby text explains connection needs and the lack of email/SMS delivery. The published preview must not imitate a live model connection.
 
-Email and SMS drafts appear inline with recipient, channel, message, **Not sent**, and readiness blockers. Recipient names open records. **Edit message** changes an existing unsent draft; **Copy** copies text; **Refine in chat** prepares a follow-up instruction. None sends outreach. Keep draft revisions available through Notices and never conceal missing permission, contact details, or providers behind a successful-looking status.
+Email and SMS drafts appear in an inline **People → Message → Review** workbench. The dark surface retains its 14px radius and fine field border. Header padding remains 21px 24px 18px; stage sections use 22px 24px 24px. Numbered steps have 44px controls, 25px circles, muted inactive states and pale accent for `aria-current="step"`. People identifies intended recipients and keeps profile, permission and contact details visible. Message provides per-person editing, character count and Save changes; unsaved selected edits block Review. Review places individual messages and their **Not sent** SMS/email status above **All messages go to your Telegram** and the pale primary **Send demo to my Telegram** action. Real delivery requirements sit below in a collapsed **Before sending to real recipients** disclosure; they do not block the owner-only demo. Copy and Refine in chat remain available. On phones sections retain 18px 16px 20px padding, editors/selects use 16px text, and actions retain 44px heights. Long demo-button text may wrap within the available width.
+
+The labeled browser-only sample demonstrates the same sequence with templates from one-visit profiles; it cannot send a demo and never imitates a live response. The connected local workspace can send one to ten selected, saved drafts only to the owner’s Telegram, each labeled with its intended recipient. A current explicit natural-language send request can also authorize this same owner-only action from conversation; a draft-only request does not. Saved Notices drafts use **Review demo** to create or reuse personalized server drafts and enter Review without sending. Keep the primary action unavailable for a sample, missing connection, sync failure, missing session token, invalid selection or unsaved selected edits. Display actual sending/sent/partial/failed receipts; retain request identity across reload and reconcile uncertain receipts without automatic resend. Conversation recovery uses **Check request result** with the original request identity; it must not silently create a new send. A rejected pre-dispatch authorization may refresh the token, but another explicit user request is required. Real SMS/email remains unsent throughout. The dedicated setup is `@roots_community_josh_bot`, with ordinary-language chat after Start and no `/roots` prefix. A privately hosted static site still has no live bridge or outgoing-message route.
 
 ## People and opportunities
 
@@ -280,7 +309,7 @@ Programme terms were researched from official sources on 24 October 2026. Their 
 
 Notices defaults to **Notes**, a dated text feed with expandable **Notes & people**, profile links, review actions, and a Reviewed filter. **Drafts, Workflows, and Delivery** remain additional views. Check records updates the local scope check time, while unchanged findings retain their dates. Workflow rows summarize audience rules, timing, channel, and draft status. Saving a rule does not activate or schedule it. Audience previews do not establish bookings, permission, or deliverability.
 
-SMS and email providers are not configured. Delivery counts describe stored profiles, not verified contact details. A contact preference is not permission. No email/SMS outreach has been sent through these features; connecting Gemini or Telegram does not enable delivery.
+SMS and email providers are not configured. In demo mode, every dispatched message goes only to the owner’s Telegram and names its intended recipient. Delivery status must distinguish that demo receipt from an unsent SMS/email draft. Contact coverage and permission checks describe future real-recipient delivery; a contact preference is not permission. Drafting, editing, copying and saving workflow settings do not automatically send.
 
 The published site is static with browser-local records. The optional local bridge synchronizes a snapshot for Gemini and an explicitly configured Telegram connection. Local and published origins do not automatically share browser storage. Web and Telegram may share records and deliberately saved drafts while their conversation histories remain separate; recommendation synthesis uses neither history.
 
@@ -290,4 +319,4 @@ Connection details distinguish configuration, synchronization, polling, and fail
 
 Use explicit labels, native disclosures, accessible chart groups and selectors, and keyboard focus return. Preserve expanded evidence during status updates where possible. Prefer restrained sheet transitions and truthful work indicators, with reduced-motion support.
 
-Keep Overview practical: a small number of connected findings with visible provenance, supporting patterns available on demand, and the composer beneath. Preserve the full dark green canvas and one reading order. Opportunities should lead with a named programme and the community circumstances that make it worth pursuing, while retaining requirements and source links. People Groups should expose education pathways, service goals and useful capacity while Everyone retains the complete records. Keep the dated Notices feed consistent with the shared theme. Keep calculations, interpretations, delivery readiness, and unverified program leads clearly distinguishable.
+Keep Overview practical: actual observed changes, visible analytics on the left, a small number of dated connected findings on the right, and conversation below. Preserve the dark-green world and mobile findings → analytics → chat order. Opportunities continues to lead with a named programme and the community circumstances that make it worth pursuing, retaining requirements and sources. People Groups exposes education pathways, service goals and useful capacity while Everyone retains complete records. Keep calculations, interpretation, owner-only Telegram demo delivery, real-recipient readiness and unverified programme leads clearly distinguishable. This documentation records source behavior; it does not establish screenshot QA or live connection-test results.

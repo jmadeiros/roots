@@ -74,10 +74,18 @@ body[data-view=chat] main{padding-top:20px;padding-bottom:0;min-height:calc(100d
 .chat-review-messages summary > span:nth-child(2) { margin-left:auto; font-size:11px; color:var(--muted); }
 .chat-review-messages .chat-draft-body { font-size:13px; line-height:1.8; padding-bottom:10px; }
 .chat-review-messages .text-button { min-height:36px; font-size:11px; margin-bottom:8px; }
-.chat-send-checks h4,.chat-telegram-test h4 { font-size:13px; font-weight:500; margin:0 0 7px; line-height:1.5; }
-.chat-send-checks ul { margin:0 0 14px; padding-left:17px; color:var(--muted); font-size:12px; line-height:1.75; }
+.chat-telegram-test h4 { font-size:13px; font-weight:500; margin:0 0 7px; line-height:1.5; }
+.chat-send-checks ul { margin:10px 0 0; padding-left:17px; color:var(--muted); font-size:12px; line-height:1.75; }
 .chat-send-checks li + li { margin-top:4px; }
-.chat-telegram-test { border-top:1px solid var(--line); margin-top:22px; padding-top:20px; }
+.chat-telegram-test { margin-top:20px; }
+.chat-send-checks { border-top:1px solid var(--line); margin-top:22px; padding-top:12px; }
+.chat-send-checks summary { display:flex; align-items:center; justify-content:space-between; gap:14px; min-height:44px; cursor:pointer; color:var(--muted); font-size:12px; list-style:none; }
+.chat-send-checks summary::-webkit-details-marker { display:none; }
+.chat-send-checks summary:hover { color:var(--ink); }
+.chat-send-checks summary > svg { width:13px; height:13px; flex:none; }
+.chat-send-checks[open] summary > svg { transform:rotate(180deg); }
+.chat-send-checks > p { font-size:12px; color:var(--muted); line-height:1.75; }
+.chat-telegram-test .button { max-width:100%; white-space:normal; text-align:center; }
 .chat-telegram-test > p { font-size:12px; color:var(--muted); line-height:1.75; margin-bottom:13px; max-width:64ch; }
 .chat-telegram-test > small { display:block; font-size:11px; line-height:1.7; color:var(--muted); margin-top:9px; }
 .chat-test-receipt { margin:14px 0 0; }

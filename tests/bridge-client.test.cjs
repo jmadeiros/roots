@@ -32,7 +32,7 @@ function harness() {
     dispatchEvent(event) { events.push(event.type); listeners.get(event.type)?.(event); }
   };
   async function fetch(url, options = {}) {
-    const request = {url, method: options.method || 'GET', body: options.body ? JSON.parse(options.body) : null};
+    const request = {url, method: options.method || 'GET', headers:options.headers||{}, body: options.body ? JSON.parse(options.body) : null};
     requests.push(request);
     if (url === '/api/status') return response(200, {connected: true, geminiConfigured: true});
     if (url === '/api/activity') return response(200, server.activity);
@@ -223,4 +223,26 @@ test('insights load with connection readiness and explicit refresh uses the refr
   await h.bridge.loadInsights(true);
   assert.equal(h.requests.at(-1).url,'/api/insights/refresh');
   assert.equal(h.requests.at(-1).method,'POST');
+});
+
+
+test('chat includes the current owner demo-session token when available and never invents one', async () => {
+  const h=harness();await h.bridge.init();
+  await h.bridge.chat('What should we do next?');
+  assert.equal(h.chats()[0].headers['X-Roots-Test-Token'],undefined);
+  h.bridge.status.testPreview={available:true,csrfToken:'owner-demo-token'};
+  await h.bridge.chat('Send these messages to my Telegram.','conversation-test');
+  assert.equal(h.chats()[1].headers['X-Roots-Test-Token'],'owner-demo-token');
+  h.bridge.status.testPreview.csrfToken='refreshed-owner-demo-token';
+  await h.bridge.chat('Send the revised message.','conversation-test');
+  assert.equal(h.chats()[2].headers['X-Roots-Test-Token'],'refreshed-owner-demo-token');
+});
+
+
+test('chat passes a supplied request identity unchanged across explicit replay', async () => {
+  const h=harness();await h.bridge.init();const id='a'.repeat(32);
+  await h.bridge.chat('Send these demo messages.',null,id);
+  await h.bridge.chat('Send these demo messages.',null,id);
+  assert.equal(h.chats()[0].body.requestId,id);assert.deepEqual(h.chats()[0].body,h.chats()[1].body);
+  await h.bridge.chat('Read the records.');assert.equal(h.chats()[2].body.requestId,undefined);
 });

@@ -138,7 +138,7 @@
             if (!activity.createdAt || Date.parse(activity.createdAt) < Date.parse(ledger.since) || Date.parse(activity.createdAt) > date.getTime()) continue;
             if (activity.data.kind !== 'telegram_test_preview' || activity.data.status !== 'sent' || activity.data.deliveredToVolunteers !== false) continue;
             if (ledger.entries.some(entry => entry.activityIds?.includes(activity.id))) continue;
-            add('telegram-preview-sent', [activity], activity.createdAt, 'activityIds', 'Test preview sent to your Telegram chat');
+            add('telegram-preview-sent', [activity], activity.createdAt, 'activityIds', 'Demo messages sent to your Telegram chat');
           }
         } else if (previous) {
           const ids = kind === 'people' ? 'personIds' : kind === 'events' ? 'eventIds' : 'opportunityIds';
