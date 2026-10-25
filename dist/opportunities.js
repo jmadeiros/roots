@@ -148,12 +148,8 @@
     const item=connections('all').find(item=>item.id===id);if(!item)return;
     const p=item.program;
     api.closeDialog?.();
-    // A benefit is something to tell the matched volunteers about, so this starts their SMS drafts.
-    if(p.category==='benefits'){
-      const names=item.personIds.map(personId=>api.getState().people.find(person=>person.id===personId)?.name).filter(Boolean);
-      window.RootsChat.ask(`Prepare SMS drafts telling these people about ${p.title}: ${names.join(', ')}. What they get: ${p.insight?.gets||benefit(item)} Only include people with recorded SMS permission. Keep every draft unsent and show a plan I can review.`);
-      return;
-    }
+    // A benefit is something to tell the matched volunteers about, so this opens the Tell the people window.
+    if(p.category==='benefits'){tell({heading:`Tell them about ${p.title}.`,personIds:item.personIds,message:p.insight?.sms||`Hi {first_name}, ${benefit(item)}. Reply STOP to opt out.`});return;}
     window.RootsChat.setPrompt(`Prepare a practical application or partnership plan for ${p.title}. Published benefit: ${benefit(item)}. Current source status: ${displayedStatus(p)}. Our community fit: ${item.summary} Evidence: ${item.facts.map(f=>`${f.label}: ${f.value}`).join('; ')}. Gaps: ${item.gaps.join('; ')}. Next step: ${p.action}. Use the programme sources saved in this dashboard, researched 24 October 2026. Clearly label the ages, student needs and capacity as fictional demo assumptions. Do not imply a new web search, guaranteed eligibility, funding or attendance. Draft only; do not submit applications or send messages.`);
   }
   function updateResults(){const target=document.getElementById('opp-results');if(target)target.innerHTML=results();}
@@ -178,5 +174,43 @@
     document.addEventListener('input',event=>{if(event.target.id==='opp-search'){view.query=event.target.value;view.limit=4;updateResults();}});
     document.addEventListener('keydown',event=>{const button=event.target.closest('.opp-tab');if(!button||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const current=tabs.findIndex(tab=>tab[0]===view.tab);const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(current+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;changeTab(tabs[next][0]);});
   }
-  window.RootsOpportunities={configure,render,open,list,projects};
+  // Tell the people: an in-place window to message the people a benefit applies to.
+  // It saves drafts and can send labelled examples to the Roots Demo Inbox; nothing reaches volunteers.
+  const demoReady=()=>!!window.RootsBridge?.status?.testPreview?.available;
+  const requestHex=()=>crypto.randomUUID?crypto.randomUUID().replace(/-/g,''):Array.from({length:32},()=>Math.floor(Math.random()*16).toString(16)).join('');
+  function tell({heading,personIds,message}) {
+    const people=personIds.map(id=>state().people.find(person=>person.id===id)).filter(Boolean).slice(0,10);
+    api.openDialog('Tell the people',`<h2 id="dialog-title">${e(heading)}</h2><p class="lead">Choose who to tell and check the message. Examples go to your Roots Demo Inbox on Telegram, never to the volunteers.</p>
+      <form id="tell-form"><fieldset class="tell-people"><legend>Who</legend>${people.map(person=>`<label class="tell-person"><input type="checkbox" name="person" value="${e(person.id)}" checked>${api.avatar(person)}<span><strong>${e(person.name)}</strong><small>${person.consent?'SMS permission recorded':'SMS permission not recorded'}</small></span></label>`).join('')}</fieldset>
+      <div class="form-field tell-message"><label for="tell-message">Message</label><textarea id="tell-message" name="message" rows="4" maxlength="600" required>${e(message)}</textarea><p class="hint">{first_name} becomes each person’s first name.</p></div>
+      <div id="tell-result" role="status"></div>
+      <div class="dialog-actions tell-actions"><button type="button" class="button" data-tell="save">Save as drafts</button><button type="submit" class="button primary"${demoReady()?'':' disabled title="Connect the Roots Demo Inbox to send examples"'}>Send to demo inbox ${api.icon('arrow')}</button></div></form>`);
+  }
+  async function tellRun(form,send) {
+    const bridge=window.RootsBridge, result=document.getElementById('tell-result'), buttons=form.querySelectorAll('button');
+    const ids=[...form.querySelectorAll('input[name=person]:checked')].map(input=>input.value), message=form.message.value.trim();
+    if(!ids.length){result.innerHTML='<p class="tell-error">Choose at least one person.</p>';return;}
+    if(!message)return;
+    if(!bridge?.status?.testPreview?.csrfToken){result.innerHTML='<p class="tell-error">Open the connected local workspace to save or send these messages.</p>';return;}
+    buttons.forEach(button=>button.disabled=true);
+    result.innerHTML=`<p class="tell-progress">${send?'Sending to your demo inbox…':'Saving drafts…'}</p>`;
+    try {
+      await bridge.flush();
+      const headers={'X-Roots-Test-Token':bridge.status.testPreview.csrfToken};
+      const saved=await bridge.request('/api/drafts',{method:'POST',headers,body:JSON.stringify({drafts:ids.map(id=>({personId:id,channel:'sms',body:message.replaceAll('{first_name}',state().people.find(person=>person.id===id).name.split(' ')[0])}))})});
+      const draftIds=(saved.drafts||[]).map(draft=>draft.id);
+      if(!send){result.innerHTML=`<div class="success-panel"><strong>${api.icon('check')}${draftIds.length} ${draftIds.length===1?'draft':'drafts'} saved</strong>Nothing was sent. You can review them on Notices.</div>`;await bridge.loadActivity().catch(()=>{});return;}
+      const preview=(await bridge.request('/api/outreach/test',{method:'POST',headers,body:JSON.stringify({draftIds,requestId:requestHex()})})).testPreview||{};
+      const sent=preview.status==='sent';
+      result.innerHTML=`<div class="success-panel"><strong>${api.icon('check')}${sent?`Sent ${draftIds.length} ${draftIds.length===1?'example':'examples'} to your demo inbox`:'Telegram did not confirm every example'}</strong>${sent?'Nothing was sent to the volunteers.':'Check your demo inbox; nothing is resent automatically.'}${preview.botUsername?` <a href="https://t.me/${encodeURIComponent(preview.botUsername)}" target="_blank" rel="noopener">Open @${e(preview.botUsername)}</a>`:''}</div>`;
+      await bridge.loadActivity().catch(()=>{});
+    } catch(error) {
+      if(error.status===403)await bridge.init().catch(()=>{});
+      result.innerHTML=`<p class="tell-error">${e(error.status===403?'The connection was refreshed. Press the button again.':error.message||'That did not work. Your message is still here.')}</p>`;
+      buttons.forEach(button=>button.disabled=false);
+    }
+  }
+  document.addEventListener('submit',event=>{if(event.target.id==='tell-form'){event.preventDefault();tellRun(event.target,true);}});
+  document.addEventListener('click',event=>{const button=event.target.closest('[data-tell="save"]');if(button)tellRun(button.form,false);});
+  window.RootsOpportunities={configure,render,open,list,projects,tell};
 })();

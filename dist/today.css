@@ -255,6 +255,23 @@ main:has(.today-page[data-layout="a"][data-rail="open"]) { padding-right: calc(v
 .trend-note { margin: var(--t3) 0 0; font-size: 12px; color: var(--muted); }
 .today-fold .trend-interest-track { background: var(--paper); }
 
+/* Tell the people window. */
+.tell-people { display: grid; gap: var(--t2); margin: 0 0 var(--t5); padding: 0; border: 0; }
+.tell-people legend { margin-bottom: var(--t2); font-size: 11px; font-weight: 500; color: var(--muted); }
+.tell-person { display: flex; align-items: center; gap: var(--t3); padding: var(--t2) var(--t3); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+.tell-person:has(input:checked) { border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: var(--soft-surface); }
+.tell-person input { accent-color: var(--accent); }
+.tell-person span { display: grid; gap: 1px; }
+.tell-person strong { font-size: 13px; font-weight: 500; }
+.tell-person small { font-size: 11.5px; color: var(--muted); }
+.tell-message textarea { min-height: 96px; border-color: var(--line); background: var(--paper); color: var(--ink); font: inherit; font-size: 13.5px; line-height: 1.55; }
+.tell-message .hint { margin-top: var(--t2); font-size: 11.5px; color: var(--muted); }
+.tell-actions { display: flex; justify-content: flex-end; gap: var(--t2); }
+.tell-progress, .tell-error { margin: 0 0 var(--t4); font-size: 13px; color: var(--muted); }
+.tell-error { color: var(--warning); }
+#tell-result .success-panel { margin: 0 0 var(--t4); }
+#tell-result .success-panel a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
 /* The conversation stays docked at the bottom of the window. */
 .today-dock { position: sticky; bottom: 0; z-index: 5; padding: var(--t6) 0 var(--t4); background: linear-gradient(to bottom, color-mix(in srgb, var(--paper) 0%, transparent), var(--paper) var(--t6)); }
 .today-composer.briefing-composer { margin: 0; padding: var(--t3) var(--t3) var(--t3) var(--t4); border-radius: 14px; box-shadow: 0 10px 30px rgb(0 0 0 / .28); }
