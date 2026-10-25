@@ -130,3 +130,61 @@
   .opp-people-line { gap:2px 12px; }
   .opp-people-line button { min-height:40px; }
 }
+
+/* Concrete participation ideas have room for the people and evidence beside them. */
+.opp-intelligence { max-width:1000px; }
+.opp-intelligence .page-heading { margin-bottom:12px; }
+.opp-connection, .opp-csr-lead { display:grid; grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr); gap:48px; align-items:start; padding:32px 0; border-bottom:1px solid var(--line); }
+.opp-connection:first-child { padding-top:0; }
+.opp-connection h2, .opp-csr-lead h2 { font-size:20px; line-height:1.45; font-weight:500; letter-spacing:-.3px; text-wrap:balance; }
+.opp-connection-summary { margin-top:10px; max-width:70ch; }
+.opp-proposed-benefit { margin-top:12px; font-size:13px; line-height:1.8; color:var(--muted); }
+.opp-proposed-benefit > strong { font-weight:500; color:var(--ink); }
+.opp-plan-steps { padding-left:18px; margin:16px 0; font-size:13px; line-height:1.8; color:var(--muted); }
+.opp-plan-steps li + li { margin-top:6px; }
+.opp-people-evidence { padding-top:3px; min-width:0; }
+.opp-people-evidence h3 { font-size:14px; font-weight:500; line-height:1.5; margin-bottom:14px; }
+.opp-people-evidence .people-cluster { margin-bottom:9px; }
+.opp-see-people { display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--muted); min-height:32px; }
+.opp-see-people svg, .opp-csr-guide svg { width:13px; height:13px; }
+.opp-see-people:hover, .opp-csr-guide:hover { color:var(--ink); text-decoration:underline; text-underline-offset:4px; }
+.opp-evidence-facts { margin:16px 0 12px; font-size:12px; line-height:1.6; }
+.opp-evidence-facts > div { display:flex; justify-content:space-between; gap:18px; padding:9px 0; border-bottom:1px solid var(--line); }
+.opp-evidence-facts dt { color:var(--muted); }
+.opp-evidence-facts dd { margin:0; color:var(--ink); font-variant-numeric:tabular-nums; text-align:right; }
+.opp-evidence-observation, .opp-csr-gap { font-size:12px; line-height:1.8; color:var(--muted); }
+.opp-interest-detail { margin-top:12px; color:var(--muted); }
+.opp-interest-detail summary { display:flex; align-items:center; gap:8px; min-height:32px; list-style:none; cursor:pointer; font-size:12px; }
+.opp-interest-detail summary::-webkit-details-marker { display:none; }
+.opp-interest-detail summary svg { width:13px; height:13px; }
+.opp-interest-detail ul { padding:6px 0 0; margin:0; list-style:none; }
+.opp-interest-detail li { display:flex; justify-content:space-between; gap:16px; padding:5px 0; font-size:12px; }
+.opp-interest-detail strong { font-weight:500; color:var(--ink); }
+.opp-more-connections { margin:16px 0 0; }
+.opp-csr-lead { margin-top:28px; border-top:1px solid var(--line); border-bottom:0; }
+.opp-csr-lead .finding-sources { flex-wrap:wrap; }
+.opp-csr-lead .finding-sources a { display:inline-flex; align-items:center; gap:6px; font-size:12px; line-height:1.6; color:var(--ink); text-decoration:underline; text-underline-offset:4px; }
+.opp-csr-lead .finding-sources a svg { width:13px; height:13px; }
+.opp-csr-lead .finding-sources > span { font-size:11px; color:var(--muted); }
+.opp-csr-action { display:inline-flex; align-items:center; gap:8px; font-size:12px; border:1px solid var(--field-line); border-radius:7px; min-height:36px; padding:7px 11px; margin-top:12px; background:var(--surface); }
+.opp-csr-gap { margin:14px 0; color:var(--ink); }
+.opp-csr-guide { display:inline-flex; align-items:center; gap:7px; min-height:32px; font-size:12px; color:var(--muted); text-decoration:underline; text-underline-offset:4px; }
+.opp-connection .finding-next { grid-template-columns:150px minmax(0,1fr); }
+.opp-provenance { margin-top:20px; }
+@media(max-width:1100px) {
+  .opp-connection, .opp-csr-lead { grid-template-columns:minmax(0,1.55fr) minmax(230px,1fr); gap:28px; }
+}
+@media(max-width:900px) {
+  .opp-connection, .opp-csr-lead { grid-template-columns:minmax(0,1fr); gap:24px; }
+  .opp-people-evidence { max-width:540px; padding-top:0; }
+  .opp-people-evidence h3 { margin-bottom:10px; }
+  .opp-evidence-facts { margin-top:10px; }
+  .opp-plan-steps { margin:12px 0; }
+}
+@media(max-width:760px) {
+  .opp-connection, .opp-csr-lead { padding:28px 0; gap:24px; }
+  .opp-connection h2, .opp-csr-lead h2 { font-size:20px; }
+  .opp-priority-controls select { width:190px; font-size:14px; }
+  .opp-priority-controls { gap:8px; }
+  .opp-csr-action, .opp-see-people, .opp-csr-guide, .opp-interest-detail summary { min-height:44px; }
+}

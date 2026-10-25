@@ -152,3 +152,23 @@ test('current demo records yield three traceable connections, including five ser
     assert.equal(connection.discoveredAt, undefined);
   }
 });
+
+
+test('participation order prioritizes practical return-visit ideas only when actual interests match', () => {
+  const state = {people:[
+    {id:'a',name:'A',interests:['Service hours']},
+    {id:'b',name:'B',interests:['Growing']},
+    {id:'c',name:'C',interests:['Growing']}
+  ]};
+  const leads = [
+    {id:'o01',title:'Campus route',interests:['Growing']},
+    {id:'o05',title:'Service hours',interests:['Service hours']},
+    {id:'o07',title:'Tools',interests:['Growing']},
+    {id:'o09',title:'Training',interests:['Training']},
+    {id:'o12',title:'Employer policy',interests:[]}
+  ];
+  assert.deepEqual(rankOpportunities(state,leads,{order:'participation'}).map(item=>item.id),['o05','o07','o01']);
+  assert.deepEqual(rankOpportunities(state,leads,{order:'reach'}).map(item=>item.id),['o01','o07','o05']);
+  state.people[0].interests = [];
+  assert.deepEqual(rankOpportunities(state,leads,{order:'participation'}).map(item=>item.id),['o07','o01']);
+});

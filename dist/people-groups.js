@@ -1,13 +1,14 @@
-/* People groups use recorded interests, participation and explicitly shared age ranges. */
+/* People groups connect recorded interests, participation and shared personal context. */
 ((root) => {
   'use strict';
 
   const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   const text = value => typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : '';
   const validCount = value => Number.isSafeInteger(value) && value >= 0;
+  const validHours = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
   const groupOrder = (a, b) => b.count - a.count || a.label.localeCompare(b.label, 'en');
   const thoughts = {
-    'community gardening':'A regular garden session could give this shared interest a place to grow.',
+    'community gardening':'What would this group like to grow, learn or share? Ask before choosing a session or project; a broad interest can mean different things to different people.',
     'service hours':'Ask what experience or hours people need before shaping a recurring service pathway.',
     'composting':'A practical composting session could bring this group together around a shared project.',
     'community outreach':'Ask whether people would like to help welcome volunteers or tell the community’s story.',
@@ -35,6 +36,14 @@
     return result;
   }
 
+  function recordedContext(original, profile, field) {
+    const source = profile.personContextSource;
+    if (isRecord(source) && Object.prototype.hasOwnProperty.call(source, field)) {
+      return ['Locally recorded', 'Recorded in profile'].includes(source[field]) ? text(profile[field]) : '';
+    }
+    return text(original[field]);
+  }
+
   function compute(state, leads, profileAdapter) {
     const people = [], interestGroups = new Map(), ageGroups = new Map();
     const participation = [
@@ -43,7 +52,7 @@
       {id:'participation-zero', label:'No recorded visits', nextThought:'A simple conversation about interests and availability could help shape a first invitation.'},
       {id:'participation-unknown', label:'Visits not recorded', nextThought:'Check the attendance record before making assumptions about participation.'}
     ].map(group => ({...group, count:0, personIds:[], opportunityIds:[]}));
-    const coverage = {people:0, interests:0, visits:0, ageGroups:0};
+    const coverage = {people:0, interests:0, visits:0, ageGroups:0, students:0, employers:0, targets:0};
     for (const [id, original] of records(isRecord(state) ? state.people : null)) {
       let profile = original;
       if (typeof profileAdapter === 'function') {
@@ -57,11 +66,18 @@
       // profile enrichment, illustrative history or another inferred field.
       const ageGroup = text(original.ageGroup) || text(original.ageBand);
       const visits = profile.visits;
-      people.push({id, name:text(original.name) || 'Unnamed person', interests:[...interests.values()], visits});
+      const name = text(original.name) || 'Unnamed person';
+      const studentStatus = recordedContext(original, profile, 'studentStatus');
+      const employer = recordedContext(original, profile, 'employer');
+      const target = profile.serviceHours?.targetSource === 'Locally recorded' && validHours(profile.serviceHours.target) && profile.serviceHours.target > 0 ? profile.serviceHours.target : null;
+      people.push({id, name, initials:text(original.initials) || name.split(' ').slice(0, 2).map(part => part[0]).join(''), color:text(original.color) || 'sage', interests:[...interests.values()], visits, hours:validHours(original.hours) ? original.hours : null, availability:text(profile.availability), studentStatus, employer, target});
       coverage.people++;
       if (interests.size) coverage.interests++;
       if (validCount(visits)) coverage.visits++;
       if (ageGroup) coverage.ageGroups++;
+      if (studentStatus === 'Student') coverage.students++;
+      if (employer) coverage.employers++;
+      if (target !== null) coverage.targets++;
       for (const [key, label] of interests) {
         if (!interestGroups.has(key)) interestGroups.set(key, {id:`interest-${encodeURIComponent(key)}`, label, count:0, personIds:[], opportunityIds:[], nextThought:thoughts[key] || `Ask what people would like to do with their shared interest in ${label.toLowerCase()}.`});
         const group = interestGroups.get(key);
@@ -84,25 +100,59 @@
         if (interestGroups.has(key)) interestGroups.get(key).opportunityIds.push(id);
       }
     }
+    const service = interestGroups.get('service hours');
+    const goalGroup = (id, label, members, description, nextThought, opportunityIds = []) => ({id, label, count:members.length, personIds:members.map(person => person.id), description, nextThought, opportunityIds:opportunityIds.filter(id => relatedLeads.some(lead => lead.id === id))});
+    const servicePeople = people.filter(person => service?.personIds.includes(person.id));
+    const firstPeople = people.filter(person => person.visits === 1);
+    const students = people.filter(person => person.studentStatus === 'Student');
+    const employed = people.filter(person => person.employer);
+    const targets = people.filter(person => person.target !== null);
+    const goals = [
+      goalGroup('goal-service', 'Working toward service hours', servicePeople, `${servicePeople.length} ${servicePeople.length === 1 ? 'person lists' : 'people list'} service hours as an interest.`, 'A recurring supervised shift could give this group a clear way to plan and record hours. Ask what experience and approval each person needs.', service?.opportunityIds || []),
+      goalGroup('goal-return', 'A reason to come back', firstPeople, `${firstPeople.length} ${firstPeople.length === 1 ? 'person has' : 'people have'} one recorded visit.`, 'Ask what they enjoyed and what would make a next visit worthwhile. A visit total does not tell us when someone attended or whether they plan to return.'),
+      goalGroup('goal-students', 'Students shaping their next step', students, `${students.length} ${students.length === 1 ? 'person has' : 'people have'} shared that they are students.`, 'Explore a project that connects with their learning or service goals, then confirm school approval and supervision.', ['o01', 'o05']),
+      goalGroup('goal-employers', 'Connections through work', employed, `${employed.length} ${employed.length === 1 ? 'person has' : 'people have'} an employer recorded.`, 'Ask whether they want to explore a team activity, volunteer time or matching gifts through work. An employer name does not establish a benefit.', ['o06', 'o10']),
+      goalGroup('goal-targets', 'Recorded hour goals to plan around', targets, `${targets.length} ${targets.length === 1 ? 'person has' : 'people have'} a locally recorded service-hour target.`, 'Agree a manageable schedule and how hours will be verified. Recorded totals do not establish approved progress toward a school requirement.', ['o05'])
+    ].filter(group => group.count);
+    const groupStats = group => {
+      const members = people.filter(person => group.personIds.includes(person.id));
+      return {...group, stats:{
+        hours:members.reduce((sum, person) => sum + (person.hours ?? 0), 0),
+        hoursKnown:members.filter(person => person.hours !== null).length,
+        oneVisit:members.filter(person => person.visits === 1).length,
+        visitsKnown:members.filter(person => validCount(person.visits)).length,
+        percent:coverage.people ? Math.round(group.count / coverage.people * 100) : 0,
+        targetCount:members.filter(person => person.target !== null).length
+      }};
+    };
     return {
       people, leads:relatedLeads, coverage,
-      interests:[...interestGroups.values()].sort(groupOrder),
-      participation:participation.filter(group => group.count),
-      ageGroups:[...ageGroups.values()].sort(groupOrder)
+      goals:goals.map(groupStats),
+      interests:[...interestGroups.values()].sort(groupOrder).map(groupStats),
+      participation:participation.filter(group => group.count).map(groupStats),
+      ageGroups:[...ageGroups.values()].sort(groupOrder).map(groupStats)
     };
   }
 
   let api = null, bound = false;
-  const view = {tab:'groups', grouping:'interests', all:false, expanded:new Set()};
-  const groupingNames = [['interests','Interests'], ['participation','Participation'], ['ageGroups','Age groups']];
+  const view = {tab:'groups', grouping:'goals', all:false, expanded:new Set()};
+  const groupingNames = [['goals','Ways to take part'], ['interests','Interests'], ['participation','Participation'], ['ageGroups','Age groups']];
   const e = value => api.esc(value);
+  const number = value => new Intl.NumberFormat('en-US', {maximumFractionDigits:1}).format(value);
+
+  function clusterMarkup(members, group) {
+    const visible = members.slice(0, 5), remaining = members.length - visible.length;
+    return `<div class="people-cluster" role="group" aria-label="People in ${e(group.label)}">${visible.map(person => `<button type="button" data-people-group-person="${e(person.id)}" title="${e(person.name)}" aria-label="Open ${e(person.name)}’s profile">${api.avatar(person)}</button>`).join('')}${remaining ? `<button type="button" class="people-cluster-more" data-people-group-open="${e(group.id)}" aria-controls="people-details-${e(group.id)}" aria-expanded="${view.expanded.has(group.id)}" aria-label="See all ${group.count} people in ${e(group.label)}" title="See all ${group.count} people">+${remaining}</button>` : ''}</div>`;
+  }
 
   function groupMarkup(group, result) {
     const members = group.personIds.map(id => result.people.find(person => person.id === id)).filter(Boolean);
     const leads = group.opportunityIds.map(id => result.leads.find(lead => lead.id === id)).filter(Boolean);
     const count = `${group.count} ${group.count === 1 ? 'person' : 'people'}`;
-    const description = view.grouping === 'interests' ? `${count} ${group.count === 1 ? 'lists' : 'list'} this interest.` : view.grouping === 'ageGroups' ? `${count} ${group.count === 1 ? 'has' : 'have'} this age range recorded.` : `${count} in the current records.`;
-    return `<article class="people-group"><h2>${e(group.label)}</h2><p class="people-group-thought"><span>${e(description)}</span> ${e(group.nextThought)}</p><details class="people-group-details" data-people-group-id="${e(group.id)}"${view.expanded.has(group.id) ? ' open' : ''}><summary>See ${e(count)}${leads.length ? ' and related leads' : ''}${api.icon('chevron-down')}</summary><div class="people-group-expanded"><ul class="people-group-members">${members.map(person => `<li><button type="button" data-people-group-person="${e(person.id)}"><span>${e(person.name)}</span>${api.icon('arrow')}</button></li>`).join('')}</ul>${leads.length ? `<section class="people-group-leads"><h3>Related leads</h3><p>Connected by stated interest; current program terms need checking.</p><ul>${leads.map(lead => `<li><button type="button" data-people-group-lead="${e(lead.id)}"><span>${e(lead.title)}</span>${api.icon('arrow')}</button></li>`).join('')}</ul></section>` : ''}</div></details></article>`;
+    const description = group.description || (view.grouping === 'interests' ? `${count} ${group.count === 1 ? 'lists' : 'list'} this interest.` : view.grouping === 'ageGroups' ? `${count} ${group.count === 1 ? 'has' : 'have'} this age range recorded.` : `${count} in the current records.`);
+    const stats = group.stats;
+    const coverageNote = [stats.hoursKnown < group.count ? `Hours recorded for ${stats.hoursKnown} of ${group.count}.` : '', stats.visitsKnown < group.count ? `Visits recorded for ${stats.visitsKnown} of ${group.count}.` : ''].filter(Boolean).join(' ');
+    return `<article class="people-group"><div class="people-group-story"><h2>${e(group.label)}</h2><p class="people-group-description">${e(description)}</p><p class="people-group-thought">${e(group.nextThought)}</p>${group.label.toLowerCase() === 'community gardening' ? '<p class="people-group-qualification">This records who named the interest, not everyone who might enjoy gardening.</p>' : ''}</div><aside class="people-group-evidence" aria-label="People and recorded facts">${clusterMarkup(members, group)}<p class="people-group-count">${group.count} of ${result.coverage.people} people <span>· ${stats.percent}% of the community</span></p><dl class="people-group-stats"><div><dt>Recorded hours</dt><dd>${stats.hoursKnown ? e(number(stats.hours)) : '—'}</dd></div><div><dt>With one visit</dt><dd>${stats.visitsKnown ? stats.oneVisit : '—'}</dd></div>${stats.targetCount ? `<div><dt>Recorded hour goals</dt><dd>${stats.targetCount}</dd></div>` : ''}</dl>${coverageNote ? `<p class="people-group-coverage">${e(coverageNote)}</p>` : ''}</aside><details id="people-details-${e(group.id)}" class="people-group-details" data-people-group-id="${e(group.id)}"${view.expanded.has(group.id) ? ' open' : ''}><summary>See ${e(count)}${leads.length ? ' and related leads' : ''}${api.icon('chevron-down')}</summary><div class="people-group-expanded"><ul class="people-group-members">${members.map(person => `<li><button type="button" data-people-group-person="${e(person.id)}">${api.avatar(person)}<span><strong>${e(person.name)}</strong><small>${e(person.availability || 'Availability not recorded')}</small></span>${api.icon('arrow')}</button></li>`).join('')}</ul>${leads.length ? `<section class="people-group-leads"><h3>Possible next steps</h3><p>Leads to explore with this group. Participation and current program terms still need checking.</p><ul>${leads.map(lead => `<li><button type="button" data-people-group-lead="${e(lead.id)}"><span>${e(lead.title)}</span>${api.icon('arrow')}</button></li>`).join('')}</ul></section>` : ''}</div></details></article>`;
   }
 
   function groupsMarkup(result) {
@@ -114,14 +164,20 @@
         ? '<p class="people-groups-empty">Age groups aren’t recorded yet. This view will use age ranges people choose to share.</p>'
         : view.grouping === 'interests'
           ? '<p class="people-groups-empty">There are no stated interests to group yet. Shared interests will appear here as people add them.</p>'
-          : '<p class="people-groups-empty">Add people to start exploring participation.</p>';
+          : view.grouping === 'goals'
+            ? '<p class="people-groups-empty">A shared goal starts with a conversation. Add interests or People context to a profile to find useful ways to take part.</p>'
+            : '<p class="people-groups-empty">Add people to start exploring participation.</p>';
     }
-    const note = view.grouping === 'interests'
+    const note = view.grouping === 'goals'
+      ? 'Groups can overlap. These are starting points for a conversation, not commitments to participate. Fictional demo records.'
+      : view.grouping === 'interests'
       ? `Groups use stated interests, so a person can appear in more than one. ${result.coverage.people - result.coverage.interests ? `${result.coverage.people - result.coverage.interests} ${result.coverage.people - result.coverage.interests === 1 ? 'person has' : 'people have'} no interests recorded. ` : ''}Fictional demo records.`
       : view.grouping === 'participation'
         ? 'These are total recorded visits, not a measure of recent attendance or retention. Fictional demo records.'
         : `Only explicitly recorded age ranges appear here.${groups.length && result.coverage.people > result.coverage.ageGroups ? ` ${result.coverage.people - result.coverage.ageGroups} ${result.coverage.people - result.coverage.ageGroups === 1 ? 'person has' : 'people have'} no age range recorded.` : ''}`;
-    return `<div class="people-grouping-controls" role="group" aria-label="Group people by">${groupingNames.map(([id,label]) => `<button type="button" id="people-grouping-${id}" data-people-grouping="${id}" aria-pressed="${view.grouping === id}">${label}</button>`).join('')}</div><div class="people-group-list">${content}</div>${view.grouping === 'interests' && groups.length > 4 ? `<button type="button" class="people-groups-more" data-people-groups-all aria-expanded="${view.all}">${view.all ? 'Show fewer groups' : `Show all ${groups.length} groups`}</button>` : ''}<p class="people-groups-note">${e(note)}</p>`;
+    const missingContext = [!result.coverage.students ? 'Student' : '', !result.coverage.employers ? 'employer' : ''].filter(Boolean);
+    const contextNote = view.grouping === 'goals' && missingContext.length ? `<p class="people-groups-context">${e(missingContext.join(' and '))} groups appear when people share that context. Open a profile and use <strong>People context</strong> to record it.</p>` : '';
+    return `<div class="people-grouping-controls" role="group" aria-label="Group people by">${groupingNames.map(([id,label]) => `<button type="button" id="people-grouping-${id}" data-people-grouping="${id}" aria-pressed="${view.grouping === id}">${label}</button>`).join('')}</div><div class="people-group-list">${content}</div>${view.grouping === 'interests' && groups.length > 4 ? `<button type="button" class="people-groups-more" data-people-groups-all aria-expanded="${view.all}">${view.all ? 'Show fewer groups' : `Show all ${groups.length} groups`}</button>` : ''}${contextNote}<p class="people-groups-note">${e(note)}</p>`;
   }
 
   function render(renderEveryone) {
@@ -142,7 +198,7 @@
     if (bound || typeof document === 'undefined') return;
     bound = true;
     document.addEventListener('click', event => {
-      const button = event.target.closest('[data-people-view],[data-people-grouping],[data-people-groups-all],[data-people-group-person],[data-people-group-lead]');
+      const button = event.target.closest('[data-people-view],[data-people-grouping],[data-people-groups-all],[data-people-group-person],[data-people-group-lead],[data-people-group-open]');
       if (!button || !api) return;
       if (button.hasAttribute('data-people-view')) selectTab(button.dataset.peopleView);
       else if (button.hasAttribute('data-people-grouping')) {
@@ -154,6 +210,13 @@
         view.all = !view.all;
         api.render();
         document.querySelector('[data-people-groups-all]')?.focus();
+      } else if (button.hasAttribute('data-people-group-open')) {
+        const details = document.getElementById(`people-details-${button.dataset.peopleGroupOpen}`);
+        if (details) {
+          details.open = !details.open;
+          button.setAttribute('aria-expanded', String(details.open));
+          if (details.open) details.querySelector('summary')?.focus();
+        }
       } else if (button.hasAttribute('data-people-group-person')) api.showPerson(button.dataset.peopleGroupPerson);
       else if (button.hasAttribute('data-people-group-lead')) api.showOpportunity(button.dataset.peopleGroupLead);
     });
@@ -161,6 +224,9 @@
       if (!event.target.isConnected || !event.target.matches?.('.people-group-details')) return;
       const id = event.target.dataset.peopleGroupId;
       if (event.target.open) view.expanded.add(id); else view.expanded.delete(id);
+      document.querySelectorAll('[data-people-group-open]').forEach(button => {
+        if (button.dataset.peopleGroupOpen === id) button.setAttribute('aria-expanded', String(event.target.open));
+      });
     }, true);
     document.addEventListener('keydown', event => {
       if (!event.target.matches?.('[data-people-view]') || !['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;

@@ -150,7 +150,9 @@
         peopleCount:matches.length, closeCount:matches.filter(item=>item.interests.length>1).length,
         interests:[...counts.values()].sort((a,b)=>b.count-a.count || a.label.localeCompare(b.label))});
     }
-    return ranked.sort((a,b) => (options.order === 'closest' ? b.closeCount-a.closeCount : 0) || b.peopleCount-a.peopleCount || a.id.localeCompare(b.id));
+    const participationOrder = ['o05','o07','o09','o01','o10','o08','o11'];
+    const participationPriority = id => participationOrder.includes(id) ? participationOrder.indexOf(id) : participationOrder.length;
+    return ranked.sort((a,b) => (options.order === 'participation' ? participationPriority(a.id)-participationPriority(b.id) : 0) || (options.order === 'closest' ? b.closeCount-a.closeCount : 0) || b.peopleCount-a.peopleCount || a.id.localeCompare(b.id));
   }
 
   const api = {compute, rankOpportunities};

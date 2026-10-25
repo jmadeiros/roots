@@ -95,4 +95,63 @@ test('current demo groups show eight gardeners and no fabricated age groups', ()
   assert.deepEqual(result.participation.map(group => group.count), [8, 27]);
   assert.equal(result.coverage.ageGroups, 0);
   assert.deepEqual(result.ageGroups, []);
+  assert.deepEqual(result.goals.map(group => [group.id, group.count]), [['goal-service', 5], ['goal-return', 8]]);
+  assert.equal(result.goals[0].stats.oneVisit, 3);
+  assert.equal(result.goals[0].stats.percent, 14);
+  assert.equal(result.coverage.students, 0);
+  assert.equal(result.coverage.employers, 0);
+});
+
+test('student and employer groups require explicit records and respect locally cleared context', () => {
+  const state = {people:[
+    {id:'interest', name:'Student-looking name', interests:['Service hours', 'Youth mentoring']},
+    {id:'student', studentStatus:'Student'},
+    {id:'school-only', school:'A college'},
+    {id:'not-student', studentStatus:'Not a student'},
+    {id:'employer', employer:' Local company '},
+    {id:'local'},
+    {id:'cleared', studentStatus:'Student', employer:'Past workplace'},
+    {id:'fabricated'}
+  ]};
+  const result = compute(state, [], person => person.id === 'local'
+    ? {...person, studentStatus:'Student', employer:'Shared workplace', personContextSource:{studentStatus:'Locally recorded', employer:'Locally recorded'}}
+    : person.id === 'cleared'
+      ? {...person, studentStatus:'Not recorded', employer:null, personContextSource:{studentStatus:'Not recorded', employer:'Not recorded'}}
+      : person.id === 'fabricated'
+        ? {...person, studentStatus:'Student', employer:'Invented company', personContextSource:{studentStatus:'Inferred', employer:'Illustrative'}}
+        : person);
+  assert.deepEqual(result.goals.find(group => group.id === 'goal-students').personIds, ['student', 'local']);
+  assert.deepEqual(result.goals.find(group => group.id === 'goal-employers').personIds, ['employer', 'local']);
+  assert.equal(result.coverage.students, 2);
+  assert.equal(result.coverage.employers, 2);
+  assert.equal(result.people.find(person => person.id === 'employer').employer, 'Local company');
+  const untrustedAdapter = compute({people:[{id:'a'}]}, [], person => ({...person, studentStatus:'Student', employer:'Unrecorded'}));
+  assert.equal(untrustedAdapter.goals.length, 0, 'adapter enrichment without provenance cannot invent context');
+});
+
+test('group facts total valid direct hours and keep unknown records out of the total', () => {
+  const result = compute({people:[
+    {id:'a', interests:['Art'], hours:4.5, visits:1},
+    {id:'b', interests:['Art'], hours:0, visits:2},
+    {id:'c', interests:['Art'], hours:'8'},
+    {id:'d', interests:['Art'], hours:-1, visits:0},
+    {id:'e', interests:['Art'], hours:Infinity},
+    {id:'f', interests:['Art'], hours:true}
+  ]}, [], person => ({...person, hours:999, serviceHours:{recordedTotal:999, approved:998, pending:1, target:40, targetSource:'Illustrative target'}}));
+  assert.deepEqual(result.interests[0].stats, {hours:4.5, hoursKnown:2, oneVisit:1, visitsKnown:3, percent:100, targetCount:0});
+  assert.equal(result.coverage.targets, 0);
+  assert.equal(result.goals.some(group => group.id === 'goal-targets'), false);
+});
+
+test('only locally recorded positive hour targets form a goal cohort and related pathways remain inspectable', () => {
+  const targets = [40, 0, -10, '60', Infinity, 50];
+  const result = compute({people:targets.map((_, index) => ({id:`p${index}`, interests:['Service hours']}))}, [
+    {id:'o05', title:'School service-hour partnership', interests:['Service hours']},
+    {id:'o01', title:'Student partnership', interests:['Community gardening']}
+  ], person => ({...person, serviceHours:{target:targets[Number(person.id.slice(1))], targetSource:person.id === 'p5' ? 'Illustrative target' : 'Locally recorded'}}));
+  assert.deepEqual(result.goals.find(group => group.id === 'goal-targets').personIds, ['p0']);
+  assert.deepEqual(result.goals.find(group => group.id === 'goal-targets').opportunityIds, ['o05']);
+  assert.equal(result.goals.find(group => group.id === 'goal-service').stats.targetCount, 1);
+  assert.deepEqual(result.goals.find(group => group.id === 'goal-service').opportunityIds, ['o05']);
+  assert.equal(result.coverage.targets, 1);
 });

@@ -4,6 +4,7 @@
 
   const STORAGE_KEY = 'roots-people-details-v1';
   const tabNames = ['Profile', 'Activity', 'Notes'];
+  const studentStatuses = ['Not recorded', 'Student', 'Not a student'];
   let api = null;
   let activeId = null;
   let activeTab = 'Profile';
@@ -64,6 +65,15 @@
 
   function profileData(person) {
     const stored = storedFor(person);
+    const context = {};
+    const personContextSource = {};
+    for (const field of ['studentStatus', 'school', 'employer']) {
+      const isLocal = Object.prototype.hasOwnProperty.call(stored, field);
+      const value = validText(isLocal ? stored[field] : person[field], 160).trim();
+      context[field] = field === 'studentStatus' ? (studentStatuses.includes(value) ? value : 'Not recorded') : (value || null);
+      const recorded = field === 'studentStatus' ? context[field] !== 'Not recorded' : Boolean(context[field]);
+      personContextSource[field] = recorded ? (isLocal ? 'Locally recorded' : 'Recorded in profile') : 'Not recorded';
+    }
     const activity = sampleHistory(person);
     const pending = activity.find(item => item.approval === 'Pending review')?.hours || 0;
     const sampleTarget = person.interests?.includes('Service hours') ? 40 : null;
@@ -72,6 +82,8 @@
     const target = hasTarget ? (Number.isFinite(suppliedTarget) && suppliedTarget > 0 && suppliedTarget <= 1000 ? suppliedTarget : null) : sampleTarget;
     return {
       ...person,
+      ...context,
+      personContextSource,
       availability: validText(stored.availability, 160) || person.availability,
       declaredSkills: Array.isArray(stored.skills) ? stored.skills.filter(skill => typeof skill === 'string').slice(0, 12).map(skill => skill.slice(0, 60)) : [],
       communicationPreference: ['Email', 'SMS', 'Either'].includes(stored.channel) ? stored.channel : 'Not recorded',
@@ -118,13 +130,19 @@
       availability: profile.availability,
       skills: profile.declaredSkills.join(', '),
       channel: profile.communicationPreference,
-      target: profile.serviceHours.targetSource === 'Locally recorded' ? (profile.serviceHours.target ?? '') : ''
+      target: profile.serviceHours.targetSource === 'Locally recorded' ? (profile.serviceHours.target ?? '') : '',
+      studentStatus: profile.studentStatus,
+      school: profile.school || '',
+      employer: profile.employer || ''
     };
-    return `<details class="people-edit" id="people-edit-preferences"><summary>Edit skills & preferences ${api.icon('chevron-down')}</summary>
+    return `<details class="people-edit" id="people-edit-preferences"><summary>People context & preferences ${api.icon('chevron-down')}</summary>
       <form id="people-preferences-form" class="people-edit-form">
         <div class="form-field"><label for="people-declared-skills">Declared skills</label><input id="people-declared-skills" name="skills" value="${escapeText(draft.skills)}" maxlength="600" placeholder="e.g. Gardening, photography"><p class="hint">Add skills the volunteer has shared, separated by commas. Interests are kept separately.</p></div>
         <div class="form-field"><label for="people-availability">Availability</label><input id="people-availability" name="availability" value="${escapeText(draft.availability)}" maxlength="160" required></div>
         <div class="form-row"><div class="form-field"><label for="people-preferred-channel">Preferred contact method</label><select id="people-preferred-channel" name="channel">${['Not recorded', 'Email', 'SMS', 'Either'].map(channel => `<option${draft.channel === channel ? ' selected' : ''}>${channel}</option>`).join('')}</select></div><div class="form-field"><label for="people-hour-target">Service-hour target</label><input id="people-hour-target" name="target" type="number" min="1" max="1000" step="1" value="${escapeText(draft.target)}" placeholder="Not recorded"><p class="hint">Optional. Add a confirmed target.</p></div></div>
+        <p class="hint">Student and employer details are optional. Record only what this person has shared.</p>
+        <div class="form-field"><label for="people-student-status">Student status</label><select id="people-student-status" name="studentStatus">${studentStatuses.map(status => `<option${draft.studentStatus === status ? ' selected' : ''}>${status}</option>`).join('')}</select></div>
+        <div class="form-row"><div class="form-field"><label for="people-school">School / college (optional)</label><input id="people-school" name="school" value="${escapeText(draft.school)}" maxlength="160" placeholder="Not recorded"></div><div class="form-field"><label for="people-employer">Employer (optional)</label><input id="people-employer" name="employer" value="${escapeText(draft.employer)}" maxlength="160" placeholder="Not recorded"></div></div>
         <p class="people-form-note">A contact preference does not grant permission to send messages.</p>
         <button class="button primary" type="submit">Save preferences ${api.icon('check')}</button>
       </form></details>`;
@@ -143,6 +161,7 @@
     <section class="people-section"><h3>What they bring</h3><div class="people-field-group"><span class="people-field-label">Interests</span><div class="tags">${person.interests.map(interest => `<span class="tag">${escapeText(interest)}</span>`).join('')}</div></div>
       <div class="people-field-group"><span class="people-field-label">Declared skills</span>${profile.declaredSkills.length ? `<div class="tags">${profile.declaredSkills.map(skill => `<span class="tag">${escapeText(skill)}</span>`).join('')}</div>` : '<p class="people-unrecorded">Skills haven’t been recorded yet.</p>'}</div>
       <div class="people-availability">${api.icon('clock')}<div><span class="people-field-label">Usually available</span><p>${escapeText(profile.availability)}</p></div></div>
+      <dl class="people-facts"><div><dt>Student status</dt><dd>${escapeText(profile.studentStatus)}</dd></div><div><dt>School / college</dt><dd>${escapeText(profile.school || 'Not recorded')}</dd></div><div><dt>Employer</dt><dd>${escapeText(profile.employer || 'Not recorded')}</dd></div></dl>
       ${preferenceForm(person)}
     </section>
     <section class="people-section"><div class="people-section-heading"><h3>Service hours</h3><span class="people-example-label">Example tracking</span></div>
@@ -200,7 +219,8 @@
 
   function saveEntry(id, values) {
     edits[id] = {...storedFor({id}), ...values};
-    window.RootsBridge?.sync();
+    if (window.RootsBridge?.sync) window.RootsBridge.sync();
+    else window.dispatchEvent(new CustomEvent('roots:records-changed'));
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(edits));
       return true;
@@ -288,7 +308,10 @@
       }
       const skills = [...new Set(String(fields.get('skills')).split(',').map(skill => skill.trim().slice(0, 60)).filter(Boolean))].slice(0, 12);
       const target = fields.get('target') ? Number(fields.get('target')) : null;
-      const saved = saveEntry(person.id, {skills, availability, channel: String(fields.get('channel')), target, preferencesUpdatedAt: new Date().toISOString()});
+      const studentStatus = studentStatuses.includes(fields.get('studentStatus')) ? fields.get('studentStatus') : 'Not recorded';
+      const school = validText(fields.get('school'), 160).trim() || null;
+      const employer = validText(fields.get('employer'), 160).trim() || null;
+      const saved = saveEntry(person.id, {skills, availability, channel: String(fields.get('channel')), target, studentStatus, school, employer, preferencesUpdatedAt: new Date().toISOString()});
       const draft = drafts.get(person.id) || {};
       delete draft.preferences;
       drafts.set(person.id, draft);
