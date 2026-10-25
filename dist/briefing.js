@@ -240,10 +240,16 @@
     const feed=document.getElementById('today-feed');if(feed)feed.innerHTML=feedMarkup(model);
     const latest=document.getElementById('today-feed-latest');if(latest)latest.innerHTML=latestMarkup(model);
     const tab=document.getElementById('today-tab-feed-body');if(tab)tab.innerHTML=feedTabMarkup(model);
+    const head=document.getElementById('today-feed-head');if(head)head.innerHTML=feedHeadMarkup(model);
   }
   const chartTabs=()=>`<div class="overview-chart-tabs" role="group" aria-label="Coming back chart"><button data-dashboard-tab="trend" aria-pressed="${analyticsTab==='trend'}">By month</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">By interest</button></div>`;
   // Layout D: three headings in one row; the open one shows its content underneath.
   let rowOpen='noticed';
+  // Layout E: the feed folds to one line, opened the way the layout D headings open.
+  function feedHeadMarkup(model) {
+    const items=feedItems(model), latest=items[0], today=items.filter(item=>Date.now()-item.at<86400000).length, fresh=latest&&Date.now()-latest.at<4000;
+    return `<span class="today-tab-figure"><strong>${today}</strong><span>updates today</span></span><span class="today-latest${fresh?' is-new':''}"><span class="today-live" aria-hidden="true"><i></i></span><span class="today-latest-text">${latest?e(latest.text):'Nothing yet today'}</span>${latest?`<span class="today-latest-time">${e(ago(latest.at))}</span>`:''}</span>`;
+  }
   function feedTabMarkup(model) {
     const items=feedItems(model), latest=items[0], fresh=latest&&Date.now()-latest.at<4000;
     return `<span class="today-tab-figure"><strong>${items.length}</strong><span>updates today</span></span><span class="today-tab-visual today-latest${fresh?' is-new':''}"><span class="today-live" aria-hidden="true"><i></i></span><span class="today-latest-text">${latest?e(latest.text):'Nothing yet today'}</span>${latest?`<span class="today-latest-time">${e(ago(latest.at))}</span>`:''}</span>`;
@@ -280,7 +286,7 @@
     const dock=`<div class="today-dock"><form id="briefing-chat-form" class="briefing-composer today-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="1" maxlength="2000" placeholder="Ask Roots, or turn an idea into an SMS…" required>${e(prompt)}</textarea><div class="today-composer-bottom"><div class="today-chips">${shown.map(([label,ask])=>`<button type="button" data-briefing="suggestion" data-prompt="${e(ask)}">${e(label)}</button>`).join('')}</div><button class="today-send" type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form></div>`;
     if(layout==='e')return `<div class="today-page" data-layout="e">
       <header class="today-head"><div class="today-head-top"><h1 id="today-title">${e(briefingTitle())}</h1><span class="today-date">${e(date)}</span></div><p class="today-summary" id="today-summary">${model.brief}</p></header>
-      <section class="today-band" aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today <span class="today-live"><i></i>Live</span></h2></div><ol class="today-feed today-feed-wide" id="today-feed">${feedMarkup(model)}</ol></section>
+      <details class="today-feedfold" data-open-key="feed-band"${opened.has('feed-band')?' open':''}><summary><span class="today-tab-title">Today’s feed${CHEV}</span><span class="today-feedfold-head" id="today-feed-head">${feedHeadMarkup(model)}</span></summary><ol class="today-feed today-feed-wide" id="today-feed">${feedMarkup(model)}</ol></details>
       <div class="today-split">
         <section class="today-glance" aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Coming back</h2>${tabs}</div>${patterns}</section>
         <section class="today-section" aria-labelledby="today-noticed"><div class="today-section-head"><h2 id="today-noticed">What Roots noticed</h2></div><div id="briefing-insights">${insightsMarkup()}</div></section>

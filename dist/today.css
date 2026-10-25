@@ -177,6 +177,16 @@ main:has(.today-page[data-layout="a"]) { max-width: none; margin: 0; padding-rig
 .today-page[data-layout="e"] .today-head h1 { font-size: 30px; }
 .today-page[data-layout="e"] .today-date { flex: none; }
 .today-band { margin-bottom: var(--t5); }
+.today-feedfold { margin-bottom: var(--t6); }
+.today-feedfold > summary { display: grid; gap: var(--t2); }
+.today-feedfold > summary:hover .today-tab-title, .today-feedfold[open] > summary .today-tab-title { color: var(--ink); }
+.today-feedfold[open] > summary .today-chev { transform: rotate(180deg); }
+.today-feedfold-head { display: flex; align-items: center; gap: var(--t5); min-width: 0; }
+.today-feedfold-head .today-tab-figure { flex: none; }
+.today-feedfold-head .today-latest { min-width: 0; font-size: 13px; color: var(--muted); }
+.today-feedfold-head .today-latest.is-new { animation: today-flash 1.6s ease-out both; }
+.today-feedfold[open] .today-feedfold-head .today-latest { visibility: hidden; }
+.today-feedfold > .today-feed { margin-top: var(--t3); }
 .today-section-head h2 .today-live { margin-left: var(--t2); font-weight: 400; letter-spacing: 0; }
 .today-feed-wide .feed-text { display: flex; justify-content: space-between; align-items: baseline; gap: var(--t4); }
 .today-feed-wide .feed-text time { flex: none; margin: 0; }
@@ -186,7 +196,7 @@ main:has(.today-page[data-layout="a"]) { max-width: none; margin: 0; padding-rig
 .feed-earlier > details > summary { display: inline-flex; align-items: center; gap: 6px; padding: 6px var(--t2); border-radius: var(--t2); font-size: 12.5px; color: var(--muted); }
 .feed-earlier > details > summary:hover { background: var(--hover-surface); color: var(--ink); }
 .feed-earlier .today-feed { margin-top: 2px; }
-.today-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--t7); padding-top: var(--t5); border-top: 1px solid var(--line); }
+.today-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--t7); }
 .today-split .today-section + .today-section { margin-top: 0; }
 .today-metrics { display: flex; flex-wrap: wrap; align-items: center; gap: var(--t1) var(--t2); margin: 0 0 var(--t5); font-size: 12.5px; color: var(--muted); }
 .today-metrics button, .today-metrics a { padding: 0; border: 0; background: none; color: var(--ink); font: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); cursor: pointer; }
