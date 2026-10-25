@@ -85,11 +85,12 @@
   const money=p=>p.amountMin&&p.amountMax?`${short(p.amountMin)}–${short(p.amountMax)}`:p.amountMax?`up to ${short(p.amountMax)}`:'funded';
   const person=id=>api.getState().people.find(p=>p.id===id);
   const LOADED=Date.now();
-  const ago=at=>{const mins=Math.floor((Date.now()-at)/60000);return mins<1?'just now':mins<60?`${mins} min ago`:`${Math.round(mins/60)} h ago`;};
+  const ago=at=>{const mins=Math.floor((Date.now()-at)/60000);return mins<1?'just now':mins<60?`${mins} min ago`:mins<1440?`${Math.round(mins/60)} h ago`:new Date(at).toLocaleDateString(undefined,{weekday:'long'});};
   const CHEV='<svg class="today-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
-  // Three layouts to compare; the switcher goes once one is chosen.
-  const LAYOUTS=[['a','Side panel'],['b','Side by side'],['c','Folded'],['d','In a row']];
-  let layout=(()=>{try{const asked=new URLSearchParams(location.search).get('layout')||localStorage.getItem('roots-today-layout');return LAYOUTS.some(([key])=>key===asked)?asked:'d';}catch{return 'd';}})();
+  // E follows the shape of Codex's published page. Earlier layouts stay reachable with ?layout=a…d for comparison.
+  const LAYOUTS=['a','b','c','d','e'];
+  let layout=(()=>{try{const asked=new URLSearchParams(location.search).get('layout');return LAYOUTS.includes(asked)?asked:'e';}catch{return 'e';}})();
+  let feedPeriod='today';
   // Drop-downs the viewer has opened stay open when the page refreshes its numbers.
   const opened=new Set(['fold-noticed']);
   function peopleStack(ids) {
@@ -120,9 +121,15 @@
     const items=(current().insights||[]).slice(0,4);
     if(openCard>=items.length)openCard=-1;
     if(!items.length)return `<p class="today-empty">Add people and opportunities, then Roots can look for useful connections.</p>`;
-    if(layout!=='a')return `<div class="today-notices-list">${items.map(insightFold).join('')}</div>`;
-    const open=items[openCard];
-    return `<div class="today-cards">${items.map(insightTile).join('')}</div><div id="today-detail" class="today-detail"${open?'':' hidden'}>${open?`<div class="today-detail-head">${kindTag(open)}<strong>${e(open.title)}</strong></div>${insightBody(open,openCard)}`:''}</div>`;
+    if(!['a','e'].includes(layout))return `<div class="today-notices-list">${items.map(insightFold).join('')}</div>`;
+    const open=items[openCard], detail=`<div id="today-detail" class="today-detail"${open?'':' hidden'}>${open?`<div class="today-detail-head">${kindTag(open)}<strong>${e(open.title)}</strong></div>${insightBody(open,openCard)}`:''}</div>`;
+    if(layout==='e')return `<div class="today-cards today-cards-big">${items.map(insightCard).join('')}</div>${detail}`;
+    return `<div class="today-cards">${items.map(insightTile).join('')}</div>${detail}`;
+  }
+  // Layout E: bigger boxes, two by two; one opens its detail underneath.
+  function insightCard(item,index) {
+    const ids=item.sourceIds?.people||[];
+    return `<button class="today-card today-card-big" data-today-card="${index}" aria-expanded="${openCard===index}" aria-controls="today-detail"><span class="today-card-top"><span class="today-tag is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span>${ids.length?peopleStack(ids.slice(0,3)):''}</span><strong class="today-card-count">${e(item.count??'')}</strong><span class="today-card-text">${e(item.rest||item.title)}</span><span class="today-card-foot"><small class="today-card-meta">${e(item.meta||'')}</small>${CHEV}</span></button>`;
   }
   const number=value=>typeof value==='number'?value.toLocaleString(undefined,{maximumFractionDigits:1}):'—';
   const stats=()=>window.RootsAnalytics.compute(api.getState(),window.RootsPeople.profileData);
@@ -136,7 +143,7 @@
     return {lastBack,firstBack,share:Math.round(100*lastBack/(lastBack+lastFirst))};
   }
   function trendMarkup() {
-    const wide=layout!=='a', W=wide?820:600, H=layout==='b'?108:wide?128:150, top=10, base=H-22, right=78, bw=wide?44:32, step=(W-right-bw)/(HISTORY.length-1);
+    const narrow=layout==='e', wide=!narrow&&layout!=='a', W=narrow?340:wide?820:600, H=layout==='b'?108:wide?128:150, top=10, base=H-22, right=78, bw=narrow?28:wide?44:32, step=(W-right-bw)/(HISTORY.length-1);
     const max=Math.max(...HISTORY.map(([,first,back])=>first+back)), scale=v=>v/max*(base-top-14);
     const bars=HISTORY.map(([month,first,back],i)=>{
       const x=i*step, hb=scale(back), hf=scale(first);
@@ -203,17 +210,25 @@
     feed.push({id:'f-joined',at:at(70),icon:'users',text:`${joined.length} people joined from the sign-up form`,more:personLinks(joined.map(p=>p.id))});
     feed.push({id:'f-sms',at:at(130),icon:'message',text:`SMS invitation drafted for ${first.length} first-timers`,more:`<p>Waiting for your review. Nothing is sent until you approve it.</p><div class="feed-actions"><a class="today-link" href="#notices">Review the drafts ${api.icon('arrow')}</a></div>`});
     if(saturday)feed.push({id:'f-sat',at:at(190),icon:'calendar',text:`${saturday.title}: 2 new sign-ups`,more:`<p>${saturday.attendees} of ${saturday.capacity} places taken, ${saturday.capacity-saturday.attendees} left.</p><span class="feed-track" aria-hidden="true"><i style="width:${100*saturday.attendees/saturday.capacity}%"></i></span><div class="feed-actions">${recordLink('event',saturday.id,'Open the event')}</div>`});
+    const day=days=>LOADED-days*86400000, compost=api.getState().events.find(event=>event.id==='e02'), week=[];
+    week.push({id:'w-new',at:day(1),icon:'users',text:'3 people joined after the Native planting morning post',more:personLinks(['p06','p09','p07'])});
+    if(compost)week.push({id:'w-compost',at:day(2),icon:'calendar',text:`${compost.title} reached ${compost.attendees} of ${compost.capacity} places`,more:`<div class="feed-actions">${recordLink('event',compost.id,'Open the event')}</div>`});
+    if(nextGrant)week.push({id:'w-grant',at:day(4),icon:'funding',text:`Roots found the ${nextGrant.title}`,more:`<p>${e(money(nextGrant))} for an education project. Closes in ${daysUntil(nextGrant.deadlineAt)} days.</p><div class="feed-actions">${recordLink('opportunity',nextGrant.id,'Open the grant')}</div>`});
+    const isabel=person('p08');if(isabel)week.push({id:'w-isabel',at:day(5),icon:'heart',text:`${isabel.name} reached ${isabel.visits} visits`,more:personLinks([isabel.id])});
     const link=(attrs,text)=>`<button class="today-inline" ${attrs}>${text}</button>`;
     const drafts=link('data-today-go="notices"','2 drafts');
     const summary=`Since yesterday, ${link(`data-briefing="daily-people" data-ids="${e(joined.map(p=>p.id).join(','))}"`,`${joined.length} people joined`)} and Roots found ${link('data-today-go="opportunities"',`${benefitPeople.size} volunteers who could gain a benefit`)} by coming back. ${nextGrant?`${link(`data-briefing="source" data-kind="opportunity" data-id="${e(nextGrant.id)}"`,e(nextGrant.title))} closes in ${daysUntil(nextGrant.deadlineAt)} days, and ${drafts} are`:`There are ${drafts}`} waiting for your review.`;
-    return {benefits,grants,joined,first,feed,summary};
+    return {benefits,grants,joined,first,feed,week,summary};
   }
   function feedItems(model=todayModel()) {
     const day=dailySnapshot(), real=(day?.entries||[]).slice(0,3).map((item,i)=>({id:`d-${item.at}-${i}`,at:Date.parse(item.at),icon:'check',text:item.title,more:item.personIds?.length?personLinks(item.personIds):'<p>Recorded in this browser.</p>'}));
-    return [...real,...arrived,...model.feed].sort((x,y)=>y.at-x.at);
+    return [...real,...arrived,...model.feed,...(feedPeriod==='week'?model.week:[])].sort((x,y)=>y.at-x.at);
   }
-  function feedMarkup(model) {
-    return feedItems(model).map(item=>`<li><details class="feed-item${Date.now()-item.at<4000?' is-new':''}" data-open-key="${e(item.id)}"${opened.has(item.id)?' open':''}><summary><span class="today-feed-icon" aria-hidden="true">${api.icon(item.icon)}</span><span class="feed-text">${e(item.text)}<time>${e(ago(item.at))}</time></span>${CHEV}</summary><div class="feed-more">${item.more}</div></details></li>`).join('');
+  const feedItemMarkup=item=>`<li><details class="feed-item${Date.now()-item.at<4000?' is-new':''}" data-open-key="${e(item.id)}"${opened.has(item.id)?' open':''}><summary><span class="today-feed-icon" aria-hidden="true">${api.icon(item.icon)}</span><span class="feed-text">${e(item.text)}<time>${e(ago(item.at))}</time></span>${CHEV}</summary><div class="feed-more">${item.more}</div></details></li>`;
+  // Layout E shows the latest four; the rest sit behind one drop-down.
+  function feedMarkup(model,cap=layout==='e'?4:Infinity) {
+    const items=feedItems(model), shown=items.slice(0,cap), rest=items.slice(cap);
+    return shown.map(feedItemMarkup).join('')+(rest.length?`<li class="feed-earlier"><details data-open-key="feed-earlier"${opened.has('feed-earlier')?' open':''}><summary>${CHEV}Show ${rest.length} earlier</summary><ol class="today-feed">${rest.map(feedItemMarkup).join('')}</ol></details></li>`:'');
   }
   function latestMarkup(model) {
     const items=feedItems(model), latest=items[0];
@@ -255,13 +270,22 @@
     const chips=[benefit&&[`Message the ${benefit.insight?.noun?.[1]||'people'}`,`Draft a short SMS telling the matched volunteers about ${benefit.title} and what they get. Keep every message unsent for my review.`],
       ['Invite first-timers back','Prepare SMS invitation drafts for first-time volunteers with recorded SMS permission. Build a short friendly invitation, and let me review each message before any sending.'],
       ['Start the CalAgPlate proposal','Help build a practical proposal for the CalAgPlate education grant. Use its current requirements and our recorded students. Explain the gaps before applying.']].filter(Boolean);
-    const switcher=`<div class="today-layouts" role="group" aria-label="Try a layout">${LAYOUTS.map(([key,label])=>`<button data-today-layout="${key}" aria-pressed="${layout===key}"><b>${key.toUpperCase()}</b><span class="today-layout-name">${e(label)}</span></button>`).join('')}</div>`;
-    const head=`<header class="today-head"><div class="today-head-top"><h1 id="today-title">Today <span class="today-date">${e(date)}</span></h1>${switcher}</div><p class="today-summary" id="today-summary">${model.summary}</p></header>`;
+    const head=`<header class="today-head"><div class="today-head-top"><h1 id="today-title">Today <span class="today-date">${e(date)}</span></h1></div><p class="today-summary" id="today-summary">${model.summary}</p></header>`;
     const tabs=chartTabs();
     const patterns=`<div id="overview-patterns" class="today-patterns" data-chart="${analyticsTab}">${patternsMarkup(a)}</div>`;
     const noticed=`<section class="today-section" aria-labelledby="today-noticed"><div class="today-section-head"><h2 id="today-noticed">What Roots noticed</h2><span id="today-checked">Checked ${e(time(checkedLocally))}</span></div><div id="briefing-insights">${insightsMarkup()}</div></section>`;
     const coming=`<section class="today-section" aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Coming back</h2>${tabs}</div>${patterns}</section>`;
     const feed=`<section class="today-feed-panel" aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today’s feed</h2><span class="today-live"><i></i>Live</span></div><ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol></section>`;
+    const dock=`<div class="today-dock"><form id="briefing-chat-form" class="briefing-composer today-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="1" maxlength="2000" placeholder="Ask Roots, or turn an idea into an SMS…" required>${e(prompt)}</textarea><div class="today-composer-bottom"><div class="today-chips">${chips.map(([label,ask])=>`<button type="button" data-briefing="suggestion" data-prompt="${e(ask)}">${e(label)}</button>`).join('')}</div><button class="today-send" type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form></div>`;
+    if(layout==='e')return `<div class="today-page" data-layout="e">
+      <header class="today-head"><div class="today-head-top"><h1 id="today-title">${e(briefingTitle())}</h1><span class="today-date">${e(date)}</span></div><p class="today-summary" id="today-summary">${model.summary}</p></header>
+      <section class="today-band" aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today <span class="today-live"><i></i>Live</span></h2><div class="overview-chart-tabs" role="group" aria-label="Feed period"><button data-today-period="today" aria-pressed="${feedPeriod==='today'}">Today</button><button data-today-period="week" aria-pressed="${feedPeriod==='week'}">Last 7 days</button></div></div><ol class="today-feed today-feed-wide" id="today-feed">${feedMarkup(model)}</ol></section>
+      <div class="today-split">
+        <section class="today-glance" aria-labelledby="today-glance-title"><div class="today-section-head"><h2 id="today-glance-title">Community at a glance</h2></div><p class="today-metrics" id="overview-metrics">${snapshotMarkup(a)}</p><div class="today-sub-head"><h3>Coming back</h3>${tabs}</div>${patterns}</section>
+        ${noticed}
+      </div>
+      ${dock}
+    </div>`;
     let body;
     if(layout==='d')body=`<div id="today-row-region">${rowMarkup(a,model)}</div>`;
     else if(layout==='b')body=`<div class="today-columns">${noticed}${feed}</div>${coming}`;
@@ -272,7 +296,7 @@
       </div>`;
     else body=`${noticed}${coming}<aside class="today-rail" aria-label="Today’s feed">${feed}<p class="today-rail-note">New activity appears here as it happens.</p></aside>`;
     return `<div class="today-page" data-layout="${layout}">${head}${body}
-      <div class="today-dock"><form id="briefing-chat-form" class="briefing-composer today-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="1" maxlength="2000" placeholder="Ask Roots, or turn an idea into an SMS…" required>${e(prompt)}</textarea><div class="today-composer-bottom"><div class="today-chips">${chips.map(([label,ask])=>`<button type="button" data-briefing="suggestion" data-prompt="${e(ask)}">${e(label)}</button>`).join('')}</div><button class="today-send" type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form></div>
+      ${dock}
     </div>`;
   }
   function briefingTitle() { const hour=new Date().getHours();return `Good ${hour<12?'morning':hour<17?'afternoon':'evening'}, Jamie.`; }
@@ -324,7 +348,8 @@
       if(region){region.innerHTML=rowMarkup(stats(),todayModel());document.getElementById(`today-tab-${rowTab.dataset.todayTab}`)?.focus({preventScroll:true});}
       return;
     }
-    const pick=event.target.closest('[data-today-layout]');if(pick){layout=pick.dataset.todayLayout;openCard=-1;try{localStorage.setItem('roots-today-layout',layout);}catch{}api.render();return;}
+    const period=event.target.closest('[data-today-period]');
+    if(period){feedPeriod=period.dataset.todayPeriod;document.querySelectorAll('[data-today-period]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.todayPeriod===feedPeriod)));refreshFeed();return;}
     const card=event.target.closest('[data-today-card]');if(!card)return;
     openCard=openCard===Number(card.dataset.todayCard)?-1:Number(card.dataset.todayCard);
     const target=document.getElementById('briefing-insights');if(target)target.innerHTML=insightsMarkup();
