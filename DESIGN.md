@@ -1,45 +1,46 @@
 ---
 name: Roots
-description: A simple green Today page with useful ideas, evidence on demand, and a separate conversation.
+description: A forest-green Overview dashboard with current-record analytics and independent recommendations.
 colors:
-  charcoal: "#343632"
-  forest: "#294b36"
-  deep: "#203b2a"
-  brand-accent: "#52764a"
-  sage: "#e7eddf"
-  featured: "#f3f5ed"
-  featured-line: "#e0e5d8"
-  positive-bg: "#edf1e9"
-  positive-text: "#4b6142"
-  peach: "#f2e9df"
-  action-bg: "#f5ece1"
-  action-text: "#81562e"
-  paper: "#fafaf6"
+  forest: "#234c3c"
+  deep: "#193d30"
+  brand-accent: "#234c3c"
+  sage: "#e8eddf"
+  featured: "#e8eddf"
+  featured-line: "#dbe4cf"
+  positive-bg: "#d8e5c6"
+  positive-text: "#496134"
+  peach: "#f9ebdf"
+  action-bg: "#f7ebdf"
+  action-text: "#87522c"
+  paper: "#f7f8f3"
   surface: "#fff"
-  sidebar: "#f0f2eb"
-  topbar: "#fafaf6"
-  sheet: "#fafaf6"
-  ink: "#293a30"
-  muted: "#667060"
-  secondary-text: "#667060"
-  recommendation-text: "#667060"
-  line: "#e0e5d8"
-  focus: "#293a30"
-  selected: "#e3ead9"
-  field-line: "#cbd5c2"
-  tag-bg: "#f3f5ed"
-  tag-text: "#667060"
-  table-heading-text: "#667060"
+  sidebar: "#eff2e9"
+  soft-surface: "#edf2e7"
+  hover-surface: "#e6eddf"
+  topbar: "#f7f8f3"
+  sheet: "#fbfcf8"
+  ink: "#23392f"
+  muted: "#596d5f"
+  secondary-text: "#596d5f"
+  recommendation-text: "#53684f"
+  line: "#dfe5da"
+  focus: "#587842"
+  selected: "#234c3c"
+  field-line: "#cbd6c3"
+  tag-bg: "#f1f3ed"
+  tag-text: "#59694b"
+  table-heading-text: "#596d5f"
 typography:
   display:
     fontFamily: "'DM Sans', sans-serif"
-    fontSize: "28px"
+    fontSize: "30px"
     fontWeight: 500
-    lineHeight: 1.25
+    lineHeight: 1.3
     letterSpacing: "-0.8px"
   headline:
     fontFamily: "'DM Sans', sans-serif"
-    fontSize: "28px"
+    fontSize: "30px"
     fontWeight: 500
     lineHeight: 1.2
     letterSpacing: "-0.6px"
@@ -51,10 +52,10 @@ typography:
     letterSpacing: "-0.3px"
   recommendation-title:
     fontFamily: "'DM Sans', sans-serif"
-    fontSize: "17px"
+    fontSize: "20px"
     fontWeight: 500
     lineHeight: 1.4
-    letterSpacing: "-0.2px"
+    letterSpacing: "-0.4px"
   body:
     fontFamily: "'DM Sans', sans-serif"
     fontSize: "14px"
@@ -65,6 +66,11 @@ typography:
     fontSize: "13px"
     fontWeight: 400
     lineHeight: 1.8
+  action:
+    fontFamily: "'DM Sans', sans-serif"
+    fontSize: "12px"
+    fontWeight: 500
+    lineHeight: 1.5
   label:
     fontFamily: "'DM Sans', sans-serif"
     fontSize: "11px"
@@ -75,11 +81,12 @@ rounded:
   badge: "5px"
   control: "6px"
   field-shell: "7px"
-  navigation: "6px"
+  navigation: "7px"
   compact-card: "10px"
   preview: "12px"
   card: "14px"
-  composer: "15px"
+  composer: "12px"
+  insight-card: "13px"
   circle: "50%"
 spacing:
   micro: "5px"
@@ -93,9 +100,9 @@ spacing:
   gutter: "40px"
 components:
   button-primary:
-    backgroundColor: "{colors.ink}"
+    backgroundColor: "{colors.forest}"
     textColor: "{colors.surface}"
-    typography: "{typography.label}"
+    typography: "{typography.action}"
     rounded: "{rounded.control}"
     padding: "9px 13px"
   button-primary-hover:
@@ -103,13 +110,13 @@ components:
   button-secondary:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    typography: "{typography.label}"
+    typography: "{typography.action}"
     rounded: "{rounded.control}"
     padding: "9px 13px"
   button-quiet:
     backgroundColor: "transparent"
     textColor: "{colors.ink}"
-    typography: "{typography.label}"
+    typography: "{typography.action}"
     rounded: "{rounded.control}"
     padding: "9px 13px"
   button-text:
@@ -126,11 +133,11 @@ components:
   navigation:
     textColor: "{colors.muted}"
     rounded: "{rounded.navigation}"
-    padding: "8px 10px"
-    height: "36px"
+    padding: "10px 12px"
+    height: "42px"
   navigation-active:
     backgroundColor: "{colors.selected}"
-    textColor: "{colors.forest}"
+    textColor: "{colors.surface}"
   badge-positive:
     backgroundColor: "{colors.positive-bg}"
     textColor: "{colors.positive-text}"
@@ -146,23 +153,23 @@ components:
   metric:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-    padding: "21px 23px 18px"
+    rounded: "{rounded.preview}"
+    padding: "16px 19px"
   recommendation:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-    padding: "{spacing.card}"
+    rounded: "{rounded.insight-card}"
+    padding: "23px"
   recommendation-featured:
     backgroundColor: "{colors.featured}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
-    padding: "{spacing.card}"
+    rounded: "{rounded.insight-card}"
+    padding: "23px"
   event-date:
-    backgroundColor: "{colors.sidebar}"
+    backgroundColor: "{colors.soft-surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.field-shell}"
-    width: "44px"
+    rounded: "{rounded.control}"
+    width: "39px"
     height: "51px"
 ---
 
@@ -170,95 +177,107 @@ components:
 
 ## Direction and authority
 
-**Creative North Star: “Two things worth a look.”**
+**Creative North Star: “Good things are taking root.”**
 
-Roots opens on Today, a simple current briefing for nonprofit coordinators. A short heading, compact freshness line, two plain ideas, and a roomy composer form the first screen. Warm paper, dark green text and actions, restrained sage surfaces, open space, and fine dividers preserve the original green concept.
+Roots opens on an Overview dashboard that combines current community analytics, useful recommendations, and upcoming events. Dark forest navigation and primary actions, sage featured cards, white analytical surfaces, warm paper, and self-hosted DM Sans restore the original Roots identity.
 
-The user preferred the first green “Roots Quieter Workspace” concept and rejected the expanded production briefing. That concept's simple, effective composition is the visual authority. More capability should emerge through useful ideas, actions, and opened detail. Retain independent AI review beneath the surface. Neither the later large status treatment nor the older full metrics dashboard is the restoration target.
+The user's latest direction prefers the original darker green style and asks for a better presentation of insights and analytics on the first page. The original Overview screenshot and forest-green dashboard composition are the visual reference. This supersedes the narrow Today and conversation-first layouts. Preserve a useful dashboard hierarchy while keeping cards compact and supporting details accessible on demand.
 
-Implementation authority is the shared shell in `dist/style.css` and `dist/app.js`, the existing neutral and conversation styles, and the final overrides in `dist/briefing.css`. The independent front page lives in `dist/briefing.js`; Ask Roots lives in `dist/conversation.js`. The briefing stylesheet supplies the current palette and shell dimensions, overriding earlier neutral token values. `opportunities`, `people-detail`, and `notices` remain scoped modules for deeper work.
+Implementation authority is the shared shell in `dist/style.css` and `dist/app.js`, plus the Overview overrides in `dist/briefing.css`. `dist/briefing.js` renders Overview, and `dist/analytics.js` computes current-record arithmetic. `dist/neutral.css` is no longer loaded. The `conversation`, `opportunities`, `people-detail`, and `notices` modules provide the supporting workspaces.
 
 ## Color and material
 
-- **Paper `#fafaf6`** is the page ground; **white** defines fields and contained work such as message drafts.
-- **Ink `#293a30`** carries primary text, general primary buttons, and the text of outlined idea actions. **Forest `#294b36`** carries active navigation, discussion links, and composer send controls. **Deep `#203b2a`** is the stronger hover state.
-- **Muted `#667060`**, **Line `#e0e5d8`**, and **Field Line `#cbd5c2`** give secondary content and controls a clear hierarchy.
-- **Sidebar `#f0f2eb`**, **Soft Surface `#f3f5ed`**, **Hover `#e9eee1`**, **Selected `#e3ead9`**, and **Sage `#e7eddf`** introduce restrained green material without turning every section into a colored card.
-- **Brand Accent `#52764a`** supports the identity and the small checking indicator. Opened evidence uses Soft Surface; the Today composer and outlined actions use the fine Line boundary.
-- Warm amber status styling remains available for an actual warning or prerequisite. Avatar accents identify people without competing with navigation.
+- **Forest `#234c3c`** carries selected navigation with white text, primary actions, key chart segments, and the wordmark. **Deep `#193d30`** is the stronger hover state. These dark anchors establish the identity.
+- **Paper `#f7f8f3`** is the page ground, **Ink `#23392f`** carries text, and **Muted `#596d5f`** carries supporting copy.
+- **Sage `#e8eddf`** highlights the first recommendation. Its border is `#dbe4cf`; later recommendations and analytics cards are white.
+- **Sidebar `#eff2e9`**, **Soft Surface `#edf2e7`**, **Hover `#e6eddf`**, **Line `#dfe5da`**, and **Field Line `#cbd6c3`** create a restrained surface hierarchy.
+- Participation uses forest for repeat visits, `#b4c992` for one visit, `#e4e8de` for zero visits, and `#a7ada6` for unknown counts. Labels and counts accompany color. Interest bars use `#658952`; event capacity uses `#8ea86d`.
+- Warm amber remains available for actual prerequisites or warnings. Muted avatar colors identify people without becoming extra dashboard categories.
 
-The `--forest` and `--sage` variables now resolve to green again. Do not apply the previous neutral-only interpretation to new work. Ordinary surfaces stay flat; sheets retain a restrained side shadow and backdrop. Carets, focus, selection, hover, and active states should read as part of the same green-and-paper system.
+Do not flatten selected navigation and primary actions into pale green or charcoal. Ordinary surfaces stay flat, with fine borders and restrained corners. Sheets retain a modest side shadow and backdrop. Focus, caret, selection, hover, and active states remain consistent with the forest palette.
 
 ## Typography
 
-Self-hosted DM Sans remains the sole UI family. Use medium weight for page greetings and briefing titles; stronger weight should identify information worth scanning rather than decorate the page.
+Self-hosted DM Sans remains the sole UI family. The Overview heading is 30px, medium weight, with a 1.3 line height and −0.8px tracking. It steps to 28px on smaller desktops and 26px on phones. Metric values use 34px tabular numbers; metric labels are 12px and explanatory text is 11px.
 
-The desktop Today heading is 28px with a 1.25 line height and −0.8px tracking, stepping to 26px on phones. Idea titles are 17px with a 1.4 line height and −0.2px tracking. Each visible explanation is 13px with a 1.8 line height. Desktop navigation is 13px, outlined actions are 12px, and freshness and disclosure controls are 11px. Ask Roots uses a 28px greeting and the existing comfortable conversation text. Composer input reaches 16px on phones to avoid browser zoom.
+Section headings use 16px semibold. Recommendation titles use 20px medium, with the featured title at 22px; both are 20px on phones. Supporting recommendation copy is 13px with a 1.8 line height. Navigation is 13px, actions are 12px, and compact review metadata is 11px. Ask Roots uses a 30px greeting and comfortable conversation text. Text entry reaches 16px on phones to avoid browser zoom.
 
-Air comes from fewer visible controls and better spacing, not shrinking reading text. Keep body contrast at least 4.5:1 and maintain visible focus on every interactive control. Existing record pages retain their practical 12–14px text hierarchy.
+Use hierarchy and spacing to make the dashboard scannable. Keep body contrast at least 4.5:1 and visible focus on every interactive control. Record pages retain practical 12–14px text.
 
 ## Navigation and layout
 
-Primary navigation contains **Today, People, Opportunities, Outreach**. Today keeps the `#briefing` route. **Ask Roots** and **Calendar** are secondary links. Assistant connection details open within Ask Roots. Old Overview links resolve to Today; old Funding links resolve to Opportunities. The underlying Notices route is labeled Outreach in the interface.
+Primary navigation contains **Overview, People, Opportunities, Outreach**. Overview keeps the `#briefing` route; `#overview` is an alias. **Ask Roots** and **Calendar** are secondary links. Old Funding links resolve to Opportunities, and the underlying Notices route is labeled Outreach.
 
-The desktop sidebar is **170px** wide and collapses to a **56px** icon rail. Use small 36px navigation rows, the 26px Roots wordmark, and a compact profile. Hide labels when collapsed while preserving accessible names. The topbar is 49px high, with the workspace name presented quietly. Keep this shared shell in the original green palette.
+The desktop sidebar is **200px** wide, reduces to **180px** between 761px and 1100px, and collapses to a **60px** icon rail. Navigation rows are 42px high with solid forest selection and white text. The wordmark is 29px, and the workspace label and profile remain compact. Hidden labels retain accessible names. The desktop topbar is 56px high with a fine bottom divider.
 
-Today has a centered **590px maximum reading column**. Its heading reads “Two things worth a look.”, adapting to one idea or an empty state. A compact freshness line sits directly below. Two plain idea blocks follow, with a third available on demand, then a quiet explanation disclosure. The content area grows to keep the roomy composer toward the bottom; long content still scrolls normally. Opening Ask Roots does not shrink, replace, or determine the briefing.
+The page container is capped at **1184px**, including 32px side padding. A familiar heading and **Current records** scope label sit above three compact metric cards. Below them, recommendations occupy the wider left column and analytics the right, using a **1.65:1** grid with a **25px** gap and a 300px minimum right column.
 
-The Today composer uses a **48px textarea**, **15px padding**, **15px corner radius**, and a 31px forest send button. Leave 32px above it on desktop. Its placeholder invites the coordinator to ask Roots or take an idea further. Preserve this comfortable input area rather than reducing it to a shallow toolbar.
+The left column has **Worth your attention**, compact independent review status, two recommendation cards with an optional third, a review explanation disclosure, and a small Ask Roots composer. The right column holds **Community patterns** above **Coming up**. The Overview remains independent of chat messages and is not a centered conversation landing page.
 
-Ask Roots retains a separate 660px conversation column within a 920px workspace. Its transcript and inline actions have their own layout and a route back to Today. Record pages may use the broader shared container. Tables scroll within their own wrappers rather than widening the page.
+Between 761px and 900px the recommendations stack above a two-card analytics row. On phones all sections stack, the three metrics remain compact across the top, and navigation becomes four labeled bottom items with safe-area spacing. The main phone gutters are 19px. Charts, forms, and disclosures must not force horizontal page scrolling.
 
-On phones the sidebar becomes a four-item bottom navigation with visible labels and safe-area spacing. The briefing uses the available width with 20px side gutters. The desktop collapse control is hidden. Forms, draft controls, and evidence wrap without forcing horizontal scrolling.
+Ask Roots remains a separate conversation, with a 700px reading column and its own transcript and inline actions. The Overview composer is a compact entry point: white surface, 12px radius, 12–13px padding, a small sprout, and forest send control. It grows for text and uses a larger input on phones; it does not determine the dashboard's height or composition.
 
-## Today, evidence, and freshness
+## Snapshot analytics
 
-Start with two useful ideas; **One more idea** reveals the third when available. Each block has a concrete title, one short factual paragraph, and a simple outlined action with an adjacent **Why this?** disclosure. Use 22px vertical spacing, fine dividers, and a 34px minimum desktop action height. The disclosure contains the model's **Suggested next step**, evidence, unknowns, source links, and **Discuss this with Roots**. Keep the extra interpretation inside the disclosure rather than repeating it as another visible paragraph.
+The three top metrics are **People**, **Recorded hours**, and **Opportunity leads**. The first two open the contributing people; the third opens Opportunities. Current seed totals are **35 people**, **893 recorded hours**, and **11 opportunity leads**. The people card also identifies **8 people with one recorded visit**. These are illustrative saved-record totals, recomputed when records change.
 
-Below the ideas, **How Roots finds these ideas** explains the review source, available records, cadence, and limitations. This replaces the expanded status panel and visible coverage strip. The first screen should read as a useful pair of ideas, not a description of the machinery producing them.
+Community patterns switches between **Participation** and **Interests**. Participation shows a stacked bar for one visit, repeat visits, zero visits, and unknown counts. Clicking a segment or legend opens its people. Its headline percentage is repeat-visit profiles divided by profiles with at least one recorded visit: **27 / 35**, rounded to **77%**, in the seed snapshot. The bar itself represents all profiles, including zero and unknown groups when present. State the denominator clearly.
 
-Current record matches connect first-visit gardeners to an event with remaining capacity, service-hour interests to a school-partnership lead, and a draft project team to different recorded availability. All source records are illustrative. An interest match does not establish eligibility; aggregate attendance does not identify individual RSVPs; a suggested role does not mean someone has accepted it.
+This is a distribution of accumulated visit counts, not cohort retention, a monthly return rate, or a trend. Do not restore the old hardcoded 42%, month-over-month changes, growth arrows, or invented historical series. Missing values are not zero. Recorded hours sum valid direct profile totals and do not use generated attendance stories or illustrative approved/pending breakdowns.
 
-In a static preview, the briefing uses deterministic record matches. With the local bridge, an independent Gemini review selects and combines a bounded derived fact catalog and proposes short interpretations. It does not depend on conversation or research external sources. Strict fact IDs are validated; summaries, numeric evidence, and source references are reconstructed server-side from the catalog. Validation establishes reference integrity and output structure, not the truth of every interpretation. Keep model suggestions distinguishable from record facts.
+Interests shows the five largest groups by stated interest. Each bar counts people and opens that group; a person may appear in several groups. The bar scale uses the number of people in the workspace, not a claim that categories sum to 100%. Keep names, counts, and an overlap explanation visible.
 
-Record totals belong in **How Roots finds these ideas**. They describe available records, not a claim that every record was reviewed; Gemini receives a bounded derived fact catalog. Raw phone numbers, email addresses, coordinator notes, and chat history are excluded from briefing synthesis. A model response must not imply that an external benefit, eligibility rule, deadline, partnership, or application has been verified.
+Coming up shows three date-sorted event rows with date, title, time, recorded attendee/capacity values, open places, and a capacity bar. Each opens the event record; View all opens Calendar. Missing or invalid capacity gets a plain unknown state. Aggregate counts do not establish any named person's RSVP or attendance.
 
-Check after meaningful record changes, after 30 minutes while the app is open, when it becomes visible again, or on manual refresh. Activity-only or version-only saves do not count as new evidence. Cached results use IDs derived from selected facts. Rechecking must not create fabricated discoveries, novelty indicators, or activity.
+Every chart needs readable labels, keyboard-operable groups, honest empty states, and a path to its underlying records. Unknown data, invalid values, and a lack of history must remain distinct from poor performance.
 
-Generation exposes **pending, reviewing, ready, and failed** states. Pending/reviewing means real queued or running work. Keep the previous successful briefing visible during a review or a failure; label older retained evidence when stale. If no successful review exists, show the record-match fallback with its source stated. Discard a result generated against superseded records and review the latest snapshot. Failures retry on explicit refresh or a meaningful record change, with the server's retry guard. There is no dismiss feature or promised continuous monitoring after the app closes.
+## Recommendations, evidence, and freshness
 
-Use three small dots within the freshness line during actual checking or pending/reviewing work. The line then returns to its checked/reviewed time, or explains a failure and offers **Try again**. Do not add an artificial delay, large animated mark, scan bar, or idle animation. Under reduced motion, leave the dots static. Empty records and failed reviews need clear text and a useful retry or next step.
+Start with two recommendations, with **One more idea** exposing a third when available. The first card uses sage and a forest primary action; the second uses white and a quieter action. Cards have a 13px radius and 23px padding. Each contains a concise title, one factual explanation, referenced people when available, and a direct review action.
+
+**Why this surfaced** reveals the model's suggested next step, evidence, unknowns, source record links, and **Discuss this with Roots**. Referenced avatars open their profiles. **How Roots finds these ideas** explains the review source, bounded fact catalog, cadence, and limitations below the recommendations.
+
+Current matches connect first-visit gardeners to a relevant event, service-hour interests to a school-partnership lead, and a draft project team to different availability descriptions. An interest match is not eligibility; a proposed role is not agreement; recorded capacity does not establish individual RSVPs. All seed records remain illustrative.
+
+In the static preview, recommendations use deterministic record matches. The local bridge independently lets Gemini select and connect a bounded derived fact catalog and propose short interpretations. It does not depend on chat or research external sources. Strict fact IDs are validated; factual summaries, numeric evidence, and citations are reconstructed server-side. This establishes reference integrity and output structure, not the correctness of every interpretation.
+
+Raw phone numbers, email addresses, coordinator notes, and chat history are excluded from recommendation synthesis. The workspace totals shown in explanations are available records, not a claim that every record entered the smaller reviewed catalog. Recommendations must not imply an external benefit, eligibility rule, deadline, partnership, or application has been verified.
+
+Recheck after meaningful record changes, after 30 minutes while the app is open, when it becomes visible again, or on manual refresh. Activity-only and version-only saves are not new evidence. Stable fact-based IDs and caching prevent routine checks from becoming invented discoveries or activity.
+
+Generation exposes **pending, reviewing, ready, and failed** states. Keep the previous successful recommendations visible during review or failure, identify stale evidence, and discard results produced against superseded records. Without a successful AI review, show the labeled record-match fallback. Failures retry through explicit refresh or meaningful data change, subject to the retry guard. No dismiss feature or monitoring after app closure is promised.
+
+Keep status beside the section heading. Three small dots indicate actual checking or pending/reviewing work; reduced motion leaves them static. Show a genuine checked/reviewed time or an error with **Try again**. Never add artificial delay, idle animation, or discovery badges to unchanged ideas.
 
 ## Ask Roots and inline actions
 
-Ask Roots is a separate conversation, available from the secondary navigation, briefing composer, and evidence disclosures. User messages use a pale green bubble; assistant text sits directly on the page with a small Roots label and sprout. A concise checking state belongs to an actual request. Failures expose recovery rather than a fabricated answer.
+Ask Roots is separate from the Overview and accessible through secondary navigation, its compact composer, and recommendation disclosures. User messages use a soft green bubble; assistant text sits directly on the page with a small Roots identity. Checking indicators reflect actual requests, and failures expose recovery rather than fabricated replies.
 
-The separate Ask Roots composer has a fine green boundary, an 11px radius, and a forest send control. Input grows within a bounded range. Nearby text explains whether a local assistant is needed and that email/SMS delivery is unavailable. The larger 15px-radius Today composer remains distinct. The published static preview must not pretend to answer with a live model.
+The conversation composer remains a white field with a fine boundary and forest send control. Nearby text explains connection needs and the lack of email/SMS delivery. The published preview must not imitate a live model connection.
 
-An email or SMS draft appears inline with channel, recipient, message, **Not sent**, and explicit readiness blockers. Recipient names open their records. **Edit message** changes the existing unsent backend draft; **Copy** copies text; **Refine in chat** prepares a follow-up instruction. Editing exposes save and cancel controls. None of these actions delivers outreach.
-
-Keep draft revisions available in Outreach as well as conversation. Missing phone details, permission, and provider connections must not disappear behind successful-looking statuses. Do not add a Send action while delivery is unavailable.
+Email and SMS drafts appear inline with recipient, channel, message, **Not sent**, and readiness blockers. Recipient names open records. **Edit message** changes an existing unsent draft; **Copy** copies text; **Refine in chat** prepares a follow-up instruction. None sends outreach. Keep draft revisions available through Outreach and never conceal missing permission, contact details, or providers behind a successful-looking status.
 
 ## People and opportunities
 
-People remains a searchable table with individual records in a 620px sheet. Profile, Activity, and Notes separate preferences and contact facts, illustrative participation history, and locally recorded context. Stated interests remain distinct from declared skills; contact preference remains distinct from consent. Confirmed and illustrative service-hour targets require different source labels. Explicit saves persist edits.
+People remains a searchable table with individual records in a 620px sheet. Profile, Activity, and Notes separate preferences and contact facts, illustrative participation history, and recorded context. Stated interests remain distinct from declared skills, and contact preference remains distinct from consent. Confirmed and illustrative service-hour targets require separate source labels.
 
-Opportunities uses For volunteers, For organization, Projects, and Saved views. Eleven candidate leads and three draft project plans appear in compact searchable rows, six results at a time. A separate save action makes bookmarking clear. Details show benefits and matching people first, then collapse additional matches, terms, next steps, budgets, and readiness checks. Teams and budgets are drafts; source links are leads to verify, not confirmed offers.
+Opportunities uses For volunteers, For organization, Projects, and Saved views. Eleven candidate leads and three draft plans appear in compact searchable rows, six results at a time. Details expose benefits and matching people first, then collapse additional matches, terms, next steps, budgets, and readiness checks. Teams and budgets are drafts; source links are leads to verify.
 
-Both surfaces use the current paper, green, and fine-divider system. The standard sheet remains 540px wide, with the People exception above; sheets fill phone width and retain a sticky close header. Keep these detailed controls out of the briefing's initial view.
+Both surfaces use the forest-green system and fine dividers. Standard sheets remain 540px wide, with the People exception above, fill phone width, and retain a sticky close header. Detailed controls stay in these workspaces rather than overcrowding Overview.
 
 ## Outreach and connection truth
 
-Outreach has **Drafts, Workflows, and Delivery** views. Workflow rows summarize audience rules, timing, channel, and draft status. Saving a rule does not activate or schedule it. Audience previews do not establish actual bookings, consent, or deliverability.
+Outreach has **Drafts, Workflows, and Delivery** views. Workflow rows summarize audience rules, timing, channel, and draft status. Saving a rule does not activate or schedule it. Audience previews do not establish bookings, permission, or deliverability.
 
-Delivery clearly says that SMS and email providers are not configured. Its coverage counts describe stored profiles, not verified contact details. A contact preference is not permission. No email/SMS outreach has been sent through these features, and connecting Gemini or Telegram does not enable delivery.
+SMS and email providers are not configured. Delivery counts describe stored profiles, not verified contact details. A contact preference is not permission. No email/SMS outreach has been sent through these features; connecting Gemini or Telegram does not enable delivery.
 
-The published site is a static preview with browser-local records. The optional local bridge synchronizes a snapshot for Gemini and an explicitly configured Telegram connection. The published and local origins do not share browser storage automatically. Web and Telegram can use the same local records and deliberately saved drafts, while conversation histories remain separate. Briefing synthesis does not consume either history.
+The published site is static with browser-local records. The optional local bridge synchronizes a snapshot for Gemini and an explicitly configured Telegram connection. Local and published origins do not automatically share browser storage. Web and Telegram may share records and deliberately saved drafts while their conversation histories remain separate; recommendation synthesis uses neither history.
 
-Connection details should distinguish configuration, synchronization, polling, and failures. Credential presence alone is not a live connection test. Model responses and shared assistant draft creation require the local server; credentials never belong in frontend files or browser storage. No simulated delivery status should fill a disconnected state.
+Connection details distinguish configuration, synchronization, polling, and failure. Credential presence is not a live connection test. Model responses and shared assistant draft creation require the local server; credentials never belong in frontend files or browser storage.
 
 ## Interaction quality
 
-Use explicit button labels, native disclosures, accessible tab semantics, and keyboard focus return. Preserve expanded evidence during status updates where possible. Use restrained sheet transitions and only truthful pending-work indicators, with reduced-motion support.
+Use explicit labels, native disclosures, accessible chart groups and selectors, and keyboard focus return. Preserve expanded evidence during status updates where possible. Prefer restrained sheet transitions and truthful work indicators, with reduced-motion support.
 
-Preserve the original green concept's simple composition while making each idea more useful. Put additional intelligence and controls inside actions, disclosures, and records. Keep the backend's factual checks and review states without turning them into extra front-page furniture. The interface should make it easy to understand, inspect, ask, and prepare an action without concealing what remains unverified.
+Keep Overview practical: current-record patterns, a small number of useful recommendations, and upcoming events. Preserve the darker forest identity and original dashboard hierarchy while making its numbers inspectable and its actions concrete. Keep calculations, interpretations, delivery readiness, and unverified program leads clearly distinguishable.

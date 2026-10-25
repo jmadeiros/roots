@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-24T23:18:33.529918+00:00",
+  "generatedAt": "2026-10-25T03:52:00.757429+00:00",
   "title": "Design System: Roots",
   "extensions": {
     "colorMeta": {
@@ -52,31 +52,31 @@
       "featured": {
         "role": "primary",
         "displayName": "Featured",
-        "canonical": "#e9eedf",
+        "canonical": "#e8eddf",
         "tonalRamp": [
-          "oklch(15.00% 0.02059 121.85)",
-          "oklch(26.43% 0.02059 121.85)",
-          "oklch(37.86% 0.02059 121.85)",
-          "oklch(49.29% 0.02059 121.85)",
-          "oklch(60.71% 0.02059 121.85)",
-          "oklch(72.14% 0.02059 121.85)",
-          "oklch(83.57% 0.02059 121.85)",
-          "oklch(95.00% 0.02059 121.85)"
+          "oklch(15.00% 0.01933 122.84)",
+          "oklch(26.43% 0.01933 122.84)",
+          "oklch(37.86% 0.01933 122.84)",
+          "oklch(49.29% 0.01933 122.84)",
+          "oklch(60.71% 0.01933 122.84)",
+          "oklch(72.14% 0.01933 122.84)",
+          "oklch(83.57% 0.01933 122.84)",
+          "oklch(95.00% 0.01933 122.84)"
         ]
       },
       "featured-line": {
         "role": "primary",
         "displayName": "Featured Line",
-        "canonical": "#dce5cd",
+        "canonical": "#dbe4cf",
         "tonalRamp": [
-          "oklch(15.00% 0.03344 123.84)",
-          "oklch(26.43% 0.03344 123.84)",
-          "oklch(37.86% 0.03344 123.84)",
-          "oklch(49.29% 0.03344 123.84)",
-          "oklch(60.71% 0.03344 123.84)",
-          "oklch(72.14% 0.03344 123.84)",
-          "oklch(83.57% 0.03344 123.84)",
-          "oklch(95.00% 0.03344 123.84)"
+          "oklch(15.00% 0.02969 125.99)",
+          "oklch(26.43% 0.02969 125.99)",
+          "oklch(37.86% 0.02969 125.99)",
+          "oklch(49.29% 0.02969 125.99)",
+          "oklch(60.71% 0.02969 125.99)",
+          "oklch(72.14% 0.02969 125.99)",
+          "oklch(83.57% 0.02969 125.99)",
+          "oklch(95.00% 0.02969 125.99)"
         ]
       },
       "positive-bg": {
@@ -187,31 +187,31 @@
       "sidebar": {
         "role": "neutral",
         "displayName": "Sidebar",
-        "canonical": "#f0f3e9",
+        "canonical": "#eff2e9",
         "tonalRamp": [
-          "oklch(15.00% 0.01359 120.28)",
-          "oklch(26.43% 0.01359 120.28)",
-          "oklch(37.86% 0.01359 120.28)",
-          "oklch(49.29% 0.01359 120.28)",
-          "oklch(60.71% 0.01359 120.28)",
-          "oklch(72.14% 0.01359 120.28)",
-          "oklch(83.57% 0.01359 120.28)",
-          "oklch(95.00% 0.01359 120.28)"
+          "oklch(15.00% 0.01232 121.70)",
+          "oklch(26.43% 0.01232 121.70)",
+          "oklch(37.86% 0.01232 121.70)",
+          "oklch(49.29% 0.01232 121.70)",
+          "oklch(60.71% 0.01232 121.70)",
+          "oklch(72.14% 0.01232 121.70)",
+          "oklch(83.57% 0.01232 121.70)",
+          "oklch(95.00% 0.01232 121.70)"
         ]
       },
       "topbar": {
         "role": "neutral",
         "displayName": "Topbar",
-        "canonical": "#fafbf7",
+        "canonical": "#f7f8f3",
         "tonalRamp": [
-          "oklch(15.00% 0.00536 117.92)",
-          "oklch(26.43% 0.00536 117.92)",
-          "oklch(37.86% 0.00536 117.92)",
-          "oklch(49.29% 0.00536 117.92)",
-          "oklch(60.71% 0.00536 117.92)",
-          "oklch(72.14% 0.00536 117.92)",
-          "oklch(83.57% 0.00536 117.92)",
-          "oklch(95.00% 0.00536 117.92)"
+          "oklch(15.00% 0.00667 115.70)",
+          "oklch(26.43% 0.00667 115.70)",
+          "oklch(37.86% 0.00667 115.70)",
+          "oklch(49.29% 0.00667 115.70)",
+          "oklch(60.71% 0.00667 115.70)",
+          "oklch(72.14% 0.00667 115.70)",
+          "oklch(83.57% 0.00667 115.70)",
+          "oklch(95.00% 0.00667 115.70)"
         ]
       },
       "sheet": {
@@ -247,61 +247,61 @@
       "muted": {
         "role": "neutral",
         "displayName": "Muted",
-        "canonical": "#68756d",
+        "canonical": "#596d5f",
         "tonalRamp": [
-          "oklch(15.00% 0.01981 158.70)",
-          "oklch(26.43% 0.01981 158.70)",
-          "oklch(37.86% 0.01981 158.70)",
-          "oklch(49.29% 0.01981 158.70)",
-          "oklch(60.71% 0.01981 158.70)",
-          "oklch(72.14% 0.01981 158.70)",
-          "oklch(83.57% 0.01981 158.70)",
-          "oklch(95.00% 0.01981 158.70)"
+          "oklch(15.00% 0.03244 154.60)",
+          "oklch(26.43% 0.03244 154.60)",
+          "oklch(37.86% 0.03244 154.60)",
+          "oklch(49.29% 0.03244 154.60)",
+          "oklch(60.71% 0.03244 154.60)",
+          "oklch(72.14% 0.03244 154.60)",
+          "oklch(83.57% 0.03244 154.60)",
+          "oklch(95.00% 0.03244 154.60)"
         ]
       },
       "secondary-text": {
         "role": "neutral",
         "displayName": "Secondary Text",
-        "canonical": "#637157",
+        "canonical": "#596d5f",
         "tonalRamp": [
-          "oklch(15.00% 0.04293 130.82)",
-          "oklch(26.43% 0.04293 130.82)",
-          "oklch(37.86% 0.04293 130.82)",
-          "oklch(49.29% 0.04293 130.82)",
-          "oklch(60.71% 0.04293 130.82)",
-          "oklch(72.14% 0.04293 130.82)",
-          "oklch(83.57% 0.04293 130.82)",
-          "oklch(95.00% 0.04293 130.82)"
+          "oklch(15.00% 0.03244 154.60)",
+          "oklch(26.43% 0.03244 154.60)",
+          "oklch(37.86% 0.03244 154.60)",
+          "oklch(49.29% 0.03244 154.60)",
+          "oklch(60.71% 0.03244 154.60)",
+          "oklch(72.14% 0.03244 154.60)",
+          "oklch(83.57% 0.03244 154.60)",
+          "oklch(95.00% 0.03244 154.60)"
         ]
       },
       "recommendation-text": {
         "role": "neutral",
         "displayName": "Recommendation Text",
-        "canonical": "#58664f",
+        "canonical": "#53684f",
         "tonalRamp": [
-          "oklch(15.00% 0.03959 133.30)",
-          "oklch(26.43% 0.03959 133.30)",
-          "oklch(37.86% 0.03959 133.30)",
-          "oklch(49.29% 0.03959 133.30)",
-          "oklch(60.71% 0.03959 133.30)",
-          "oklch(72.14% 0.03959 133.30)",
-          "oklch(83.57% 0.03959 133.30)",
-          "oklch(95.00% 0.03959 133.30)"
+          "oklch(15.00% 0.04651 140.58)",
+          "oklch(26.43% 0.04651 140.58)",
+          "oklch(37.86% 0.04651 140.58)",
+          "oklch(49.29% 0.04651 140.58)",
+          "oklch(60.71% 0.04651 140.58)",
+          "oklch(72.14% 0.04651 140.58)",
+          "oklch(83.57% 0.04651 140.58)",
+          "oklch(95.00% 0.04651 140.58)"
         ]
       },
       "line": {
         "role": "neutral",
         "displayName": "Line",
-        "canonical": "#e1e6dd",
+        "canonical": "#dfe5da",
         "tonalRamp": [
-          "oklch(15.00% 0.01316 130.79)",
-          "oklch(26.43% 0.01316 130.79)",
-          "oklch(37.86% 0.01316 130.79)",
-          "oklch(49.29% 0.01316 130.79)",
-          "oklch(60.71% 0.01316 130.79)",
-          "oklch(72.14% 0.01316 130.79)",
-          "oklch(83.57% 0.01316 130.79)",
-          "oklch(95.00% 0.01316 130.79)"
+          "oklch(15.00% 0.01605 130.43)",
+          "oklch(26.43% 0.01605 130.43)",
+          "oklch(37.86% 0.01605 130.43)",
+          "oklch(49.29% 0.01605 130.43)",
+          "oklch(60.71% 0.01605 130.43)",
+          "oklch(72.14% 0.01605 130.43)",
+          "oklch(83.57% 0.01605 130.43)",
+          "oklch(95.00% 0.01605 130.43)"
         ]
       },
       "focus": {
@@ -352,23 +352,98 @@
       "table-heading-text": {
         "role": "neutral",
         "displayName": "Table Heading Text",
-        "canonical": "#5d6d52",
+        "canonical": "#596d5f",
         "tonalRamp": [
-          "oklch(15.00% 0.04562 132.82)",
-          "oklch(26.43% 0.04562 132.82)",
-          "oklch(37.86% 0.04562 132.82)",
-          "oklch(49.29% 0.04562 132.82)",
-          "oklch(60.71% 0.04562 132.82)",
-          "oklch(72.14% 0.04562 132.82)",
-          "oklch(83.57% 0.04562 132.82)",
-          "oklch(95.00% 0.04562 132.82)"
+          "oklch(15.00% 0.03244 154.60)",
+          "oklch(26.43% 0.03244 154.60)",
+          "oklch(37.86% 0.03244 154.60)",
+          "oklch(49.29% 0.03244 154.60)",
+          "oklch(60.71% 0.03244 154.60)",
+          "oklch(72.14% 0.03244 154.60)",
+          "oklch(83.57% 0.03244 154.60)",
+          "oklch(95.00% 0.03244 154.60)"
+        ]
+      },
+      "brand-accent": {
+        "role": "primary",
+        "displayName": "Brand Accent",
+        "canonical": "#234c3c",
+        "tonalRamp": [
+          "oklch(15.00% 0.05432 165.94)",
+          "oklch(26.43% 0.05432 165.94)",
+          "oklch(37.86% 0.05432 165.94)",
+          "oklch(49.29% 0.05432 165.94)",
+          "oklch(60.71% 0.05432 165.94)",
+          "oklch(72.14% 0.05432 165.94)",
+          "oklch(83.57% 0.05432 165.94)",
+          "oklch(95.00% 0.05432 165.94)"
+        ]
+      },
+      "soft-surface": {
+        "role": "neutral",
+        "displayName": "Soft Surface",
+        "canonical": "#edf2e7",
+        "tonalRamp": [
+          "oklch(15.00% 0.01549 126.82)",
+          "oklch(26.43% 0.01549 126.82)",
+          "oklch(37.86% 0.01549 126.82)",
+          "oklch(49.29% 0.01549 126.82)",
+          "oklch(60.71% 0.01549 126.82)",
+          "oklch(72.14% 0.01549 126.82)",
+          "oklch(83.57% 0.01549 126.82)",
+          "oklch(95.00% 0.01549 126.82)"
+        ]
+      },
+      "hover-surface": {
+        "role": "neutral",
+        "displayName": "Hover Surface",
+        "canonical": "#e6eddf",
+        "tonalRamp": [
+          "oklch(15.00% 0.02004 128.70)",
+          "oklch(26.43% 0.02004 128.70)",
+          "oklch(37.86% 0.02004 128.70)",
+          "oklch(49.29% 0.02004 128.70)",
+          "oklch(60.71% 0.02004 128.70)",
+          "oklch(72.14% 0.02004 128.70)",
+          "oklch(83.57% 0.02004 128.70)",
+          "oklch(95.00% 0.02004 128.70)"
+        ]
+      },
+      "selected": {
+        "role": "primary",
+        "displayName": "Selected",
+        "canonical": "#234c3c",
+        "tonalRamp": [
+          "oklch(15.00% 0.05432 165.94)",
+          "oklch(26.43% 0.05432 165.94)",
+          "oklch(37.86% 0.05432 165.94)",
+          "oklch(49.29% 0.05432 165.94)",
+          "oklch(60.71% 0.05432 165.94)",
+          "oklch(72.14% 0.05432 165.94)",
+          "oklch(83.57% 0.05432 165.94)",
+          "oklch(95.00% 0.05432 165.94)"
+        ]
+      },
+      "field-line": {
+        "role": "neutral",
+        "displayName": "Field Line",
+        "canonical": "#cbd6c3",
+        "tonalRamp": [
+          "oklch(15.00% 0.02838 131.83)",
+          "oklch(26.43% 0.02838 131.83)",
+          "oklch(37.86% 0.02838 131.83)",
+          "oklch(49.29% 0.02838 131.83)",
+          "oklch(60.71% 0.02838 131.83)",
+          "oklch(72.14% 0.02838 131.83)",
+          "oklch(83.57% 0.02838 131.83)",
+          "oklch(95.00% 0.02838 131.83)"
         ]
       }
     },
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Tabular values in community metrics."
+        "purpose": "Overview heading; responsive size is documented in DESIGN.md."
       },
       "headline": {
         "displayName": "Headline",
@@ -393,6 +468,10 @@
       "label": {
         "displayName": "Label",
         "purpose": "Compact controls and operational labels."
+      },
+      "action": {
+        "displayName": "Action",
+        "purpose": "Primary, secondary, and quiet button labels."
       }
     },
     "shadows": [
@@ -437,20 +516,21 @@
         "name": "reduced-motion",
         "value": "animation: none; transition: none; scroll-behavior: auto",
         "purpose": "Applied globally under prefers-reduced-motion: reduce."
+      },
+      {
+        "name": "review-work",
+        "value": "1.2s ease-in-out; stagger .15s; opacity .35; translateY(-2px)",
+        "purpose": "Three small dots only while checking or pending/reviewing; static under reduced motion."
       }
     ],
     "breakpoints": [
       {
-        "name": "wide-desktop-min",
-        "value": "1500px"
+        "name": "overview-compact-desktop-max",
+        "value": "1100px"
       },
       {
-        "name": "compact-desktop-max",
-        "value": "1190px"
-      },
-      {
-        "name": "tablet-max",
-        "value": "980px"
+        "name": "overview-stacked-columns-max",
+        "value": "900px"
       },
       {
         "name": "phone-max",
@@ -465,7 +545,7 @@
       "refersTo": "button-primary",
       "description": "A committed action with forest emphasis.",
       "html": "<div class=\"ds-preview\"><button class=\"ds-button ds-primary\">Explore partnership <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border-radius:6px;padding:9px 13px;font-size:11px;font-weight:500;border:1px solid var(--line, #e1e6dd);background:#fff;white-space:nowrap;transition:background .15s,box-shadow .15s}.ds-button:hover{background:#f0f4ea}.ds-button svg{width:14px;height:14px}.ds-button.ds-primary{background:var(--forest, #234c3c);border-color:var(--forest, #234c3c);color:#fff}.ds-button.ds-primary:hover{background:var(--deep, #193d30)}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border-radius:6px;padding:9px 13px;font-size:12px;font-weight:500;border:1px solid var(--line, #dfe5da);background:#fff;white-space:nowrap;transition:background .15s,box-shadow .15s}.ds-button:hover{background:#f0f4ea}.ds-button svg{width:14px;height:14px}.ds-button.ds-primary{background:var(--forest, #234c3c);border-color:var(--forest, #234c3c);color:#fff}.ds-button.ds-primary:hover{background:var(--deep, #193d30)}"
     },
     {
       "name": "Secondary button",
@@ -473,7 +553,7 @@
       "refersTo": "button-secondary",
       "description": "A bordered neutral action.",
       "html": "<div class=\"ds-preview\"><button class=\"ds-button\">Add volunteer <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border-radius:6px;padding:9px 13px;font-size:11px;font-weight:500;border:1px solid var(--line, #e1e6dd);background:#fff;white-space:nowrap;transition:background .15s,box-shadow .15s}.ds-button:hover{background:#f0f4ea}.ds-button svg{width:14px;height:14px}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border-radius:6px;padding:9px 13px;font-size:12px;font-weight:500;border:1px solid var(--line, #dfe5da);background:#fff;white-space:nowrap;transition:background .15s,box-shadow .15s}.ds-button:hover{background:#f0f4ea}.ds-button svg{width:14px;height:14px}"
     },
     {
       "name": "Quiet button",
@@ -481,7 +561,7 @@
       "refersTo": "button-quiet",
       "description": "A transparent bordered action on a content surface.",
       "html": "<div class=\"ds-preview\"><button class=\"ds-button ds-quiet\">Design outreach flow <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border-radius:6px;padding:9px 13px;font-size:11px;font-weight:500;border:1px solid var(--line, #e1e6dd);background:#fff;white-space:nowrap;transition:background .15s,box-shadow .15s}.ds-button:hover{background:#f0f4ea}.ds-button svg{width:14px;height:14px}.ds-button.ds-quiet{background:transparent;border-color:#ccd7c0}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border-radius:6px;padding:9px 13px;font-size:12px;font-weight:500;border:1px solid var(--line, #dfe5da);background:#fff;white-space:nowrap;transition:background .15s,box-shadow .15s}.ds-button:hover{background:#f0f4ea}.ds-button svg{width:14px;height:14px}.ds-button.ds-quiet{background:transparent;border-color:#ccd7c0}"
     },
     {
       "name": "Text button",
@@ -489,7 +569,7 @@
       "refersTo": "button-text",
       "description": "A small supporting navigation action.",
       "html": "<div class=\"ds-preview\"><button class=\"ds-text-button\">View all <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-text-button{display:inline-flex;align-items:center;gap:6px;padding:0;color:#657953;font-size:11px;font-weight:500;white-space:nowrap}.ds-text-button:hover{color:var(--forest, #234c3c);text-decoration:underline;text-underline-offset:4px}.ds-text-button svg{width:12px;height:12px}.ds-text-button{border:0;background:none}"
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-text-button{display:inline-flex;align-items:center;gap:6px;padding:0;color:var(--forest,#234c3c);font-size:11px;font-weight:500;white-space:nowrap}.ds-text-button:hover{color:var(--forest, #234c3c);text-decoration:underline;text-underline-offset:4px}.ds-text-button svg{width:12px;height:12px}.ds-text-button{border:0;background:none}"
     },
     {
       "name": "Labeled field",
@@ -504,8 +584,8 @@
       "kind": "nav",
       "refersTo": "navigation",
       "description": "Desktop navigation with a forest current-page state.",
-      "html": "<div class=\"ds-preview\"><nav aria-label=\"Preview navigation\"><a class=\"ds-nav-item ds-active\" href=\"#overview\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z\"/></svg><span>Overview</span></a><a class=\"ds-nav-item\" href=\"#people\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm7 0a4 4 0 0 1 0 8m6 10v-2a4 4 0 0 0-3-3.87\"/></svg><span>People</span></a></nav></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-nav-item{display:flex;gap:13px;align-items:center;height:47px;padding:0 15px;border-radius:8px;margin:5px 0;color:#576659;font-weight:500;transition:background .15s,color .15s}.ds-nav-item svg{width:19px;height:19px}.ds-nav-item.ds-active{background:var(--forest, #234c3c);color:#fff}.ds-nav-item:hover:not(.ds-active){background:#e2e8d9;color:var(--forest, #234c3c)}.ds-preview nav{width:186px;padding:10px;background:#f0f3e9}"
+      "html": "<div class=\"ds-preview\"><nav aria-label=\"Preview navigation\"><a class=\"ds-nav-item ds-active\" href=\"#briefing\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z\"/></svg><span>Overview</span></a><a class=\"ds-nav-item\" href=\"#people\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm7 0a4 4 0 0 1 0 8m6 10v-2a4 4 0 0 0-3-3.87\"/></svg><span>People</span></a></nav></div>",
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview button,.ds-preview a{font-family:inherit;cursor:pointer}.ds-preview button{color:inherit;border:0;background:none}.ds-preview a{text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,summary):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview nav{width:170px;padding:10px;background:var(--sidebar-surface,#eff2e9)}.ds-nav-item{display:flex;align-items:center;gap:11px;height:42px;padding:10px 12px;box-sizing:border-box;border-radius:7px;margin-bottom:5px;font-size:13px;font-weight:500;color:#576659;transition:background .15s,color .15s}.ds-nav-item.ds-active{background:var(--forest,#234c3c);color:#fff}.ds-nav-item:hover:not(.ds-active){background:var(--hover-surface,#e6eddf);color:var(--forest,#234c3c)}"
     },
     {
       "name": "Fit and action badges",
@@ -519,67 +599,33 @@
       "name": "Metric card",
       "kind": "card",
       "refersTo": "metric",
-      "description": "A whole-card action with tabular values and quiet trend metadata.",
-      "html": "<div class=\"ds-preview\"><button class=\"ds-metric\"><span class=\"ds-metric-top\">Volunteers <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm7 0a4 4 0 0 1 0 8m6 10v-2a4 4 0 0 0-3-3.87\"/></svg></span><div class=\"ds-metric-value\">35</div><span class=\"ds-metric-bottom\"><span class=\"ds-trend\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 16 12-12m-8 0h8v8\"/></svg> +6</span> new faces this month</span></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-metric{display:block;text-align:left;padding:21px 23px 18px;border:1px solid var(--line, #e1e6dd);border-radius:var(--radius, 14px);background:var(--surface, #fff);transition:border-color .15s}.ds-metric:hover{border-color:#a8b999}.ds-metric-top{display:flex;justify-content:space-between;align-items:center;color:#627261;font-size:12px}.ds-metric-top svg{width:17px;height:17px;color:#7b8c6e}.ds-metric-value{font-size:38px;font-weight:500;letter-spacing:-1.5px;font-variant-numeric:tabular-nums;line-height:1.15;margin:11px 0 9px}.ds-metric-bottom{font-size:11px;color:#637157;display:flex;align-items:center;gap:7px}.ds-trend{display:inline-flex;align-items:center;gap:3px;color:#50703e;background:#edf4e7;padding:2px 5px;border-radius:4px;font-size:11px}.ds-trend svg{width:11px;height:11px}.ds-metric{width:100%;max-width:365px}"
+      "description": "A compact current-record total opens its contributing records; no invented trend.",
+      "html": "<div class=\"ds-preview\"><button class=\"ds-metric\"><span>People</span><strong>35</strong><small>8 with one recorded visit</small></button></div>",
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview button,.ds-preview a{font-family:inherit;cursor:pointer}.ds-preview button{color:inherit;border:0;background:none}.ds-preview a{text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,summary):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview .ds-metric{display:block;text-align:left;width:100%;max-width:365px;background:#fff;border:1px solid var(--line,#dfe5da);border-radius:12px;padding:16px 19px;transition:border-color .15s}.ds-metric:hover{border-color:#a4b599}.ds-metric>span{font-size:12px;color:var(--muted,#596d5f)}.ds-metric>strong{display:block;font-size:34px;line-height:1.2;font-weight:500;letter-spacing:-.7px;margin:8px 0;font-variant-numeric:tabular-nums}.ds-metric>small{font-size:11px;line-height:1.6;color:var(--muted,#596d5f)}"
     },
     {
       "name": "Featured recommendation",
       "kind": "card",
       "refersTo": "recommendation-featured",
-      "description": "The signature sage recommendation turns context into an explicit next action.",
-      "html": "<div class=\"ds-preview\"><article class=\"ds-recommendation ds-featured\"><div class=\"ds-rec-top\"><span class=\"ds-rec-icon\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m2 9 10-5 10 5-10 5L2 9Zm4 2v6c4 3 8 3 12 0v-6m4-2v7\"/></svg></span><span class=\"ds-badge ds-green\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 12 4 4L19 6\"/></svg> High fit</span></div><h3>College Corps partnership</h3><p>Your environmental projects could be a great home for funded student fellows.</p><div class=\"ds-rec-footer\"><span class=\"ds-rec-benefit\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm7 0a4 4 0 0 1 0 8m6 10v-2a4 4 0 0 0-3-3.87\"/></svg>Potential: 2 recurring fellows</span><button class=\"ds-button ds-primary\">Explore partnership <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-5-5 5 5-5 5\"/></svg></button></div></article></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-recommendation{padding:25px;border-radius:var(--radius, 14px);margin-bottom:17px;border:1px solid var(--line, #e1e6dd);background:#fff}.ds-recommendation.ds-featured{background:#e9eedf;border-color:#dce5cd}.ds-rec-top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:17px}.ds-rec-icon{display:flex;align-items:center;justify-content:center;width:35px;height:35px;border-radius:10px;background:#dbe5c8;color:#4a633b}.ds-rec-icon svg{width:20px;height:20px}.ds-badge{display:inline-flex;align-items:center;gap:5px;border-radius:5px;padding:4px 7px;font-size:11px;font-weight:500;line-height:1.2;white-space:nowrap}.ds-badge.ds-green{color:#496134;background:#d8e5c6}.ds-badge.ds-green svg{width:11px;height:11px}.ds-recommendation h3{font-size:19px;margin-bottom:8px;letter-spacing:-.45px}.ds-recommendation p{font-size:12px;line-height:1.8;color:#58664f;max-width:53ch}.ds-rec-footer{display:flex;align-items:center;justify-content:space-between;gap:15px;border-top:1px solid #d9e1cc;margin-top:21px;padding-top:17px}.ds-rec-benefit{font-size:11px;display:flex;align-items:center;gap:7px;color:#526442}.ds-rec-benefit svg{width:15px;height:15px}.ds-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;border-radius:6px;padding:9px 13px;font-size:11px;font-weight:500;border:1px solid var(--line, #e1e6dd);background:#fff;white-space:nowrap;transition:background .15s,box-shadow .15s}.ds-button:hover{background:#f0f4ea}.ds-button svg{width:14px;height:14px}.ds-button.ds-primary{background:var(--forest, #234c3c);border-color:var(--forest, #234c3c);color:#fff}.ds-button.ds-primary:hover{background:var(--deep, #193d30)}.ds-recommendation{max-width:640px}.ds-recommendation h3{font-weight:600;line-height:1.4}@media(max-width:760px){.ds-rec-footer{flex-direction:column;align-items:stretch}.ds-rec-footer .ds-button{width:100%}}"
+      "description": "A sage recommendation connects a factual summary to an action and a native evidence disclosure.",
+      "html": "<div class=\"ds-preview\"><article class=\"ds-recommendation\"><h3>A garden invitation to bring people back</h3><p>Maya, Sofia and Chloe share an interest in community gardening. Saturday in the garden has 6 open places.</p><div class=\"ds-actions\"><span>3 people referenced</span><button class=\"ds-primary\">Review invitation \u2192</button></div><details class=\"ds-evidence\"><summary>Why this surfaced</summary><p>These illustrative profiles share a gardening interest. Availability and attendance still need confirming.</p></details></article></div>",
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview button,.ds-preview a{font-family:inherit;cursor:pointer}.ds-preview button{color:inherit;border:0;background:none}.ds-preview a{text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,summary):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-recommendation{max-width:640px;background:var(--sage,#e8eddf);border:1px solid #dbe4cf;border-radius:13px;padding:23px}.ds-recommendation h3{font-size:22px;font-weight:500;line-height:1.4;letter-spacing:-.4px;color:var(--forest,#234c3c);margin-bottom:10px}.ds-recommendation p{font-size:13px;line-height:1.8;color:#53684f}.ds-actions{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-top:19px}.ds-actions>span{font-size:11px;color:#596e52}.ds-preview .ds-primary{font-size:12px;font-weight:500;min-height:36px;padding:9px 13px;border-radius:6px;background:var(--forest,#234c3c);color:#fff;transition:background .15s}.ds-preview .ds-primary:hover{background:var(--deep,#193d30)}.ds-evidence{margin-top:15px;padding-top:12px;border-top:1px solid #dbe3d2;font-size:11px;color:#53684f}.ds-evidence summary{cursor:pointer;width:max-content;max-width:100%;line-height:1.8}.ds-evidence p{font-size:12px;padding-top:14px}"
     },
     {
       "name": "Upcoming event row",
       "kind": "custom",
       "refersTo": "event-date",
-      "description": "A full-row action pairs a recognizable date tile with practical attendance details.",
-      "html": "<div class=\"ds-preview\"><button class=\"ds-event-row\"><span class=\"ds-date-tile\"><small>OCT</small><strong>31</strong></span><span class=\"ds-event-info\"><strong>Saturday in the garden</strong><small>9:00 AM \u2013 12:00 PM</small><span class=\"ds-event-spots\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm7 0a4 4 0 0 1 0 8m6 10v-2a4 4 0 0 0-3-3.87\"/></svg>12 going \u00b7 6 spots left</span></span></button></div>",
-      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview svg{width:20px;height:20px;display:block;flex-shrink:0}.ds-preview button,.ds-preview input{font:inherit;color:inherit;cursor:pointer}.ds-preview :is(button,a,input,select,textarea):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview a{text-decoration:none}.ds-preview h3,.ds-preview p{margin:0}.ds-preview button:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-event-row{width:100%;text-align:left;display:flex;gap:13px;padding:0 0 20px;margin:0 0 20px;border-bottom:1px solid #e9ece4}.ds-date-tile{width:44px;height:51px;flex-shrink:0;background:#f0f3e9;border-radius:7px;text-align:center;display:flex;flex-direction:column;justify-content:center}.ds-date-tile small{font-size:11px;letter-spacing:.5px;color:#647052}.ds-date-tile strong{font-size:20px;font-weight:500;line-height:1.15;font-variant-numeric:tabular-nums}.ds-event-info{min-width:0}.ds-event-info strong{display:block;font-size:11px;font-weight:600;line-height:1.5;margin-bottom:3px}.ds-event-info small{font-size:11px;color:#637157;display:block}.ds-event-spots{display:flex;align-items:center;gap:5px;font-size:11px;color:#637157;margin-top:7px}.ds-event-spots svg{width:12px;height:12px}.ds-event-row:hover .ds-event-info strong{color:#608141}.ds-event-row{max-width:370px;border-width:0 0 1px;background:transparent;color:var(--ink,#23392f)}"
+      "description": "A full-row event action pairs a date tile with recorded aggregate capacity.",
+      "html": "<div class=\"ds-preview\"><button class=\"ds-event\"><span class=\"ds-date\"><small>OCT</small><strong>31</strong></span><span class=\"ds-event-copy\"><strong>Saturday in the garden</strong><small>9:00 AM \u2013 12:00 PM</small><span class=\"ds-track\"><i style=\"width:66.67%\"></i></span><span class=\"ds-capacity\"><span>12 / 18 places recorded</span><span>6 open</span></span></span></button></div>",
+      "css": ".ds-preview{font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;color:var(--ink,#23392f)}.ds-preview button,.ds-preview a{font-family:inherit;cursor:pointer}.ds-preview button{color:inherit;border:0;background:none}.ds-preview a{text-decoration:none}.ds-preview svg{width:18px;height:18px;display:block;flex-shrink:0}.ds-preview :is(button,a,summary):focus-visible{outline:3px solid #587842;outline-offset:4px}.ds-preview p,.ds-preview h3{margin:0}@media(prefers-reduced-motion:reduce){.ds-preview *{animation:none!important;transition:none!important}}.ds-preview .ds-event{display:flex;align-items:flex-start;gap:12px;width:100%;max-width:370px;text-align:left;padding:15px 0;border-top:1px solid var(--line,#dfe5da)}.ds-date{display:flex;flex-direction:column;justify-content:center;flex-shrink:0;width:39px;height:51px;box-sizing:border-box;padding:6px 4px;background:var(--soft-surface,#edf2e7);border-radius:6px;text-align:center}.ds-date small{font-size:11px;letter-spacing:.5px;color:#647052}.ds-date strong{font-size:20px;line-height:1.25;font-weight:500;font-variant-numeric:tabular-nums}.ds-event-copy{display:block;flex:1;min-width:0}.ds-event-copy>strong{display:block;font-size:12px;line-height:1.5;font-weight:500}.ds-event-copy>small{display:block;font-size:11px;color:var(--muted,#596d5f);margin-top:2px}.ds-track{display:block;height:4px;background:#e8eddf;border-radius:3px;overflow:hidden;margin:10px 0 5px}.ds-track i{display:block;height:100%;background:#8ea86d}.ds-capacity{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--muted,#596d5f)}.ds-event:hover .ds-event-copy>strong{color:#668246}"
     }
   ],
   "narrative": {
-    "northStar": "Community work becomes a clear next action.",
-    "overview": "Roots is a calm operations workspace with a living, community-minded character. Warm paper, forest green, and sage establish a practical nonprofit setting. Clear type and fine dividers let coordinators scan information, understand a recommendation, and take a concrete next step.\n\nThis documents the implemented expansion of the user's pinned Roots reference. The established identity is the lowercase Roots wordmark, outlined sprout, self-hosted DM Sans, restrained corners, and green positive indicators. Peach is a small action cue. Tonal surfaces carry emphasis without decorative imagery or heavy elevation.",
-    "keyCharacteristics": [
-      "Warm paper ground with white work surfaces and sage emphasis.",
-      "Forest navigation, primary actions, and quiet green-tinted typography.",
-      "Compact operational labels balanced by open horizontal spacing.",
-      "Fine borders, restrained corners, and consistent outlined SVG icons.",
-      "Persistent navigation that becomes a bottom bar on phones."
-    ],
-    "rules": [
-      {
-        "name": "The Action Emphasis Rule",
-        "body": "Use forest for a committed primary action, sage for relevant context, and peach for the established outreach cue. Preserve these meanings when extending the interface.",
-        "section": "colors"
-      },
-      {
-        "name": "The Legible Detail Rule",
-        "body": "Keep functional small text at least 11px and preserve the final contrast colors. Do not remove visible focus to make controls appear quieter.",
-        "section": "typography"
-      },
-      {
-        "name": "The Flat Workspace Rule",
-        "body": "Use a border or a tonal surface to separate ordinary content. Reserve shadows for the sheet and toast patterns already established.",
-        "section": "elevation"
-      }
-    ],
-    "dos": [
-      "**Do** preserve the Roots wordmark, outlined sprout, forest actions, and self-hosted DM Sans.",
-      "**Do** keep ordinary work surfaces flat with fine borders and use sage to emphasize relevant context.",
-      "**Do** preserve the 11px functional text floor, final contrast colors, visible focus, and reduced-motion behavior.",
-      "**Do** keep navigation labels visible on phones and place stacked rail content after the main recommendations.",
-      "**Do** pair status colors with readable text or icons and use tabular numerals for metrics and dates."
-    ],
-    "donts": [
-      "**Don't** replace the established operational typography with a new display family or introduce a decorative visual identity.",
-      "**Don't** apply sheet-style shadows or animated lifting to ordinary cards.",
-      "**Don't** turn peach, avatar lavender, or avatar sand into competing primary-action colors.",
-      "**Don't** hide keyboard focus, remove small-text contrast refinements, or depend on color alone to communicate state.",
-      "**Don't** treat generated tonal preview strips as additional production colors or assume unimplemented component states exist."
-    ]
+    "northStar": "Good things are taking root.",
+    "overview": "Roots opens on an Overview dashboard that combines current community analytics, useful recommendations, and upcoming events. Dark forest navigation and primary actions, sage featured cards, white analytical surfaces, warm paper, and self-hosted DM Sans restore the original Roots identity.\n\nThe user's latest direction prefers the original darker green style and asks for a better presentation of insights and analytics on the first page. The original Overview screenshot and forest-green dashboard composition are the visual reference. This supersedes the narrow Today and conversation-first layouts. Preserve a useful dashboard hierarchy while keeping cards compact and supporting details accessible on demand.",
+    "keyCharacteristics": [],
+    "rules": [],
+    "dos": [],
+    "donts": []
   }
 }

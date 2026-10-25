@@ -1,6 +1,6 @@
 (() => {
   let api, checkedLocally=null, localInsights=[], fingerprint='', refreshTimer=null, pollTimer=null;
-  let checking=false, showMore=false, prompt='', lastRendered='', lastStatus='', checkError='', refreshNotice='';
+  let checking=false, showMore=false, prompt='', lastRendered='', lastStatus='', checkError='', refreshNotice='', analyticsTab='participation', lastAnalytics='';
   const e=value=>api.esc(value);
   const bridge=()=>window.RootsBridge;
   const visible=()=>api?.getState().view==='briefing';
@@ -55,7 +55,7 @@
   function statusMarkup() {
     const data=current(), busy=working(), ai=data.source==='gemini-synthesis';
     const failed=data.generation?.status==='failed'||checkError||bridge()?.insightError;
-    const label=busy?'Looking for useful connections…':failed?(data.hasPreviousBriefing?'Your last briefing is still here.':'Record matches are still available.'):ai?`Reviewed ${time(data.checkedAt)}`:`Record matches · Checked ${time(data.checkedAt)}`;
+    const label=busy?'Looking for useful connections…':failed?(data.hasPreviousBriefing?'Your last briefing is still here.':'Record matches are still available.'):ai?`AI reviewed ${time(data.checkedAt)}`:`Record matches · Checked ${time(data.checkedAt)}`;
     const note=failed?'The latest review could not finish.':data.stale&&!busy?'A fresh review is needed.':'';
     return `<div class="briefing-fresh ${busy?'is-reviewing':''}" role="status"><span class="briefing-presence" aria-hidden="true">${busy?'<i></i><i></i><i></i>':api.icon('check')}</span><span>${e(label)}</span>${note?`<span>${e(note)}</span>`:''}<span aria-hidden="true">·</span><button class="briefing-refresh" data-briefing="refresh" ${busy?'disabled':''} aria-label="${failed?'Retry insight review':'Refresh briefing'}">${failed?'Try again':'Check again'}</button></div>${refreshNotice&&!busy?`<p class="briefing-update-note">${e(refreshNotice)}</p>`:''}`;
   }
@@ -74,18 +74,44 @@
     return {kind:'discuss',label:'Explore with Roots'};
   }
   function insightMarkup(item,index) {
-    const action=actionFor(item);
-    return `<article class="briefing-insight" data-insight-id="${e(item.id)}"><h2>${e(item.title)}</h2><p class="briefing-insight-summary">${e(item.summary)}</p><div class="briefing-insight-actions"><button class="briefing-action" data-briefing="action" data-index="${index}">${e(action.label)} ${api.icon('up')}</button><details class="briefing-evidence"><summary>Why this?</summary><div>${item.suggestion?`<p class="briefing-interpretation"><strong>Suggested next step:</strong> ${e(item.suggestion)}</p>`:''}${(item.evidence||[]).map(v=>`<p><strong>${e(v.label)}:</strong> ${e(typeof v.value==='object'?JSON.stringify(v.value):v.value)}</p>`).join('')}<div class="insight-sources">${sourceButtons(item)}</div><button class="briefing-discuss" data-briefing="discuss" data-index="${index}">${api.icon('message')}Discuss this with Roots</button></div></details></div></article>`;
+    const action=actionFor(item), people=(item.sourceIds?.people||[]).map(id=>api.getState().people.find(p=>p.id===id)).filter(Boolean);
+    const peopleMarkup=people.length?`<div class="overview-source-people">${people.slice(0,3).map(p=>`<button data-briefing="source" data-kind="person" data-id="${e(p.id)}" aria-label="View ${e(p.name)}">${api.avatar(p)}</button>`).join('')}<span>${people.length} ${people.length===1?'person':'people'} referenced</span></div>`:'';
+    return `<article class="briefing-insight ${index===0?'featured':''}" data-insight-id="${e(item.id)}"><h3>${e(item.title)}</h3><p class="briefing-insight-summary">${e(item.summary)}</p><div class="briefing-insight-actions">${peopleMarkup}<button class="button ${index===0?'primary':'quiet'}" data-briefing="action" data-index="${index}">${e(action.label)} ${api.icon('arrow')}</button></div><details class="briefing-evidence"><summary>Why this surfaced</summary><div>${item.suggestion?`<p><strong>Suggested next step:</strong> ${e(item.suggestion)}</p>`:''}${(item.evidence||[]).map(v=>`<p><strong>${e(v.label)}:</strong> ${e(typeof v.value==='object'?JSON.stringify(v.value):v.value)}</p>`).join('')}<div class="insight-sources">${sourceButtons(item)}</div><button class="briefing-discuss" data-briefing="discuss" data-index="${index}">${api.icon('message')}Discuss this with Roots</button></div></details></article>`;
   }
   function insightsMarkup() {
     const items=(current().insights||[]).slice(0,3);
     return items.length?items.slice(0,showMore?3:2).map(insightMarkup).join('')+(items.length>2?`<button class="briefing-more" data-briefing="more">${showMore?'Show fewer ideas':'One more idea'} ${api.icon(showMore?'chevron-down':'plus')}</button>`:''):`<div class="briefing-empty"><h2>A little more context will help.</h2><p>Add people and opportunities, then Roots can look for useful connections.</p><a class="briefing-action" href="#people">Explore your people ${api.icon('arrow')}</a></div>`;
   }
+  const number=value=>typeof value==='number'?value.toLocaleString(undefined,{maximumFractionDigits:1}):'—';
+  const stats=()=>window.RootsAnalytics.compute(api.getState(),window.RootsPeople.profileData);
+  function snapshotMarkup(a) {
+    return `<button class="overview-metric" data-dashboard-group="all"><span>People ${api.icon('users')}</span><strong>${number(a.people.total)}</strong><small>${number(a.visits.first)} with one recorded visit ${api.icon('arrow')}</small></button><button class="overview-metric" data-dashboard-group="hours"><span>Recorded hours ${api.icon('clock')}</span><strong>${number(a.hours.total)}</strong><small>Across ${number(a.hours.known)} profiles ${api.icon('arrow')}</small></button><a class="overview-metric" href="#opportunities"><span>Opportunity leads ${api.icon('leaf')}</span><strong>${window.RootsOpportunities.list().length}</strong><small>Explore possible matches ${api.icon('arrow')}</small></a>`;
+  }
+  function patternsMarkup(a) {
+    if(analyticsTab==='interests')return `<div class="overview-interests">${a.interests.top.length?a.interests.top.map(item=>`<button data-dashboard-group="interest" data-interest="${e(item.name)}"><span>${e(item.name)}<strong>${item.count}</strong></span><span class="overview-interest-track" aria-hidden="true"><i style="width:${a.people.total?100*item.count/a.people.total:0}%"></i></span></button>`).join(''):'<p class="overview-empty">Add interests to see what brings people together.</p>'}</div><p class="overview-chart-note">People can have more than one interest. Select a bar to see who.</p>`;
+    const groups=[['first','One visit',a.visits.first],['repeat','Repeat visits',a.visits.repeat],['zero','No visits yet',a.visits.zero],['unknown','Not recorded',a.visits.unknown]].filter(g=>g[2]>0);
+    return `<div class="overview-participation-value"><strong>${a.visits.repeatShare===null?'—':Math.round(a.visits.repeatShare*100)+'%'}</strong><span>have visited more than once<small>Of profiles with at least one recorded visit</small></span></div>${a.people.total?`<div class="overview-participation-bar" aria-label="Visit counts by person">${groups.map(([key,label,count])=>`<button data-dashboard-group="${key}" class="participation-${key}" style="width:${count/a.people.total*100}%" aria-label="${e(label)}: ${count} people"></button>`).join('')}</div><div class="overview-chart-legend">${groups.map(([key,label,count])=>`<button data-dashboard-group="${key}"><i class="participation-${key}" aria-hidden="true"></i>${label}<strong>${count}</strong></button>`).join('')}</div>`:'<p class="overview-empty">Add people to see participation patterns.</p>'}<p class="overview-chart-note">Based on total visits in each profile. Select a group to see the people.</p>`;
+  }
+  function eventsMarkup() {
+    const events=api.getState().events;
+    return events.slice(0,3).map(event=>{const valid=Number.isInteger(event.capacity)&&Number.isInteger(event.attendees)&&event.capacity>=0&&event.attendees>=0&&event.attendees<=event.capacity;return `<button class="overview-event" data-briefing="source" data-kind="event" data-id="${e(event.id)}"><span class="date-tile"><small>${e(event.month)}</small><strong>${e(event.day)}</strong></span><span class="overview-event-copy"><strong>${e(event.title)}</strong><small>${e(event.time)}</small>${valid?`<span class="overview-event-track" aria-hidden="true"><i style="width:${event.capacity?100*event.attendees/event.capacity:0}%"></i></span><span class="overview-event-capacity">${event.attendees} / ${event.capacity} places recorded<span>${event.capacity-event.attendees} open</span></span>`:'<span class="overview-event-capacity">Capacity not recorded</span>'}</span></button>`;}).join('')||'<p class="overview-empty">No events recorded yet.</p>';
+  }
   function render() {
-    checkLocalRecords();lastRendered='';lastStatus=statusMarkup();
-    const count=(current().insights||[]).length;
-    const heading=count===1?'One thing worth a look.':count?'Two things worth a look.':'A little more context will help.';
-    return `<div class="briefing-shell"><div class="briefing-content"><header class="briefing-heading"><h1>${heading}</h1><div id="briefing-status">${lastStatus}</div></header><section id="briefing-insights" class="briefing-insights" aria-label="Current suggestions">${insightsMarkup()}</section><div id="briefing-coverage">${coverageMarkup()}</div></div><form id="briefing-chat-form" class="briefing-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about this briefing</label><textarea id="briefing-prompt" rows="2" maxlength="2000" placeholder="Ask Roots, or take an idea further…" required>${e(prompt)}</textarea><button type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></form><p class="briefing-composer-note">Your community, in the conversation.</p></div>`;
+    checkLocalRecords();lastRendered='';lastStatus=statusMarkup();lastAnalytics='';
+    const a=stats();
+    return `<div class="overview-shell"><header class="overview-heading"><div><h1>Good things are taking root.</h1><p>Your community, the patterns, and what to do next.</p></div><span class="overview-scope">${api.icon('calendar')}Current records</span></header><section class="overview-metrics" id="overview-metrics" aria-label="Community snapshot">${snapshotMarkup(a)}</section><div class="overview-columns"><section class="overview-insight-column"><div class="overview-section-heading"><h2>Worth your attention ${api.icon('sparkles')}</h2><div id="briefing-status">${lastStatus}</div></div><div id="briefing-insights" class="briefing-insights" aria-label="Current suggestions">${insightsMarkup()}</div><div id="briefing-coverage">${coverageMarkup()}</div><form id="briefing-chat-form" class="briefing-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about these insights</label><span class="overview-ask-mark" aria-hidden="true">${api.icon('sprout')}</span><textarea id="briefing-prompt" rows="1" maxlength="2000" placeholder="Ask Roots about your community…" required>${e(prompt)}</textarea><button type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></form></section><aside class="overview-analytics-column" aria-label="Community analytics"><section class="overview-patterns"><div class="overview-section-heading"><h2>Community patterns</h2></div><div class="overview-chart-tabs" role="group" aria-label="Community chart"><button data-dashboard-tab="participation" aria-pressed="${analyticsTab==='participation'}">Participation</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">Interests</button></div><div id="overview-patterns">${patternsMarkup(a)}</div></section><section class="overview-coming"><div class="overview-section-heading"><h2>Coming up</h2><a href="#events">View all ${api.icon('arrow')}</a></div><div id="overview-events">${eventsMarkup()}</div></section></aside></div><p class="overview-data-note">${api.icon('info')}Snapshot of illustrative records · Totals update as your records change.</p></div>`;
+  }
+  function updateAnalytics() {
+    const target=document.getElementById('overview-patterns');if(!target)return;
+    const a=stats(), fingerprint=JSON.stringify([a,analyticsTab,api.getState().events,window.RootsOpportunities.list().length]);if(fingerprint===lastAnalytics)return;
+    target.innerHTML=patternsMarkup(a);document.getElementById('overview-metrics').innerHTML=snapshotMarkup(a);document.getElementById('overview-events').innerHTML=eventsMarkup();
+    document.querySelectorAll('[data-dashboard-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.dashboardTab===analyticsTab)));lastAnalytics=fingerprint;
+  }
+  function openGroup(group,interest) {
+    const a=stats(), ids=group==='all'?a.people.ids:group==='hours'?a.hours.ids.known:group==='interest'?a.interests.top.find(item=>item.name===interest)?.personIds||[]:a.visits.ids[group]||[];
+    const title=({all:'People in your community',hours:'Recorded volunteer hours',first:'People with one recorded visit',repeat:'People with repeat visits',zero:'People with no recorded visits',unknown:'Visit counts not recorded'})[group]||interest;
+    let people=ids.map(id=>api.getState().people.find(p=>p.id===id)).filter(Boolean);if(group==='hours')people=people.sort((a,b)=>(b.hours||0)-(a.hours||0));
+    api.openDialog('Community records',`<h2 id="dialog-title">${e(title)}</h2><p class="lead">${people.length} ${people.length===1?'person':'people'} in the current records. Select a profile to explore the details.</p><div class="briefing-people">${people.map(p=>`<button data-briefing="source" data-kind="person" data-id="${e(p.id)}">${api.avatar(p)}<span><strong>${e(p.name)}</strong><small>${group==='hours'?number(p.hours)+(p.hours===1?' recorded hour':' recorded hours'):Number.isInteger(p.visits)&&p.visits>=0?number(p.visits)+(p.visits===1?' recorded visit':' recorded visits'):'Visit count not recorded'}</small></span>${api.icon('arrow')}</button>`).join('')}</div>`);
   }
   function update() {
     if(!api||!visible())return;
@@ -93,7 +119,7 @@
     const coverage=document.getElementById('briefing-coverage');
     if(coverage&&!coverage.querySelector('details[open]'))coverage.innerHTML=coverageMarkup();
     const data=current(), rendered=JSON.stringify([data.insights,showMore]);
-    const heading=document.querySelector('.briefing-heading h1');if(heading)heading.textContent=data.insights?.length===1?'One thing worth a look.':data.insights?.length?'Two things worth a look.':'A little more context will help.';
+    updateAnalytics();
     if(rendered!==lastRendered){
       const open=Array.from(document.querySelectorAll('.briefing-evidence[open]')).map(d=>d.closest('[data-insight-id]').dataset.insightId);
       const target=document.getElementById('briefing-insights');if(target)target.innerHTML=insightsMarkup();
@@ -127,7 +153,10 @@
     }else window.RootsChat.setPrompt(item.suggestedPrompt||`Help me explore this suggestion: ${item.title}`);
   }
   document.addEventListener('click',event=>{
-    const button=event.target.closest('[data-briefing]');if(!button||!api)return;
+    if(!api)return;
+    const chart=event.target.closest('[data-dashboard-tab]');if(chart){analyticsTab=chart.dataset.dashboardTab;updateAnalytics();return;}
+    const group=event.target.closest('[data-dashboard-group]');if(group){openGroup(group.dataset.dashboardGroup,group.dataset.interest);return;}
+    const button=event.target.closest('[data-briefing]');if(!button)return;
     const kind=button.dataset.briefing;
     if(kind==='refresh')refresh(true);
     else if(kind==='more'){showMore=!showMore;update();}

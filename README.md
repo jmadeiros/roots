@@ -1,6 +1,6 @@
 # Roots
 
-A simple green workspace for nonprofit coordinators: a Today page with useful ideas, clear records, and concrete next actions, with a separate conversation when needed. The interface uses HTML, CSS, and JavaScript with self-hosted DM Sans and no build dependencies. An optional Python bridge connects the local workspace to Gemini and supports a private Telegram test.
+A forest-green workspace for nonprofit coordinators: an Overview dashboard with current-record analytics, useful recommendations, and upcoming events, plus a separate conversation when needed. The interface uses HTML, CSS, and JavaScript with self-hosted DM Sans and no build dependencies. An optional Python bridge connects the local workspace to Gemini and supports a private Telegram test.
 
 ## Run Roots
 
@@ -22,18 +22,20 @@ Open **http://127.0.0.1:4173**. This mode has the same limits as the published s
 
 ## Included
 
-- **Today:** a short heading, compact freshness line, and two plain idea blocks with an optional third. Each idea has one paragraph, an outlined action, and a **Why this?** disclosure for evidence and suggested next steps. **How Roots finds these ideas** holds the review explanation below the list. A roomy bottom composer opens Ask Roots; the briefing stays independent of chat and does not shrink after a message.
+- **Overview:** three compact snapshot metrics, two recommendation cards with an optional third, and a right-hand column for Community patterns and Coming up. The first recommendation uses a sage surface and forest action; **Why this surfaced** reveals evidence and suggested next steps. Participation and Interests charts open their underlying people. Event rows show recorded capacity. A compact composer opens Ask Roots; analytics and AI review stay independent of chat.
 - **People:** the existing searchable table and richer profiles with Profile, Activity, and Notes views; stated interests, editable declared skills and preferences, service-hour targets, illustrative attendance, and opportunity suggestions.
 - **Opportunities:** 11 candidate leads across volunteer benefits and organization support, plus three project drafts. Compact rows, search, saved items, and collapsed detail sections keep the page manageable. Project plans include suggested teams, budgets, and readiness checks.
 - **Outreach:** Drafts, Workflows, and Delivery views for reviewing unsent messages, configuring rules, and inspecting missing delivery prerequisites.
 - **Secondary tools:** Ask Roots provides conversation and editable inline email/SMS drafts with Edit, Copy, and Refine actions. Calendar provides event details and date-sorted event creation. Assistant connection details remain available within Ask Roots.
 - Responsive sidebar/bottom navigation, reduced-motion support, keyboard focus, and accessible form labels.
 
-The primary destinations are **Today, People, Opportunities, and Outreach**. The original simple green concept supplies the composition: warm paper, restrained green surfaces and actions, DM Sans, and fine dividers. The desktop sidebar is 170px wide and collapses to 56px; Today uses a 590px reading column, a 28px heading, 17px idea titles, and 13px explanations. Its composer has a 48px textarea, 15px padding, and a 15px radius. Ask Roots retains its separate 660px conversation column. Today uses the existing `#briefing` route; old Overview and Funding links resolve to Today and Opportunities respectively.
+The primary destinations are **Overview, People, Opportunities, and Outreach**. The original darker Roots dashboard supplies the visual direction: forest `#234c3c` selected navigation and primary actions, warm paper, sage feature cards, and self-hosted DM Sans. The desktop sidebar is 200px wide, reduces to 180px on smaller desktops, and collapses to 60px. The page container is capped at 1184px, with recommendations and analytics in a responsive two-column layout. Ask Roots retains a separate 700px conversation column. Overview keeps the `#briefing` route; `#overview` remains an alias and old Funding links resolve to Opportunities. The earlier neutral stylesheet is no longer loaded.
 
 ## Data and delivery boundaries
 
 Seed people, events, metrics, participation histories, assessments, project teams, and budgets are illustrative. Opportunity names and source links are research leads; no benefit, eligibility, deadline, award, or partnership is confirmed by this demo. Matches use stated interests rather than inferred demographics.
+
+Overview analytics use the current saved records. The seed snapshot has **35 people, 893 recorded hours, 8 people with one visit, and 27 with repeat visits**. The three top metrics are people, recorded hours, and opportunity leads. The participation percentage is repeat visitors divided by profiles with at least one recorded visit—77% in the seed snapshot—not a cohort retention rate or a monthly trend. Interest bars count people and can overlap. Charts and totals open the contributing records; unknown visit counts and missing hours remain distinguishable from zero. Event capacity describes recorded aggregate places, not confirmed individual RSVPs. No historical growth figures or trend arrows are inferred.
 
 The published site is a static demo. Its records and changes remain in that browser and origin. Core state uses `roots-demo-v1`; profile details use `roots-people-details-v1`; notices, drafts, and workflow settings use `roots-notices-v1`; the conversation ID, recent messages, and composer text use `roots-conversation-v1`. Sidebar collapse is stored as `roots-sidebar-collapsed`. The published site and local test do not automatically share browser storage.
 
