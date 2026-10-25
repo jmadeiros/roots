@@ -415,6 +415,175 @@ class BridgeTests(unittest.TestCase):
         self.assertFalse(self.store.insights()["cached"])
         self.assertFalse(self.store.insights(force=True)["cached"])
 
+    def briefing_response(self, payload, **changes):
+        catalog = json.loads(payload["contents"][0]["parts"][0]["text"])["catalog"]
+        item = {"factIds": [catalog[0]["id"]], "title": "Explore a return invitation", "suggestion": "Consider a relevant invitation after checking interest and contact permission.", "priority": "medium", **changes}
+        return {"candidates": [{"content": {"parts": [{"text": json.dumps({"insights": [item]})}]}}]}
+
+    def test_briefing_is_independent_async_deduplicated_and_persisted(self):
+        entered, release = threading.Event(), threading.Event()
+        calls = []
+        self.state["people"][0].update(email="private@example.test", phone="+15555550123", notes="PRIVATE_COORDINATOR_NOTE")
+        self.store.save(self.state)
+        def fake(url, payload, headers):
+            calls.append(payload)
+            entered.set()
+            self.assertTrue(release.wait(3))
+            return self.briefing_response(payload)
+        service = bridge.Briefing(self.store, "fake-test-key", request=fake)
+        self.addCleanup(service.close)
+        try:
+            pending = service.get()
+            self.assertEqual(pending["generation"]["status"], "pending")
+            self.assertEqual(pending["source"], "snapshot-rules")
+            self.assertTrue(entered.wait(2))
+            self.assertEqual(service.get()["generation"]["status"], "reviewing")
+            workers = [threading.Thread(target=service.get) for _ in range(5)]
+            for worker in workers:
+                worker.start()
+            for worker in workers:
+                worker.join(2)
+            self.assertEqual(len(calls), 1)
+            sent = json.dumps(calls[0])
+            for private in ("private@example.test", "+15555550123", "PRIVATE_COORDINATOR_NOTE"):
+                self.assertNotIn(private, sent)
+            self.assertEqual(calls[0]["generationConfig"]["responseMimeType"], "application/json")
+        finally:
+            release.set()
+            service.worker.join(3)
+        ready = service.get()
+        self.assertEqual(ready["generation"]["status"], "ready")
+        self.assertEqual(ready["source"], "gemini-synthesis")
+        self.assertFalse(ready["stale"])
+        self.assertEqual(ready["coverage"]["people"], 1)
+        self.assertEqual(ready["insights"][0]["action"]["personIds"], ["p01"])
+        self.store.save({**self.state, "activity": [{"text": "Opened dashboard"}]})
+        cached = service.get()
+        self.assertEqual(cached["checkedAt"], ready["checkedAt"])
+        self.assertEqual(cached["snapshotVersion"], ready["snapshotVersion"])
+        self.assertEqual(cached["currentSnapshotVersion"], 3)
+        self.assertEqual(len(calls), 1)
+        reloaded = bridge.Briefing(self.store, "fake-test-key", request=fake)
+        self.addCleanup(reloaded.close)
+        self.assertEqual(reloaded.get()["checkedAt"], ready["checkedAt"])
+        self.assertEqual(len(calls), 1)
+
+    def test_briefing_discards_outdated_job_and_reviews_latest_records(self):
+        entered = [threading.Event(), threading.Event()]
+        releases = [threading.Event(), threading.Event()]
+        calls = []
+        def fake(url, payload, headers):
+            index = len(calls)
+            calls.append(payload)
+            entered[index].set()
+            self.assertTrue(releases[index].wait(4))
+            return self.briefing_response(payload)
+        service = bridge.Briefing(self.store, "fake-test-key", request=fake)
+        self.addCleanup(service.close)
+        try:
+            service.get()
+            self.assertTrue(entered[0].wait(2))
+            self.state["people"][0]["visits"] = 2
+            self.store.save(self.state)
+            service.get()
+            self.assertEqual(len(calls), 1)
+            releases[0].set()
+            self.assertTrue(entered[1].wait(2))
+            with self.store.connect() as db:
+                self.assertIsNone(db.execute("SELECT data FROM briefings").fetchone())
+            self.assertEqual(service.get()["generation"]["snapshotVersion"], 2)
+        finally:
+            for release in releases:
+                release.set()
+            if service.worker:
+                service.worker.join(3)
+        result = service.get()
+        self.assertEqual(result["snapshotVersion"], 2)
+        self.assertEqual(result["generation"]["status"], "ready")
+        self.assertFalse(result["stale"])
+        self.assertEqual(len(calls), 2)
+
+    def test_failed_briefing_keeps_last_result_without_automatic_retry(self):
+        calls = []
+        def fake(url, payload, headers):
+            calls.append(payload)
+            return self.briefing_response(payload) if len(calls) == 1 else self.briefing_response(payload, factIds=["invented-record"])
+        service = bridge.Briefing(self.store, "fake-test-key", request=fake)
+        self.addCleanup(service.close)
+        service.get()
+        service.worker.join(3)
+        previous = service.get()
+        self.state["people"][0]["visits"] = 2
+        self.store.save(self.state)
+        pending = service.get()
+        self.assertEqual(pending["checkedAt"], previous["checkedAt"])
+        self.assertTrue(pending["stale"])
+        service.worker.join(3)
+        for _ in range(4):
+            failed = service.get()
+            self.assertEqual(failed["generation"]["status"], "failed")
+        self.assertEqual(failed["generation"]["errorCode"], "BRIEFING_VALIDATION_FAILED")
+        self.assertEqual(failed["insights"], previous["insights"])
+        self.assertEqual(len(calls), 2)
+        service.get(force=True)
+        self.assertEqual(len(calls), 2)
+        with self.store.connect() as db:
+            generation = json.loads(db.execute("SELECT data FROM briefing_generation WHERE id=1").fetchone()[0])
+            generation["manualRetryAt"] = "2000-01-01T00:00:00+00:00"
+            db.execute("UPDATE briefing_generation SET data=? WHERE id=1", (json.dumps(generation),))
+        service.get(force=True)
+        service.worker.join(3)
+        self.assertEqual(len(calls), 3)
+
+    def test_briefing_rejects_unverified_claim_fields_and_quantities(self):
+        catalog = bridge.insight_catalog(self.state)
+        item = {"factIds": [catalog[0]["id"]], "title": "Explore a return invitation", "suggestion": "Consider asking about the next suitable activity.", "priority": "medium"}
+        for changed in ({"factIds": ["missing"]}, {"title": "Invite 99 people"}, {"suggestion": "Invite twenty volunteers."}, {"sourceIds": {"people": ["p99"]}}, {"suggestion": "x" * 181}, {"suggestion": "Ask about interest. Then invite everyone."}, {"priority": "critical"}):
+            with self.subTest(changed=changed), self.assertRaises(bridge.Invalid):
+                bridge.validate_briefing({"insights": [{**item, **changed}]}, catalog)
+        with self.assertRaises(bridge.Invalid):
+            bridge.validate_briefing({"insights": [item, item]}, catalog)
+        checked = bridge.validate_briefing({"insights": [item]}, catalog)[0]
+        self.assertEqual(checked["sourceIds"], catalog[0]["sourceIds"])
+        self.assertEqual(checked["summary"], catalog[0]["summary"])
+        self.assertEqual(checked["evidence"][0]["value"], 1)
+
+    def test_empty_current_catalog_hides_obsolete_briefing_actions(self):
+        calls = []
+        def fake(url, payload, headers):
+            calls.append(payload)
+            return self.briefing_response(payload)
+        service = bridge.Briefing(self.store, "fake-test-key", request=fake)
+        self.addCleanup(service.close)
+        service.get()
+        service.worker.join(3)
+        self.assertTrue(service.get()["insights"])
+        self.store.save({"people": [], "events": [], "opportunities": [], "projects": []})
+        empty = service.get()
+        self.assertEqual(empty["insights"], [])
+        self.assertEqual(empty["generation"]["reason"], "NO_REVIEWABLE_FACTS")
+        self.assertEqual(empty["source"], "snapshot-rules")
+        self.assertFalse(empty["stale"])
+        self.assertEqual(len(calls), 1)
+
+    def test_briefing_restart_and_missing_key_do_not_simulate_review(self):
+        generation = {"status": "reviewing", "jobId": "interrupted", "fingerprint": bridge.insight_fingerprint(self.state), "snapshotVersion": 1}
+        with self.store.connect() as db:
+            db.execute("INSERT INTO briefing_generation VALUES(1,?)", (json.dumps(generation),))
+        def no_request(*args):
+            self.fail("An interrupted review must not automatically retry.")
+        service = bridge.Briefing(self.store, "fake-test-key", request=no_request)
+        self.addCleanup(service.close)
+        result = service.get()
+        self.assertEqual(result["generation"]["status"], "failed")
+        self.assertEqual(result["generation"]["errorCode"], "REVIEW_INTERRUPTED")
+        self.assertEqual(result["source"], "snapshot-rules")
+        unconfigured = bridge.Briefing(self.store, request=no_request)
+        self.addCleanup(unconfigured.close)
+        missing = unconfigured.get()
+        self.assertEqual(missing["generation"]["errorCode"], "GEMINI_NOT_CONFIGURED")
+        self.assertIsNone(missing["generation"]["startedAt"])
+
     def test_draft_readiness_and_safe_edit_preserve_action_identity(self):
         draft = bridge.execute_tool(self.store, "draft_message", {"person_id": "p01", "channel": "sms", "body": "Original"})["draft"]
         self.assertEqual(draft["recipient"], "Maya Chen")
@@ -442,6 +611,8 @@ class BridgeTests(unittest.TestCase):
 
     def test_http_conversation_cookie_insights_and_draft_edit_contract(self):
         def fake(url, payload, headers):
+            if payload.get("generationConfig", {}).get("responseMimeType") == "application/json":
+                return self.briefing_response(payload)
             return {"candidates": [{"content": {"parts": [{"text": "Test reply"}]}}]}
         server = bridge.make_server(self.store, bridge.Assistant(self.store, "fake-test-key", request=fake), port=0)
         worker = threading.Thread(target=server.serve_forever, daemon=True)
@@ -470,7 +641,7 @@ class BridgeTests(unittest.TestCase):
             self.assertEqual(status, 403)
             self.assertEqual(denied["code"], "CONVERSATION_UNAVAILABLE")
             self.assertEqual(request("/api/insights")[1]["source"], "snapshot-rules")
-            self.assertFalse(request("/api/insights/refresh", {})[1]["cached"])
+            self.assertIn(request("/api/insights/refresh", {})[1]["generation"]["status"], ("pending", "reviewing", "ready"))
             draft = bridge.execute_tool(self.store, "draft_message", {"person_id": "p01", "channel": "sms", "body": "Before"})["draft"]
             status, result, _ = request(f"/api/drafts/{draft['id']}/edit", {"body": "After"})
             self.assertEqual(status, 200)

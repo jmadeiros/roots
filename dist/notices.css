@@ -3,3 +3,73 @@
 @media(max-width:760px){.notice-row{display:grid;grid-template-columns:33px minmax(0,1fr);gap:12px;padding:19px 16px}.notice-symbol{width:33px;height:33px}.notice-content h2{font-size:15px}.notice-actions{grid-column:2;flex-direction:row;align-items:center;max-width:none;flex-wrap:wrap;padding:0;margin-top:3px;gap:8px}.notice-people{flex-wrap:wrap}.notice-people>span{margin-left:0}.platform-tabs{gap:22px;margin-top:23px}.platform-tabs button{font-size:12px}.workflow-intro{flex-direction:column;gap:14px}.workflow-row{display:grid;grid-template-columns:33px 1fr;gap:12px}.workflow-row>.badge{grid-column:2;width:max-content}.workflow-row>.button{grid-column:2;width:max-content;padding-left:0}.draft-row{flex-direction:column;padding:19px;gap:12px}.draft-row>.button{align-self:flex-start;padding-left:0}.assistant-intro h2{font-size:23px}.assistant-connection{padding:18px;align-items:flex-start}.assistant-test form{flex-direction:column;align-items:stretch}.assistant-test form .button{align-self:flex-end}.assistant-test textarea{width:100%}.assistant-shortcut{display:none}}
 
 .notice-toolbar .notice-actions{flex-direction:row;align-items:center;max-width:none;padding:0}.notice-toolbar{gap:12px;flex-wrap:wrap}
+
+/* Outreach is a compact review surface; the shared palette supplies its accents. */
+.outreach-workspace .page-heading { margin-bottom: 22px; }
+.outreach-workspace .page-heading h1 { font-size: 26px; letter-spacing: -.5px; }
+.outreach-workspace .page-heading p { font-size: 13px; max-width: 70ch; }
+.outreach-workspace .platform-tabs { gap: 24px; margin: 0 0 20px; border-color: var(--line); }
+.outreach-workspace .platform-tabs button { color: var(--muted); font-size: 12px; padding-bottom: 12px; }
+.outreach-workspace .platform-tabs button.active { color: var(--forest); border-color: var(--forest); }
+.outreach-workspace .platform-tabs button span { background: var(--sage); color: var(--forest); }
+.outreach-workspace .notice-toolbar { margin-bottom: 14px; }
+.outreach-workspace .notice-toolbar .tiny-label { white-space: normal; }
+.outreach-workspace .draft-list,
+.outreach-workspace .workflow-list { background: var(--surface); border-color: var(--line); border-radius: 12px; }
+.outreach-workspace .draft-row,
+.outreach-workspace .workflow-row { gap: 18px; padding: 17px 18px; border-color: var(--line); }
+.outreach-workspace .draft-row h3,
+.outreach-workspace .workflow-row h3 { font-size: 14px; line-height: 1.5; margin-bottom: 5px; overflow-wrap: anywhere; }
+.outreach-workspace .draft-row > div { flex: 1; }
+.outreach-workspace .draft-row .draft-excerpt {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  white-space: normal;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.outreach-workspace .draft-row small { display: block; color: var(--muted); line-height: 1.6; }
+.outreach-workspace .outreach-channel { color: var(--forest); font-weight: 500; }
+.outreach-workspace .draft-row > .button { align-self: center; }
+.outreach-workspace .workflow-intro { align-items: center; gap: 18px; margin: 0 0 17px; }
+.outreach-workspace .workflow-intro > p { font-size: 12px; color: var(--muted); line-height: 1.7; max-width: 65ch; }
+.outreach-workspace .workflow-intro > .text-button { flex-shrink: 0; }
+.outreach-workspace .workflow-row p { color: var(--muted); }
+.outreach-workspace .workflow-row p span { padding: 0 4px; }
+.outreach-workspace .notice-symbol { width: 32px; height: 32px; border-radius: 8px; background: var(--sage); color: var(--forest); }
+.outreach-workspace .notice-symbol svg { width: 17px; height: 17px; }
+.outreach-workspace .platform-footnote { color: var(--muted); margin-top: 16px; max-width: 78ch; }
+.outreach-empty { padding: 28px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.outreach-empty h2 { font-size: 16px; font-weight: 500; margin-bottom: 7px; }
+.outreach-empty p { font-size: 12px; color: var(--muted); line-height: 1.7; max-width: 65ch; }
+.delivery-intro { margin-bottom: 21px; }
+.delivery-intro h2 { font-size: 16px; font-weight: 500; letter-spacing: -.2px; margin-bottom: 7px; }
+.delivery-intro p { font-size: 12px; line-height: 1.7; color: var(--muted); max-width: 70ch; }
+.delivery-list { border-top: 1px solid var(--line); }
+.delivery-row { display: grid; grid-template-columns: 150px minmax(0,1fr); gap: 24px; padding: 21px 0; border-bottom: 1px solid var(--line); }
+.delivery-channel h3 { font-size: 14px; font-weight: 500; margin-bottom: 9px; }
+.delivery-counts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; margin: 0; align-items: start; }
+.delivery-counts dt { font-size: 11px; line-height: 1.6; color: var(--muted); }
+.delivery-counts dd { font-size: 14px; font-weight: 500; color: var(--ink); margin: 7px 0 0; font-variant-numeric: tabular-nums; }
+.delivery-footer { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-top: 18px; }
+.delivery-footer p { max-width: 70ch; font-size: 11px; line-height: 1.8; color: var(--muted); }
+.delivery-footer .text-button { flex-shrink: 0; margin-top: 3px; }
+@media (max-width: 760px) {
+  .outreach-workspace .page-heading h1 { font-size: 24px; }
+  .outreach-workspace .page-heading p { font-size: 12px; }
+  .outreach-workspace .platform-tabs { gap: 22px; margin-bottom: 18px; }
+  .outreach-workspace .draft-row { padding: 16px; gap: 10px; }
+  .outreach-workspace .draft-row > .button { align-self: flex-start; padding-left: 12px; }
+  .outreach-workspace .workflow-intro { align-items: flex-start; gap: 9px; }
+  .outreach-workspace .workflow-row { padding: 16px; gap: 10px; grid-template-columns: 32px minmax(0,1fr); }
+  .outreach-workspace .workflow-row > .button { padding-left: 12px; }
+  .delivery-row { grid-template-columns: 1fr; gap: 17px; padding: 19px 0; }
+  .delivery-channel { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .delivery-channel h3 { margin-bottom: 0; }
+  .delivery-counts { gap: 12px; }
+  .delivery-footer { flex-direction: column; gap: 12px; }
+}

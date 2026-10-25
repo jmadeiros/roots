@@ -1,7 +1,6 @@
 (() => {
   const storageKey = 'roots-conversation-v1';
-  let api, conversationId = null, messages = [], composer = '', pending = false, error = '', errorCode = '', refreshing = false, showAllInsights = false, reviewDraftId = null;
-  let checkedLocally = null, localInsights = [], fingerprint = '', refreshTimer = null;
+  let api, conversationId = null, messages = [], composer = '', pending = false, error = '', errorCode = '', reviewDraftId = null;
   const edits = new Map();
   try {
     const stored = JSON.parse(localStorage.getItem(storageKey) || '{}');
@@ -16,59 +15,6 @@
   function save() {
     try { localStorage.setItem(storageKey, JSON.stringify({conversationId, messages:messages.slice(-40), composer})); }
     catch { api.toast('Conversation storage is unavailable. This chat lasts for this visit.'); }
-  }
-  function checkLocalRecords(force = false) {
-    const state = api.getState();
-    const people = state.people.map(p => ({...p, ...window.RootsPeople.profileData(p)}));
-    const nextFingerprint = JSON.stringify({people,events:state.events,projects:window.RootsOpportunities.projects()});
-    if (!force && nextFingerprint === fingerprint) return;
-    fingerprint = nextFingerprint;
-    checkedLocally = new Date().toISOString();
-    localInsights = [];
-    const event = state.events.find(ev => ev.id === 'e01');
-    const gardeners = people.filter(p => p.visits === 1 && p.interests.some(i => /garden/i.test(i)) && /saturday/i.test(p.availability));
-    if (event && gardeners.length && event.capacity > event.attendees) localInsights.push({
-      id:'local-garden', title:`${gardeners.length} first-time volunteers could fit the garden shift.`,
-      summary:`Their gardening interests and Saturday availability align. The ${event.month} ${event.day} shift has ${event.capacity-event.attendees} spaces.`,
-      evidence:[{label:'People with matching interests',value:gardeners.map(p => p.name).join(', ')},{label:'What to confirm',value:'Individual RSVPs and attendance are not recorded for this event.'}],
-      sourceIds:{people:gardeners.map(p=>p.id),events:[event.id]},
-      suggestedPrompt:`Review ${gardeners.map(p=>p.name).join(', ')} for ${event.title} (${event.month} ${event.day}). Explain the fit and what we still need to confirm. Do not assume they have not booked.`
-    });
-    const hours = people.filter(p => p.interests.some(i => /service hours/i.test(i)));
-    if (hours.length) localInsights.push({
-      id:'local-hours',title:'Service hours could give people a reason to return.',
-      summary:`${hours.length} people list service hours, including ${hours.filter(p=>p.visits===1).length} who have visited once. School approval and verification still need checking.`,
-      evidence:[{label:'Interest recorded',value:hours.map(p=>p.name).join(', ')},{label:'What to confirm',value:'School, enrollment, required hours, and eligibility are not established.'}],
-      sourceIds:{people:hours.map(p=>p.id),opportunities:['o05']},
-      suggestedPrompt:'Which people list service hours, and what would we need to verify before offering them a school volunteering pathway? Use the school service-hours opportunity.'
-    });
-    const team = ['p08','p03','p05'].map(id=>people.find(p=>p.id===id)).filter(Boolean);
-    if (team.length === 3) localInsights.push({
-      id:'local-project',title:'The garden-signs team needs a shared planning time.',
-      summary:'The suggested team brings different interests together. Their profiles list different availability, so a planning time needs confirming.',
-      evidence:team.map(p=>({label:p.name,value:p.availability})),
-      sourceIds:{people:team.map(p=>p.id),projects:['project-garden']},
-      suggestedPrompt:'Review the suggested garden-signs project team and their recorded availability. What would we need to ask before arranging a planning session? They are not confirmed participants.'
-    });
-  }
-  function insightData() {
-    const remote = bridge()?.insights;
-    return remote || {insights:localInsights,checkedAt:checkedLocally,illustrative:true,source:'browser-records'};
-  }
-  function sourceButtons(item) {
-    const ids = item.sourceIds || {};
-    return [
-      ...(ids.people || []).map(id => ({kind:'person', id, label:api.getState().people.find(p=>p.id===id)?.name || 'View person'})),
-      ...(ids.events || []).map(id => ({kind:'event',id,label:'View event'})),
-      ...(ids.opportunities || []).map(id => ({kind:'opportunity',id,label:'View opportunity'})),
-      ...(ids.projects || []).map(id => ({kind:'opportunity',id,label:'View project'}))
-    ].map(s => `<button data-chat="source" data-kind="${s.kind}" data-id="${e(s.id)}">${e(s.label)} ${api.icon('external')}</button>`).join('');
-  }
-  function insightsMarkup() {
-    const data = insightData(), available=(data.insights||[]).slice(0,3), items=showAllInsights?available:available.slice(0,2);
-    return `<div class="insight-heading"><h2>Worth a thought</h2><div><span>${data.checkedAt ? `Checked ${e(time(data.checkedAt))}` : 'From your records'}</span><button class="icon-button" data-chat="refresh" aria-label="Refresh insights" ${refreshing?'disabled':''}>${api.icon('refresh')}</button></div></div>
-      <div class="insight-list">${items.length ? items.map((item,i)=>`<article class="insight-row"><div class="insight-copy"><h3><button data-chat="insight" data-index="${i}">${e(item.title)} ${api.icon('arrow')}</button></h3><p>${e(item.summary)}</p><details><summary>Why this surfaced</summary><div class="insight-evidence">${(item.evidence||[]).map(v=>`<p><strong>${e(v.label)}</strong> ${e(typeof v.value==='object'?JSON.stringify(v.value):v.value)}</p>`).join('')}<div class="insight-sources">${sourceButtons(item)}</div><small>Based on illustrative records as of October 24, 2026.</small></div></details></div></article>`).join('') : '<p class="insight-empty">No suggestions supported by these records yet. Add people and events to help Roots find a useful connection.</p>'}</div>
-      ${available.length>2?`<button class="insight-more" data-chat="more-insights">${showAllInsights?'Show fewer suggestions':'One more suggestion'} ${api.icon(showAllInsights?'chevron-down':'plus')}</button>`:''}<p class="insight-caption">From your demo records · Rechecked when records change and every 30 minutes while open.${bridge()?.insightError ? `<span class="chat-inline-error"> Could not refresh from the assistant. ${e(bridge().insightError)}</span>` : ''}</p>`;
   }
   function connectionMarkup() {
     const status = bridge()?.status;
@@ -94,10 +40,8 @@
     return messages.map(messageMarkup).join('') + (pending ? '<div class="chat-thinking" role="status"><span></span>Checking your records…</div>' : '') + (error ? `<div class="chat-error" role="alert"><p>${e(error)}</p><button class="text-button" data-chat="recover">${errorCode==='CONVERSATION_UNAVAILABLE'?'Start a new chat':'Try again'}</button></div>` : '');
   }
   function render() {
-    checkLocalRecords();
-    return `<div class="conversation-workspace"><div class="chat-tools"><div id="chat-connection">${connectionMarkup()}</div><div class="chat-tools-links"><button data-chat="drafts">Drafts</button><button data-chat="workflows">Workflows</button><button data-chat="new" ${pending?'disabled':''}>New chat</button></div></div>
-      <div class="conversation-column ${messages.length?'has-conversation':''}"><div class="chat-intro"><div class="chat-sprout">${api.icon('sprout')}</div><h1>What could we make happen?</h1><p>A little insight into your community. A useful next step.</p></div>
-      <section id="chat-insights" class="chat-insights" aria-label="Insights from your records">${insightsMarkup()}</section>
+    return `<div class="conversation-workspace"><div class="chat-tools"><div id="chat-connection">${connectionMarkup()}</div><div class="chat-tools-links"><a href="#briefing">Back to briefing</a><button data-chat="new" ${pending?'disabled':''}>New chat</button></div></div>
+      <div class="conversation-column ${messages.length?'has-conversation':''}"><div class="chat-intro"><h1>Ask Roots</h1><p>Explore an insight, find a person, or prepare a message.</p></div>
       <div id="chat-transcript" class="chat-transcript" role="log" aria-label="Conversation" aria-live="polite" aria-relevant="additions text">${messagesMarkup()}</div>
       <div class="chat-composer-dock"><form id="roots-conversation-form" class="chat-composer"><label class="sr-only" for="roots-conversation-input">Ask Roots about your community</label><textarea id="roots-conversation-input" name="message" rows="2" maxlength="2000" placeholder="Ask a question, explore an idea, or draft a message…" required>${e(composer)}</textarea><div class="chat-composer-bottom"><span>${api.icon('users')}Your community in context</span><button type="submit" class="chat-send" aria-label="Send message to Roots" ${pending?'disabled':''}>${api.icon('arrow')}</button></div></form><div id="chat-composer-note" class="chat-composer-note">${bridge()?.status?.geminiConfigured?'You review every draft. SMS and email delivery are not connected.':'Explore your records here. Connect the local assistant to chat and create drafts.'}</div></div></div></div>`;
   }
@@ -125,22 +69,6 @@
     if(target)target.innerHTML=connectionMarkup();
     const note=document.getElementById('chat-composer-note');
     if(note)note.textContent=bridge()?.status?.syncError?'Your latest changes could not be synced. Open the connection details to retry.':bridge()?.status?.geminiConfigured?'You review every draft. SMS and email delivery are not connected.':'Explore your records here. Connect the local assistant to chat and create drafts.';
-  }
-  function refreshInsightsView() {
-    if (!active()) return;
-    const openIds = Array.from(document.querySelectorAll('#chat-insights details')).map((d,i)=>d.open?i:-1);
-    const target=document.getElementById('chat-insights');
-    if(target)target.innerHTML=insightsMarkup();
-    document.querySelectorAll('#chat-insights details').forEach((d,i)=>d.open=openIds.includes(i));
-  }
-  async function refreshInsights(force = false) {
-    if (refreshing || !api) return;
-    refreshing=true;refreshInsightsView();
-    try {
-      checkLocalRecords(force);
-      if (bridge()?.status?.connected) { await bridge().flush(); await bridge().loadInsights(force); }
-    } catch(error) { if(force)api.toast(error.message); }
-    finally { refreshing=false;refreshInsightsView(); }
   }
   function setPrompt(text) {
     composer=text;save();
@@ -199,9 +127,6 @@
     else if(action==='review-draft'){const draft=findDraft(id);if(draft){if(!messages.some(m=>(m.drafts||[]).some(d=>d.id===id)))messages.push({role:'workspace',text:'',drafts:[draft]});save();reviewDraftId=id;if(active())api.render();else location.hash='chat';}}
     else if(action==='connection')connection();
     else if(action==='retry-connection'){button.disabled=true;await bridge().init();api.closeDialog();refreshConnection();}
-    else if(action==='refresh')await refreshInsights(true);
-    else if(action==='more-insights'){showAllInsights=!showAllInsights;refreshInsightsView();}
-    else if(action==='insight'){const item=insightData().insights[Number(button.dataset.index)];if(item)setPrompt(item.suggestedPrompt);}
     else if(action==='source')({person:api.showPerson,event:api.showEvent,opportunity:api.showOpportunity})[button.dataset.kind]?.(id);
     else if(action==='person')api.showPerson(id);
     else if(action==='new'){if(pending)return;conversationId=null;messages=[];error='';save();api.render();document.getElementById('roots-conversation-input')?.focus();}
@@ -214,17 +139,8 @@
     else if(action==='refine'){const d=findDraft(id);if(d)setPrompt(`Revise the ${d.channel} draft for ${d.personName||d.recipient} (${d.personId}). Current draft: ${d.body}\nMake it `);}
     else if(action==='copy'){const d=findDraft(id);if(d)try{await navigator.clipboard.writeText(d.body);api.toast('Message copied. Nothing sent.');}catch{api.toast('Copy is unavailable. Select the message text to copy it.');}}
   });
-  window.addEventListener('roots:ready',()=>{refreshConnection();refreshInsightsView();});
-  window.addEventListener('roots:connection',()=>{
-    refreshConnection();
-    if(!api)return;
-    const previous=fingerprint;checkLocalRecords();
-    if(previous!==fingerprint){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>bridge()?.loadInsights().catch(()=>{}),400);refreshInsightsView();}
-  });
-  window.addEventListener('roots:records-changed',()=>{if(api){checkLocalRecords();if(bridge()?.status?.connected){clearTimeout(refreshTimer);refreshTimer=setTimeout(()=>refreshInsights(),350);}else refreshInsightsView();}});
-  window.addEventListener('roots:insights',refreshInsightsView);
+  window.addEventListener('roots:ready',refreshConnection);
+  window.addEventListener('roots:connection',refreshConnection);
   window.addEventListener('roots:activity',()=>{if(!edits.size)refreshMessages();});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&api)refreshInsights();});
-  setInterval(()=>{if(!document.hidden&&api)refreshInsights();},30*60*1000);
-  window.RootsChat={configure(callbacks){api=callbacks;},render,afterRender,setPrompt};
+  window.RootsChat={configure(callbacks){api=callbacks;},render,afterRender,setPrompt,ask(text){if(pending){setPrompt(text);return;}if(!active())location.hash='chat';send(text);}};
 })();

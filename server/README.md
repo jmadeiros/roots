@@ -32,13 +32,22 @@ Browser conversations belong to an opaque, host-only `HttpOnly; SameSite=Strict`
 
 This remains a single-workspace local test, not a hosted multi-user account system. Shared dashboard records and deliberately saved drafts are visible in the workspace across browser and Telegram, while conversational history is scoped separately.
 
-## Insights from records
+## Independent current briefing
 
-`GET /api/insights` returns persisted, deterministic observations with `source: "snapshot-rules"`, evidence values, source record IDs, `checkedAt`, `snapshotVersion`, the supplied `asOf` date, and an `illustrative` flag. These are computed observations, not model-generated facts or newly verified external research. Gemini can use the read-only `get_insights` tool to explain the evidence and turn a discussion into a draft.
+`GET /api/insights` returns immediately and independently queues a Gemini review when relevant records change or the last successful review is 30 minutes old. A successful state sync also checks whether a review is needed. Chat is not required. `POST /api/insights/refresh` with `{}` requests another review. There is one background review at a time; there are no periodic timers, broadcasts, or external notifications.
 
-The first observations prioritize event capacity and first-visit interest matches, service-hours interests, and suggested project teams whose availability needs coordination. They do not infer RSVPs, confirmed eligibility, funding awards, or an absence of schedule overlap. Other observations cover one-visit profiles, opportunity interest matches, missing SMS contact details, and pending-hour records.
+The response keeps `insights`, `source`, `checkedAt`, `snapshotVersion`, `asOf`, `illustrative`, and `refreshAfter`, and adds:
 
-The cache refreshes on a browser/tool request when the relevant snapshot content changes or 30 minutes have elapsed. Identical saves and activity-only changes do not reset `checkedAt`; `snapshotVersion` remains the version used to derive the cached evidence. `POST /api/insights/refresh` with `{}` explicitly recomputes it. No timer, background model call, or external notification is started.
+- `generation.status`: `pending` for a queued job, `reviewing` while the actual provider request and validation run, `ready` after success, or `failed` with a redacted `errorCode`. `queuedAt`, `startedAt`, and `completedAt` describe that job. Animate only `pending` or `reviewing`; no fake progress delays are used.
+- `currentSnapshotVersion`, `stale`, and `hasPreviousBriefing`: the last successful briefing stays visible during a refresh or failure, retaining its original evidence time and version. `stale` is true if its relevant records changed or its review is over 30 minutes old. A first load uses the clearly labeled `source: "snapshot-rules"` fallback while a review runs.
+- `coverage`: current counts for people, events, opportunities, and projects, plus `asOf`, `factCatalogSize`, and `recordsRepresented` counts. These describe the bounded catalog, not a claim that every field was reviewed. `briefingCoverage` preserves the coverage of a successful model review.
+- Each model-reviewed item includes `factIds`, `sourceIds`, reconstructed `evidence`, a short `suggestion` labeled `Suggested next step`, and an optional server-selected navigation `action`. Actions only open the cited people or opportunity; they do not send messages.
+
+Gemini receives a bounded catalog of derived cross-record observations, without raw phone numbers, email fields, coordinator notes, or conversation history. The catalog covers event capacity and first-visit interest matches, service-hours interests, project availability coordination, opportunity matches, missing contact details, and pending hours. Gemini selects, combines, and prioritizes observations, and suggests a next step using [structured JSON output](https://ai.google.dev/api/generate-content). The server rejects unknown/repeated fact IDs and extra fields, reconstructs source IDs and all evidence from the exact snapshot catalog, and inserts factual summaries itself. Model-written titles and suggestions may not introduce numeric quantities. Suggestions remain proposed actions, not verified facts or promised outcomes. This is not external research, a full audit of every record field, or verification of funding, eligibility, RSVPs, or availability.
+
+Only a successful validated response receives `source: "gemini-synthesis"`. Missing credentials, provider errors, or invalid output retain the previous briefing or `snapshot-rules` fallback, with an honest failure status. An empty snapshot reports `SNAPSHOT_UNAVAILABLE`; a snapshot without reviewable observations returns `ready` with reason `NO_REVIEWABLE_FACTS` and no model call. Interrupted jobs are marked failed on restart.
+
+The cache uses relevant record content, not version numbers; identical saves and activity-only changes do not trigger reviews or reset `checkedAt`. If records change while Gemini is working, the result is discarded and the latest snapshot is queued. Failures do not automatically retry for the same fingerprint, even when the browser keeps reading the endpoint. Retry requires changed records or explicit refresh; explicit refresh has a 10-second duplicate guard. Generation state and successful briefings are persisted in the ignored SQLite database. The read-only `get_insights` chat tool sees this same briefing without controlling it.
 
 ## Test Telegram
 
@@ -77,8 +86,8 @@ All endpoints are same-origin, local-only JSON. Cross-origin requests and unreco
 | `PUT /api/state` | `{state, baseVersion?}`. Returns the snapshot envelope; stale explicit versions return 409. |
 | `POST /api/chat` | `{message, conversationId?}` → `{reply, drafts, actions, conversationId}`. Missing credentials return 503; unavailable conversation returns 403 and a stable error code. |
 | `GET /api/activity` | `{activity, drafts}` with the latest 100 of each. |
-| `GET /api/insights` | `{insights, checkedAt, snapshotVersion, asOf, illustrative, source, cached, refreshAfter}`. |
-| `POST /api/insights/refresh` | `{}` → freshly computed insights envelope. |
+| `GET /api/insights` | Immediate briefing envelope with generation status, current coverage, retained evidence time, and stale flag; queues a due independent review. |
+| `POST /api/insights/refresh` | `{}` → immediate briefing envelope; queues a bounded explicit refresh while preserving the previous briefing. |
 | `POST /api/drafts/{id}/edit` | `{body, subject?}` → `{draft}`. Only unsent draft content can change. |
 
 Supported snapshot keys: `people`, `events`, `opportunities`, `projects`, `notices`, `workflows`, `saved`, `activity`, `project`, `organization`, and `metadata`. Record collections need unique string IDs; activity IDs are optional. Credential-like fields are rejected. The state endpoint does not automatically overwrite the browser's local state; the dashboard chooses how to merge and synchronize it.
@@ -89,6 +98,6 @@ Supported snapshot keys: `people`, `events`, `opportunities`, `projects`, `notic
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'bridge_test.py' -v
 ```
 
-Tests use temporary SQLite databases, loopback HTTP servers, and fake provider responses. They cover state versions, body limits, credential-field rejection, origin/Host/path protections, validated tools, conversation isolation and expiry, follow-up draft context, insight evidence and cache behavior, safe draft editing and readiness, Telegram allowlisting, duplicate updates, and webhook/polling coexistence. Passing these tests is not a live Gemini or Telegram connection test.
+Tests use temporary SQLite databases, loopback HTTP servers, and fake provider responses. They cover state versions, body limits, credential-field rejection, origin/Host/path protections, validated tools, conversation isolation and expiry, follow-up draft context, independent briefing jobs and deduplication, stale-job rejection, failure preservation, no automatic retry, restart recovery, fact/source validation, cache behavior, safe draft editing and readiness, Telegram allowlisting, duplicate updates, and webhook/polling coexistence. Passing these tests is not a live Gemini or Telegram connection test.
 
 Official references: [Gemini key handling](https://ai.google.dev/gemini-api/docs/api-key), [function calling](https://ai.google.dev/gemini-api/docs/function-calling), [Telegram Bot API](https://core.telegram.org/bots/api).
