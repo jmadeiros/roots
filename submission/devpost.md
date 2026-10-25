@@ -221,11 +221,10 @@ Opt in to the East Bay Permaculture Guild problem-statement prize and to Crowd F
 - Roots dashboard (public): https://github.com/jmadeiros/roots
 - Garden Steward backend (public fork): https://github.com/jmadeiros/steward-bank-hack/tree/volunteer-onboarding
 - Garden Steward frontend (public fork): https://github.com/jmadeiros/garden-vue-hack/tree/volunteer-onboarding
-- No PR is open to Garden-Steward yet. Roots itself is not published, and there is no hosted URL for the version shown. If Roots stays unpublished, add this line to the story: "Roots is shown running live at judging. The repository is available to the Guild on request."
-- If Josh publishes Roots: the repo tracks 35 files, and none have env, secret, token or database-style names (file names checked, not contents). Leave out the untracked submission/ folder and today-a-wide-20261025.png unless intended.
+- All three are public. No PR is open to Garden-Steward; the onboarding work lives on the forks.
 
 **Video demo link**
-TO CONFIRM (optional). Judging uses the live demo. If time is short, skip it. If you record one, an unlisted upload keeps exposure low.
+Josh has the video from another chat. Paste its link here.
 
 **Thumbnail image**
 Crop /Users/josh/roots-today-claude-20261025/submission/shots/01-roots-today.png from 1440x900 to 1350x900 (3:2).
