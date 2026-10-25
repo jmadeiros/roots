@@ -91,6 +91,8 @@
   const LAYOUTS=['a','b','c','d','e'];
   let layout=(()=>{try{const asked=new URLSearchParams(location.search).get('layout');return LAYOUTS.includes(asked)?asked:'e';}catch{return 'e';}})();
   let feedPeriod='today';
+  // Layout A: the feed folds into a thin strip on the right and opens on click.
+  let railOpen=false, railUnseen=0;
   // Drop-downs the viewer has opened stay open when the page refreshes its numbers.
   const opened=new Set(['fold-noticed']);
   function peopleStack(ids) {
@@ -191,7 +193,7 @@
   let liveStarted=false;
   function startLive() {
     if(liveStarted)return;liveStarted=true;
-    for(const item of ARRIVALS)setTimeout(()=>{const built=item.build();if(!built)return;arrived.push({id:item.id,icon:item.icon,at:Date.now(),...built});refreshFeed();},item.after);
+    for(const item of ARRIVALS)setTimeout(()=>{const built=item.build();if(!built)return;arrived.push({id:item.id,icon:item.icon,at:Date.now(),...built});if(!railOpen)railUnseen++;refreshFeed();},item.after);
     setInterval(()=>{if(!document.hidden)refreshFeed();},30000);
   }
   // A seeded morning for the demo, so the briefing has a story; times are relative to page load.
@@ -240,6 +242,7 @@
     const feed=document.getElementById('today-feed');if(feed)feed.innerHTML=feedMarkup(model);
     const latest=document.getElementById('today-feed-latest');if(latest)latest.innerHTML=latestMarkup(model);
     const tab=document.getElementById('today-tab-feed-body');if(tab)tab.innerHTML=feedTabMarkup(model);
+    const count=document.getElementById('today-rail-count');if(count){count.textContent=String(feedItems(model).length);count.classList.toggle('is-new',railUnseen>0);}
     const head=document.getElementById('today-feed-head');if(head)head.innerHTML=feedHeadMarkup(model);
   }
   const chartTabs=()=>`<div class="overview-chart-tabs" role="group" aria-label="Coming back chart"><button data-dashboard-tab="trend" aria-pressed="${analyticsTab==='trend'}">By month</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">By interest</button></div>`;
@@ -301,8 +304,8 @@
         ${fold('fold-coming','Coming back',`${sparkMarkup()}<span><b>${t.lastBack}</b> came back in October · up from ${t.firstBack} in May</span>`,`<div class="today-fold-tabs">${tabs}</div>${patterns}`)}
         ${fold('fold-feed','Today’s feed',`<span id="today-feed-latest" class="today-latest">${latestMarkup(model)}</span>`,`<ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol>`)}
       </div>`;
-    else body=`${noticed}${coming}<aside class="today-rail" aria-label="Today’s feed">${feed}<p class="today-rail-note">New activity appears here as it happens.</p></aside>`;
-    return `<div class="today-page" data-layout="${layout}">${head}${body}
+    else body=`${noticed}${coming}<aside class="today-rail" aria-label="Today’s feed"><button class="today-rail-toggle" data-today-rail aria-expanded="${railOpen}" aria-controls="today-rail-body" aria-label="Show today’s feed">${CHEV}<span class="today-live" aria-hidden="true"><i></i></span><span class="today-rail-label">Today’s feed</span><span class="today-rail-count${railUnseen?' is-new':''}" id="today-rail-count">${feedItems(model).length}</span></button><div class="today-rail-body" id="today-rail-body"${railOpen?'':' hidden'}><div class="today-section-head"><h2 id="today-feed-title">Today’s feed <span class="today-live"><i></i>Live</span></h2><button class="today-rail-close" data-today-rail aria-label="Hide today’s feed">${CHEV}</button></div><ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol><p class="today-rail-note">New activity appears here as it happens.</p></div></aside>`;
+    return `<div class="today-page" data-layout="${layout}"${layout==='a'?` data-rail="${railOpen?'open':'closed'}"`:''}>${head}${body}
       ${dock}
     </div>`;
   }
@@ -353,6 +356,16 @@
       rowOpen=rowOpen===rowTab.dataset.todayTab?null:rowTab.dataset.todayTab;
       const region=document.getElementById('today-row-region');
       if(region){region.innerHTML=rowMarkup(stats(),todayModel());document.getElementById(`today-tab-${rowTab.dataset.todayTab}`)?.focus({preventScroll:true});}
+      return;
+    }
+    const rail=event.target.closest('[data-today-rail]');
+    if(rail){
+      railOpen=!railOpen;if(railOpen)railUnseen=0;
+      document.querySelector('.today-page')?.setAttribute('data-rail',railOpen?'open':'closed');
+      document.getElementById('today-rail-body')?.toggleAttribute('hidden',!railOpen);
+      document.querySelector('.today-rail-toggle')?.setAttribute('aria-expanded',String(railOpen));
+      refreshFeed();
+      (railOpen?document.querySelector('.today-rail-close'):document.querySelector('.today-rail-toggle'))?.focus({preventScroll:true});
       return;
     }
     const period=event.target.closest('[data-today-period]');
