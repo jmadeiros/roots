@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#315b46">
+  <meta name="description" content="Roots connects community projects, people, and possibilities. An interactive demonstration for the East Bay Permaculture Guild.">
+  <title>Roots — Community dashboard</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="data.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to dashboard</a>
+  <header class="site-header">
+    <div class="topbar wrap">
+      <a class="brand" href="#overview" aria-label="Roots home"><span class="brand-mark" data-icon="sprout"></span><span class="brand-name">roots<span class="brand-period">.</span></span></a>
+      <span class="brand-divider"></span><div class="organization">East Bay<br><strong>Permaculture Guild</strong></div>
+      <div class="header-right"><span class="demo-badge"><span></span>Demo workspace</span><button class="avatar-button" data-action="about" aria-label="About this demo workspace">EB</button></div>
+    </div>
+    <div class="nav-wrap wrap"><nav aria-label="Main navigation" id="navigation"></nav><span class="workspace-caption">Good things grow together.</span></div>
+  </header>
+  <main id="main" class="wrap" tabindex="-1"></main>
+  <footer class="wrap footer"><div class="footer-brand"><span data-icon="sprout"></span> Rooted in community.</div><div>Fictional workspace data · <span id="storage-status">Changes saved in this browser</span> <button class="text-button" data-action="about">About this demo</button></div></footer>
+  <dialog id="detail-dialog" class="detail-dialog" aria-labelledby="detail-title"><div id="detail-content"></div></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
