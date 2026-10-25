@@ -134,11 +134,15 @@ main:has(.today-page[data-layout="a"][data-rail="open"]) { padding-right: calc(v
 .today-rail-close:hover { background: var(--hover-surface); color: var(--ink); }
 .today-rail-close .today-chev { transform: rotate(-90deg); }
 .today-rail-note { margin: var(--t4) var(--t2) 0; font-size: 12px; color: var(--muted); }
-.today-card-full { padding: var(--t4); }
-.today-card-full .today-card-top { align-items: center; margin-bottom: var(--t1); }
-.today-card-full .today-card-count { font-size: 30px; line-height: 1; }
-.today-card-full .today-card-text { padding-right: 0; font-size: 13.5px; }
-.today-card-full .today-card-meta { margin-top: auto; padding-top: var(--t1); }
+.today-card-full { gap: var(--t2); padding: var(--t4); }
+.today-card-full .today-card-top { align-items: baseline; }
+.today-card-full .today-card-count { font-size: 30px; line-height: 1.1; }
+.today-card-full .today-card-text { padding-right: 0; font-size: 14px; }
+.today-card-full .today-card-foot { align-items: center; padding-top: var(--t2); }
+.today-card-full .today-chev { position: static; }
+.today-card-full .today-stack .avatar { width: 26px; height: 26px; margin-left: -7px; font-size: 9.5px; }
+.today-card-full .today-stack .avatar:first-child { margin-left: 0; }
+.today-more { display: inline-grid; place-items: center; background: var(--paper); color: var(--muted); font-weight: 500; }
 
 /* Layout B: what Roots noticed and the feed side by side, the trend underneath. */
 .today-page[data-layout="b"] .today-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--t6); margin-bottom: var(--t6); }
@@ -298,7 +302,7 @@ main:has(.today-page[data-layout="a"][data-rail="open"]) { padding-right: calc(v
   .today-layout-name { display: none; }
   .today-page[data-layout="b"] .today-columns { grid-template-columns: 1fr; }
   .today-coming-both { grid-template-columns: 1fr; gap: var(--t6); }
-  .today-card-big .today-stack, .today-card-full .today-stack { display: none; }
+  .today-card-big .today-stack { display: none; }
   .today-card-big { min-height: 0; }
   .today-feed-wide .feed-text { display: block; }
   .today-feed-wide .feed-text time { display: block; margin-top: 2px; }

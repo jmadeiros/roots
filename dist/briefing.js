@@ -95,9 +95,9 @@
   let railOpen=false, railUnseen=0;
   // Drop-downs the viewer has opened stay open when the page refreshes its numbers.
   const opened=new Set(['fold-noticed']);
-  function peopleStack(ids) {
-    const people=ids.map(person).filter(Boolean), shown=people.slice(0,5);
-    return `<span class="today-stack" aria-label="${people.length} people">${shown.map(p=>api.avatar(p)).join('')}${people.length>5?`<span class="avatar today-more">+${people.length-5}</span>`:''}</span>`;
+  function peopleStack(ids,max=5) {
+    const people=ids.map(person).filter(Boolean), shown=people.slice(0,max);
+    return `<span class="today-stack" aria-label="${people.length} people">${shown.map(p=>api.avatar(p)).join('')}${people.length>max?`<span class="avatar today-more">+${people.length-max}</span>`:''}</span>`;
   }
   function sourceLine(source) {
     if(!source?.url)return '';
@@ -128,10 +128,10 @@
     if(layout==='e')return `<div class="today-cards today-cards-big">${items.map(insightCard).join('')}</div>${detail}`;
     return `<div class="today-cards">${items.map(insightFull).join('')}</div>${detail}`;
   }
-  // Layout A: the original full boxes, four in a row.
+  // Layout A: four boxes in a row; number, tag, short line, and the people's circles along the bottom.
   function insightFull(item,index) {
     const ids=item.sourceIds?.people||[];
-    return `<button class="today-card today-card-full" data-today-card="${index}" aria-expanded="${openCard===index}" aria-controls="today-detail"><span class="today-card-top">${kindTag(item)}${ids.length?peopleStack(ids.slice(0,3)):''}</span><strong class="today-card-count">${e(item.count??'')}</strong><span class="today-card-text">${e(item.rest||item.title)}</span>${item.meta?`<small class="today-card-meta">${e(item.meta)}</small>`:''}</button>`;
+    return `<button class="today-card today-card-full" data-today-card="${index}" aria-expanded="${openCard===index}" aria-controls="today-detail"><span class="today-card-top"><strong class="today-card-count">${e(item.count??'')}</strong>${kindTag(item)}</span><span class="today-card-text">${e(item.short||item.rest)}</span><span class="today-card-foot">${ids.length?peopleStack(ids,3):'<span></span>'}${CHEV}</span></button>`;
   }
   // Layout E: bigger boxes, two by two; one opens its detail underneath.
   function insightCard(item,index) {
