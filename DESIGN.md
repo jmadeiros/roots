@@ -1,6 +1,6 @@
 ---
 name: Roots
-description: A deep-green workspace centered on conversation, with independent recommendations and compact analytics.
+description: A deep-green intelligence workspace with dated findings, compact patterns, and conversation beneath.
 colors:
   forest: "#d6e5ca"
   deep: "#e2eed9"
@@ -176,7 +176,12 @@ components:
     backgroundColor: "transparent"
     textColor: "{colors.ink}"
     rounded: "{rounded.insight-row}"
-    padding: "16px 0 14px"
+    padding: "16px 0"
+  dated-finding:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.insight-row}"
+    padding: "22px 0"
   event-date:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
@@ -191,11 +196,11 @@ components:
 
 **Creative North Star: “What could we make happen?”**
 
-Roots is a deep-green workspace centered on conversation. A prominent composer begins the page, with restrained insight rows and compact community patterns beneath it. Light text, pale sage actions, self-hosted DM Sans, and thin dividers establish a quiet, practical interface.
+Roots is a deep-green intelligence workspace. Open text-led findings and compact community patterns lead into a centered conversation composer beneath them. Dated observations, native disclosures, light text, pale sage actions, self-hosted DM Sans, and thin dividers make the workspace quiet and inspectable.
 
-The visual authority is the DARK rendition of the user's earlier central-chat concept in `roots-quieter-workspace.html`. Its `light-dark()` declarations specify the intended dark palette. The subsequent light broad dashboard was a mistaken reference. Preserve the confirmed dark canvas and centered hierarchy while keeping recommendations independent of chat.
+The DARK rendition of the earlier Roots concept remains the palette authority. The latest user refinement establishes a 900px two-column Overview, with attention notes on the left, patterns and an expandable third connection on the right, and a 720px composer below. Notices and Opportunities extend the same dated text-feed language. Keep this current composition distinct from the superseded composer-first layout.
 
-Implementation authority is the shared shell in `dist/style.css` and `dist/app.js`, the composition in `dist/briefing.css`, and the global theme in `dist/dark.css`, which loads last. `dist/briefing.js` renders Overview and `dist/analytics.js` computes current-record arithmetic. `dist/neutral.css` is no longer loaded. The supporting conversation, opportunities, people-detail, and notices modules share the dark theme.
+Implementation authority is the shared shell in `dist/style.css` and `dist/app.js`, the composition in `dist/briefing.css`, and the global theme in `dist/dark.css`, which loads last. `dist/briefing.js` renders Overview, `dist/analytics.js` computes current-record arithmetic, and `dist/journal.js` records local observation and check dates. The opportunities and notices styles define their dated feeds; supporting conversation and people-detail modules share the dark theme. `dist/neutral.css` is no longer loaded.
 
 ## Color and material
 
@@ -209,23 +214,27 @@ Focus, caret, selection, and active states use the pale accent. Sheets share the
 
 ## Typography
 
-Self-hosted DM Sans remains the sole UI family. The centered Overview heading is 31px, medium weight, with 1.3 line height and −0.85px tracking. On phones it becomes left-aligned at 27px with −0.65px tracking. The participation figure is 29px with tabular numerals; inline record totals are 11px.
+Self-hosted DM Sans remains the sole UI family. The centered Overview heading is 31px, medium weight, with 1.3 line height and −0.85px tracking. On phones it becomes left-aligned at 27px with −0.65px tracking. The participation figure is 30px with tabular numerals; inline record totals are 11px.
 
-Overview section labels use 13px medium text. Recommendation titles use 15px medium text, 1.5 line height, and −0.12px tracking; summaries use 12px text at 1.8 line height. Phone summaries rise to 13px. Navigation is 13px, standard buttons 12px, and compact actions and review metadata 11px. The prominent composer uses 14px text on desktop and 16px on phones. Ask Roots retains a 30px greeting and comfortable conversation text.
+Overview section labels use 14px medium text. Recommendation titles use 15px medium text, 1.5 line height, and −0.12px tracking; summaries use 12px text at 1.8 line height. Phone summaries rise to 13px. Navigation is 13px, standard buttons 12px, and compact actions and review metadata 11px. The prominent composer uses 14px text on desktop and 16px on phones. Ask Roots retains a 30px greeting and comfortable conversation text.
 
-Use the restrained hierarchy to keep the composer prominent and supporting records readable. Keep body contrast at least 4.5:1 and visible focus on every interactive control. Record pages retain practical 12–14px text.
+Overview note dates use 10px tabular text on desktop and 11px on phones. Opportunity feed titles use 15px text, with 12px descriptions; Notices titles use 16px with 13px descriptions. Date columns use 11px text.
+
+Use the restrained hierarchy to make findings easy to scan and keep the composer available beneath them. Keep body contrast at least 4.5:1 and visible focus on every interactive control. Record pages retain practical 12–14px text.
 
 ## Navigation and layout
 
-Primary navigation contains **Overview, People, Opportunities, Outreach**. Overview keeps the `#briefing` route; `#overview` is an alias. **Ask Roots** and **Calendar** are secondary links. Old Funding links resolve to Opportunities, and the underlying Notices route is labeled Outreach.
+Primary navigation contains **Overview, People, Opportunities, Notices**. Overview keeps the `#briefing` route; `#overview` is an alias. **Ask Roots** and **Calendar** are secondary links. Old Funding links resolve to Opportunities; `#outreach` resolves to Notices.
 
 The desktop sidebar is **174px** and collapses to a **60px** icon rail. Navigation rows are 38px high with dark selected-surface fill and light ink. The wordmark is 27px; the workspace label is hidden. Collapsed labels retain accessible names. The desktop topbar is 52px high without a bottom border.
 
-The shared page container caps at **1184px**, with Overview and Ask Roots each centered in a **720px** column. Overview starts with **What could we make happen?** and its prominent composer, followed by **Worth your attention**, two insight rows with an optional third, and **Community patterns**. The latter offers Participation, Interests, and Events tabs and inline record counts. Footnotes hold the review explanation and illustrative-record label. There is no separate Coming up panel or row of KPI cards.
+The shared page container caps at **1184px**. Overview uses **900px**, with a centered heading and review status above a **1.65:1** two-column layout and **48px** gap. **Worth your attention** holds two dated notes and an All notices link on the left. **Community patterns** holds Participation, Interests, and Events tabs, inline counts, an expandable interpretation, and an optional third connection on the right. A **720px** composer and footnotes are centered below the intelligence. There is no separate Coming up panel or KPI card row.
 
-The composer has a 15px radius, 17px 18px 12px padding, a multiline field, context label, and 32px pale send control. Submitting opens the existing Ask Roots conversation. Overview's independent insights remain available without a prompt.
+The composer retains a 15px radius, 17px 18px 12px padding, multiline field, context label, and 32px pale send control. Submitting opens the existing Ask Roots conversation, which also uses a 720px column. Findings remain available independently of prompts.
 
-At desktop heights up to 760px, top spacing and row padding tighten. At widths up to 1000px, page gutters become 25px. On phones at 760px and below, the heading aligns left, content uses 20px gutters, the composer input becomes 16px and its send control becomes 44×44px, chart content stacks, and navigation becomes four labeled bottom items with safe-area spacing. Charts, forms, and disclosures must not force horizontal page scrolling.
+At widths from 761px through 1050px the intelligence columns become **1.45:1** with a **30px** gap. Desktop heights up to 760px tighten vertical spacing. Page gutters become 25px up to 1000px. At the 760px phone breakpoint, intelligence stacks, the heading aligns left, gutters are 20px, the composer input is 16px and send control 44×44px, and four labeled navigation items form the bottom bar.
+
+Opportunities and Notices use **900px** text feeds. Desktop entries pair a narrow date column with a wider text body, separated by horizontal rules. Opportunities uses a 66px date column, 20px gap, and 22px vertical padding; Notices uses 64px, 23px, and 24px respectively. Native disclosures expand in place. On phones, dates sit above the body, text increases where needed, and primary feed controls have 44px touch targets. Charts, feeds, and disclosures must not force horizontal page scrolling.
 
 ## Snapshot analytics
 
@@ -243,7 +252,7 @@ Every chart needs readable labels, keyboard-operable groups, honest empty states
 
 ## Recommendations, evidence, and freshness
 
-Start with two recommendations, with **One more idea** exposing a third when available. Each is a restrained row directly on the canvas, separated by a fine bottom border and 16px 0 14px padding. A concise title and small review action share the first line, followed by factual supporting copy and an evidence disclosure. No recommendation receives feature-card fill.
+Show two attention notes in the left column. Each is a restrained row directly on the canvas, separated by a fine bottom border and 16px vertical padding. Title and factual supporting copy precede a metadata row containing the local Noted or Updated date and a small review action. Evidence expands beneath. An optional third connection appears as a native disclosure beneath the right-column patterns. No note receives feature-card fill.
 
 **Why this surfaced** reveals the model's suggested next step, evidence, unknowns, source record links, and **Discuss this with Roots**. Referenced source links open their records. **How Roots finds these ideas** explains the review source, bounded fact catalog, cadence, and limitations in the page footnotes.
 
@@ -255,29 +264,31 @@ Raw phone numbers, email addresses, coordinator notes, and chat history are excl
 
 Recheck after meaningful record changes, after 30 minutes while the app is open, when it becomes visible again, or on manual refresh. Activity-only and version-only saves are not new evidence. Stable fact-based IDs and caching prevent routine checks from becoming invented discoveries or activity.
 
+Local journal dates distinguish first observation, meaningful content change, and a manual check. Keep these dates quiet and tabular. A repeat check may advance checked time but must retain unchanged entry dates. Scope labels in Notices and Opportunities describe record checks, not external discovery or verification.
+
 Generation exposes **pending, reviewing, ready, and failed** states. Keep the previous successful recommendations visible during review or failure, identify stale evidence, and discard results produced against superseded records. Without a successful AI review, show the labeled record-match fallback. Failures retry through explicit refresh or meaningful data change, subject to the retry guard. No dismiss feature or monitoring after app closure is promised.
 
-Keep status beside the section heading. Three small dots indicate actual checking or pending/reviewing work; reduced motion leaves them static. Show a genuine checked/reviewed time or an error with **Try again**. Never add artificial delay, idle animation, or discovery badges to unchanged ideas.
+Keep review status beneath the page heading. Three small dots indicate actual checking or pending/reviewing work; reduced motion leaves them static. Show a genuine checked/reviewed time or an error with **Try again**. Never add artificial delay, idle animation, or discovery badges to unchanged ideas.
 
 ## Ask Roots and inline actions
 
-Ask Roots is accessible through secondary navigation, the prominent Overview composer, and recommendation disclosures. Submitting the Overview composer hands the prompt into the existing conversation. User messages use a soft green bubble; assistant text sits directly on the page with a small Roots identity. Checking indicators reflect actual requests, and failures expose recovery rather than fabricated replies.
+Ask Roots is accessible through secondary navigation, the Overview composer beneath the intelligence, and recommendation disclosures. Submitting the Overview composer hands the prompt into the existing conversation. User messages use a soft green bubble; assistant text sits directly on the page with a small Roots identity. Checking indicators reflect actual requests, and failures expose recovery rather than fabricated replies.
 
 The conversation composer uses the dark surface with a fine boundary and pale sage send control. Nearby text explains connection needs and the lack of email/SMS delivery. The published preview must not imitate a live model connection.
 
-Email and SMS drafts appear inline with recipient, channel, message, **Not sent**, and readiness blockers. Recipient names open records. **Edit message** changes an existing unsent draft; **Copy** copies text; **Refine in chat** prepares a follow-up instruction. None sends outreach. Keep draft revisions available through Outreach and never conceal missing permission, contact details, or providers behind a successful-looking status.
+Email and SMS drafts appear inline with recipient, channel, message, **Not sent**, and readiness blockers. Recipient names open records. **Edit message** changes an existing unsent draft; **Copy** copies text; **Refine in chat** prepares a follow-up instruction. None sends outreach. Keep draft revisions available through Notices and never conceal missing permission, contact details, or providers behind a successful-looking status.
 
 ## People and opportunities
 
 People remains a searchable table with individual records in a 620px sheet. Profile, Activity, and Notes separate preferences and contact facts, illustrative participation history, and recorded context. Stated interests remain distinct from declared skills, and contact preference remains distinct from consent. Confirmed and illustrative service-hour targets require separate source labels.
 
-Opportunities uses For volunteers, For organization, Projects, and Saved views. Eleven candidate leads and three draft plans appear in compact searchable rows, six results at a time. Details expose benefits and matching people first, then collapse additional matches, terms, next steps, budgets, and readiness checks. Teams and budgets are drafts; source links are leads to verify.
+Opportunities uses For volunteers, For organization, Projects, and Saved views. Eleven candidate leads and three draft plans appear in a dated expandable text feed, six results at a time. Preserve category tabs, search, saved items, native summary controls, and detailed sheets. Dates describe first local observation or changes to lead content and matched records; Check matches does not search the web. Details expose benefits and matching people first, then collapse additional matches, terms, next steps, budgets, and readiness checks. Teams and budgets are drafts; source links are leads to verify.
 
 Both surfaces use the forest-green system and fine dividers. Standard sheets remain 540px wide, with the People exception above, fill phone width, and retain a sticky close header. Detailed controls stay in these workspaces rather than overcrowding Overview.
 
-## Outreach and connection truth
+## Notices and connection truth
 
-Outreach has **Drafts, Workflows, and Delivery** views. Workflow rows summarize audience rules, timing, channel, and draft status. Saving a rule does not activate or schedule it. Audience previews do not establish bookings, permission, or deliverability.
+Notices defaults to **Notes**, a dated text feed with expandable **Notes & people**, profile links, review actions, and a Reviewed filter. **Drafts, Workflows, and Delivery** remain additional views. Check records updates the local scope check time, while unchanged findings retain their dates. Workflow rows summarize audience rules, timing, channel, and draft status. Saving a rule does not activate or schedule it. Audience previews do not establish bookings, permission, or deliverability.
 
 SMS and email providers are not configured. Delivery counts describe stored profiles, not verified contact details. A contact preference is not permission. No email/SMS outreach has been sent through these features; connecting Gemini or Telegram does not enable delivery.
 
@@ -289,4 +300,4 @@ Connection details distinguish configuration, synchronization, polling, and fail
 
 Use explicit labels, native disclosures, accessible chart groups and selectors, and keyboard focus return. Preserve expanded evidence during status updates where possible. Prefer restrained sheet transitions and truthful work indicators, with reduced-motion support.
 
-Keep Overview practical: current-record patterns, a small number of useful recommendations, and upcoming events. Preserve the full dark green canvas and centered composer-first hierarchy while making its numbers inspectable and its actions concrete. Keep calculations, interpretations, delivery readiness, and unverified program leads clearly distinguishable.
+Keep Overview practical: current-record patterns, a small number of useful recommendations, and upcoming events. Preserve the full dark green canvas, open intelligence layout, dated text feeds, and composer beneath the findings while making its numbers inspectable and its actions concrete. Keep calculations, interpretations, delivery readiness, and unverified program leads clearly distinguishable.

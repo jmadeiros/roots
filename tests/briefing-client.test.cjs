@@ -69,7 +69,7 @@ function harness() {
     clearTimeout(id) { timers.delete(id); },
     setInterval(callback, delay) { intervals.set(++timerId, {callback, delay}); return timerId; }
   });
-  for (const filename of ['bridge-client.js', 'briefing.js', 'conversation.js']) {
+  for (const filename of ['journal.js', 'bridge-client.js', 'briefing.js', 'conversation.js']) {
     vm.runInContext(fs.readFileSync(path.join(__dirname, '../dist', filename), 'utf8'), context, {filename});
   }
   const api = {getState:() => state, esc:escape, icon:() => '', render() {}, toast() {}};

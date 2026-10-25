@@ -1,10 +1,10 @@
 (() => {
   let api, checkedLocally=null, localInsights=[], fingerprint='', refreshTimer=null, pollTimer=null;
-  let checking=false, showMore=false, prompt='', lastRendered='', lastStatus='', checkError='', refreshNotice='', analyticsTab='participation', lastAnalytics='';
+  let checking=false, prompt='', lastRendered='', lastStatus='', checkError='', refreshNotice='', analyticsTab='participation', lastAnalytics='';
   const e=value=>api.esc(value);
   const bridge=()=>window.RootsBridge;
   const visible=()=>api?.getState().view==='briefing';
-  const time=value=>value?new Date(value).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'';
+  const time=value=>window.RootsJournal.formatStamp(value);
   function checkLocalRecords(force = false) {
     const state = api.getState();
     const people = state.people.map(p => ({...p, ...window.RootsPeople.profileData(p)}));
@@ -61,7 +61,7 @@
   }
   function coverageMarkup() {
     const state=api.getState(), data=current(), counts=data.coverage||{};
-    return `<details class="briefing-about"><summary>How Roots finds these ideas</summary><div><p>${data.source==='gemini-synthesis'?'Gemini reviews a bounded set of connections found in your saved records, independently of chat.':'These suggestions are matches from your saved demo records. The local AI connection can review and prioritize them independently of chat.'}</p><p>The workspace has ${counts.people??state.people.length} people, ${counts.opportunities??window.RootsOpportunities.list().length} opportunities and ${counts.projects??window.RootsOpportunities.projects().length} project plans. Roots checks again when records change, and every 30 minutes while open.</p><p>All records are illustrative${data.asOf?' as of '+e(data.asOf):''}. Recommendations are possibilities to explore; funding, attendance and eligibility still need checking. Messages remain drafts.</p></div></details>`;
+    return `<details class="briefing-about"><summary>How Roots finds these ideas</summary><div><p>${data.source==='gemini-synthesis'?'Gemini reviews a bounded set of connections found in your saved records, independently of chat.':'These suggestions are matches from your saved demo records. The local AI connection can review and prioritize them independently of chat.'}</p><p>The workspace has ${counts.people??state.people.length} people, ${counts.opportunities??window.RootsOpportunities.list().length} opportunities and ${counts.projects??window.RootsOpportunities.projects().length} project plans. Roots checks again when records change, and every 30 minutes while open.</p><p>Noted and updated dates reflect observations in this browser. All records are illustrative${data.asOf?' as of '+e(data.asOf):''}. Recommendations are possibilities to explore; funding, attendance and eligibility still need checking. Messages remain drafts.</p></div></details>`;
   }
   function actionFor(item) {
     const ids=item.sourceIds||{}, action=item.action;
@@ -75,11 +75,22 @@
   }
   function insightMarkup(item,index) {
     const action=actionFor(item);
-    return `<article class="briefing-insight" data-insight-id="${e(item.id)}"><div class="briefing-insight-heading"><h3>${e(item.title)}</h3><button class="briefing-action" data-briefing="action" data-index="${index}">${e(action.label)} ${api.icon('arrow')}</button></div><p class="briefing-insight-summary">${e(item.summary)}</p><details class="briefing-evidence"><summary>Why this surfaced</summary><div>${item.suggestion?`<p><strong>Suggested next step:</strong> ${e(item.suggestion)}</p>`:''}${(item.evidence||[]).map(v=>`<p><strong>${e(v.label)}:</strong> ${e(typeof v.value==='object'?JSON.stringify(v.value):v.value)}</p>`).join('')}<div class="insight-sources">${sourceButtons(item)}</div><button class="briefing-discuss" data-briefing="discuss" data-index="${index}">${api.icon('message')}Discuss this with Roots</button></div></details></article>`;
+    const observation=reviewEntries().entries[item.id];
+    const date=observation.updatedAt===observation.notedAt?'Noted':'Updated';
+    return `<article class="briefing-insight" data-insight-id="${e(item.id)}"><div class="briefing-insight-heading"><h3>${e(item.title)}</h3></div><p class="briefing-insight-summary">${e(item.summary)}</p><div class="briefing-insight-meta"><span>${date} ${e(window.RootsJournal.formatDate(observation.updatedAt))}</span><button class="briefing-action" data-briefing="action" data-index="${index}">${e(action.label)} ${api.icon('arrow')}</button></div><details class="briefing-evidence"><summary>Why this surfaced</summary><div>${item.suggestion?`<p><strong>Suggested next step:</strong> ${e(item.suggestion)}</p>`:''}${(item.evidence||[]).map(v=>`<p><strong>${e(v.label)}:</strong> ${e(typeof v.value==='object'?JSON.stringify(v.value):v.value)}</p>`).join('')}<div class="insight-sources">${sourceButtons(item)}</div><button class="briefing-discuss" data-briefing="discuss" data-index="${index}">${api.icon('message')}Discuss this with Roots</button></div></details></article>`;
+  }
+  function reviewEntries() {
+    return window.RootsJournal.review('overview', (current().insights||[]).map(item=>({id:item.id,content:{title:item.title,summary:item.summary,evidence:item.evidence,sourceIds:item.sourceIds}})));
   }
   function insightsMarkup() {
-    const items=(current().insights||[]).slice(0,3);
-    return items.length?items.slice(0,showMore?3:2).map(insightMarkup).join('')+(items.length>2?`<button class="briefing-more" data-briefing="more">${showMore?'Show fewer ideas':'One more idea'} ${api.icon(showMore?'chevron-down':'plus')}</button>`:''):`<div class="briefing-empty"><h2>A little more context will help.</h2><p>Add people and opportunities, then Roots can look for useful connections.</p><a class="briefing-action" href="#people">Explore your people ${api.icon('arrow')}</a></div>`;
+    const items=(current().insights||[]).slice(0,2);
+    return items.length?items.map(insightMarkup).join(''):`<div class="briefing-empty"><h2>A little more context will help.</h2><p>Add people and opportunities, then Roots can look for useful connections.</p><a class="briefing-action" href="#people">Explore your people ${api.icon('arrow')}</a></div>`;
+  }
+  function notebookMarkup() {
+    const item=(current().insights||[])[2];
+    if(!item)return '';
+    const action=actionFor(item), observed=reviewEntries().entries[item.id];
+    return `<details class="briefing-evidence overview-connection" data-insight-id="${e(item.id)}"><summary><span>${e(item.title)}</span>${api.icon('chevron-down')}</summary><div><p>${e(item.summary)}</p>${(item.evidence||[]).map(v=>`<p><strong>${e(v.label)}:</strong> ${e(typeof v.value==='object'?JSON.stringify(v.value):v.value)}</p>`).join('')}<div class="insight-sources">${sourceButtons(item)}</div><button class="briefing-action" data-briefing="action" data-index="2">${e(action.label)} ${api.icon('arrow')}</button><button class="briefing-discuss" data-briefing="discuss" data-index="2">Discuss this with Roots ${api.icon('message')}</button><p class="overview-note-date">${observed.updatedAt===observed.notedAt?'Noted':'Updated'} ${e(window.RootsJournal.formatDate(observed.updatedAt))}</p></div></details>`;
   }
   const number=value=>typeof value==='number'?value.toLocaleString(undefined,{maximumFractionDigits:1}):'—';
   const stats=()=>window.RootsAnalytics.compute(api.getState(),window.RootsPeople.profileData);
@@ -99,12 +110,39 @@
   function render() {
     checkLocalRecords();lastRendered='';lastStatus=statusMarkup();lastAnalytics='';
     const a=stats();
-    return `<div class="overview-shell"><header class="overview-heading"><h1>What could we make happen?</h1></header><form id="briefing-chat-form" class="briefing-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="2" maxlength="2000" placeholder="Ask about your people, explore an idea, or draft a message…" required>${e(prompt)}</textarea><div class="briefing-composer-bottom"><span>${api.icon('sprout')}Your community in context</span><button type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form><section class="overview-attention" aria-labelledby="attention-heading"><div class="overview-section-heading"><h2 id="attention-heading">Worth your attention</h2><div id="briefing-status">${lastStatus}</div></div><div id="briefing-insights" class="briefing-insights" aria-label="Current suggestions">${insightsMarkup()}</div></section><section class="overview-patterns" aria-labelledby="patterns-heading"><div class="overview-section-heading"><h2 id="patterns-heading">Community patterns</h2><div class="overview-chart-tabs" role="group" aria-label="Community chart"><button data-dashboard-tab="participation" aria-pressed="${analyticsTab==='participation'}">Participation</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">Interests</button><button data-dashboard-tab="events" aria-pressed="${analyticsTab==='events'}">Events</button></div></div><div id="overview-patterns" class="overview-pattern-content" data-chart="${analyticsTab}">${patternsMarkup(a)}</div><div id="overview-metrics" class="overview-record-counts" aria-label="Current records">${snapshotMarkup(a)}</div></section><div class="overview-footnotes"><div id="briefing-coverage">${coverageMarkup()}</div><span>Illustrative records</span></div></div>`;
+    return `<div class="overview-shell">
+      <header class="overview-heading"><h1>What could we make happen?</h1><div id="briefing-status">${lastStatus}</div></header>
+      <div class="overview-intelligence">
+        <section class="overview-attention" aria-labelledby="attention-heading">
+          <div class="overview-section-heading"><h2 id="attention-heading">Worth your attention</h2><a class="overview-section-link" href="#notices">All notices ${api.icon('arrow')}</a></div>
+          <div id="briefing-insights" class="briefing-insights" aria-label="Current suggestions">${insightsMarkup()}</div>
+        </section>
+        <section class="overview-patterns" aria-labelledby="patterns-heading">
+          <div class="overview-section-heading"><h2 id="patterns-heading">Community patterns</h2></div>
+          <div class="overview-chart-tabs" role="group" aria-label="Community chart"><button data-dashboard-tab="participation" aria-pressed="${analyticsTab==='participation'}">Participation</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">Interests</button><button data-dashboard-tab="events" aria-pressed="${analyticsTab==='events'}">Events</button></div>
+          <div id="overview-patterns" class="overview-pattern-content" data-chart="${analyticsTab}">${patternsMarkup(a)}</div>
+          <div id="overview-metrics" class="overview-record-counts" aria-label="Current records">${snapshotMarkup(a)}</div>
+          <details class="overview-pattern-note"><summary>What these patterns suggest</summary><div id="overview-pattern-note">${patternNote(a)}</div></details>
+          <section id="briefing-notebook" class="overview-notebook" aria-label="Another connection">${notebookMarkup()}</section>
+        </section>
+      </div>
+      <form id="briefing-chat-form" class="briefing-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="2" maxlength="2000" placeholder="Ask about a finding, explore an idea, or draft a message…" required>${e(prompt)}</textarea><div class="briefing-composer-bottom"><span>${api.icon('sprout')}Turn a thought into a next step</span><button type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form>
+      <div class="overview-footnotes"><div id="briefing-coverage">${coverageMarkup()}</div><span>Illustrative records</span></div>
+    </div>`;
+
+  }
+  function patternNote(a) {
+    if(analyticsTab==='interests') {
+      const lead=a.interests.top[0];
+      return lead?`<p>${e(lead.name)} appears in ${lead.count} profiles. Start with those interests when exploring the next activity, then ask people what they want to do.</p><button class="briefing-action" data-dashboard-group="interest" data-interest="${e(lead.name)}">See these people ${api.icon('arrow')}</button>`:'<p>Recorded interests will help connect people with relevant activities.</p>';
+    }
+    if(analyticsTab==='events')return `<p>${number(a.events.openPlaces)} places are open across events with valid capacity records. That suggests room for invitations; individual bookings and attendance still need confirming.</p><a class="briefing-action" href="#events">Explore the calendar ${api.icon('arrow')}</a>`;
+    return `<p>${number(a.visits.first)} people have one recorded visit. A relevant personal invitation could help them choose a second visit.</p><p>These totals do not tell us when someone last visited, whether they have booked again, or why they returned.</p><button class="briefing-action" data-dashboard-group="first">See these people ${api.icon('arrow')}</button>`;
   }
   function updateAnalytics() {
     const target=document.getElementById('overview-patterns');if(!target)return;
     const a=stats(), fingerprint=JSON.stringify([a,analyticsTab,api.getState().events,window.RootsOpportunities.list().length]);if(fingerprint===lastAnalytics)return;
-    target.innerHTML=patternsMarkup(a);target.dataset.chart=analyticsTab;document.getElementById('overview-metrics').innerHTML=snapshotMarkup(a);
+    target.innerHTML=patternsMarkup(a);target.dataset.chart=analyticsTab;document.getElementById('overview-metrics').innerHTML=snapshotMarkup(a);document.getElementById('overview-pattern-note').innerHTML=patternNote(a);
     document.querySelectorAll('[data-dashboard-tab]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.dashboardTab===analyticsTab)));lastAnalytics=fingerprint;
   }
   function openGroup(group,interest) {
@@ -118,12 +156,13 @@
     const status=document.getElementById('briefing-status');if(status){const markup=statusMarkup();if(lastStatus!==markup){const focused=document.activeElement?.closest('[data-briefing=refresh]');status.innerHTML=markup;lastStatus=markup;if(focused)status.querySelector('[data-briefing=refresh]')?.focus({preventScroll:true});}}
     const coverage=document.getElementById('briefing-coverage');
     if(coverage&&!coverage.querySelector('details[open]'))coverage.innerHTML=coverageMarkup();
-    const data=current(), rendered=JSON.stringify([data.insights,showMore]);
+    const data=current(), rendered=JSON.stringify(data.insights);
     updateAnalytics();
     if(rendered!==lastRendered){
       const open=Array.from(document.querySelectorAll('.briefing-evidence[open]')).map(d=>d.closest('[data-insight-id]').dataset.insightId);
       const target=document.getElementById('briefing-insights');if(target)target.innerHTML=insightsMarkup();
-      document.querySelectorAll('[data-insight-id]').forEach(el=>{if(open.includes(el.dataset.insightId))el.querySelector('details').open=true;});
+      const notebook=document.getElementById('briefing-notebook');if(notebook)notebook.innerHTML=notebookMarkup();
+      document.querySelectorAll('[data-insight-id]').forEach(el=>{if(open.includes(el.dataset.insightId))(el.matches('details')?el:el.querySelector('details')).open=true;});
       lastRendered=rendered;
     }
   }
@@ -159,7 +198,6 @@
     const button=event.target.closest('[data-briefing]');if(!button)return;
     const kind=button.dataset.briefing;
     if(kind==='refresh')refresh(true);
-    else if(kind==='more'){showMore=!showMore;update();}
     else if(kind==='source')({person:api.showPerson,event:api.showEvent,opportunity:api.showOpportunity})[button.dataset.kind]?.(button.dataset.id);
     else if(kind==='action'||kind==='discuss'){
       const item=current().insights[Number(button.dataset.index)];if(!item)return;

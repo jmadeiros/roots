@@ -3,7 +3,8 @@
   'use strict';
   let api;
   let bound = false;
-  const view = { tab: 'volunteers', query: '', limit: 6 };
+  let review = null;
+  const view = { tab: 'volunteers', query: '', limit: 4, expanded: new Set() };
   const tabs = [['volunteers', 'For volunteers'], ['organization', 'For organization'], ['projects', 'Projects'], ['saved', 'Saved']];
   const additions = [
     { id: 'o07', title: 'Local tool-sharing partners', type: 'In-kind benefit', benefit: 'Borrow the tools to keep growing at home.', description: 'Explore local libraries and community tool-sharing programs that could help volunteers put their new skills to use.', interests: ['Carpentry', 'Community gardening'], status: 'Find a local partner', requirements: ['Identify a provider and confirm its current lending rules', 'Check location, membership, deposits, and availability', 'Confirm whether access is public or needs a Guild partnership'], steps: ['Shortlist nearby tool libraries', 'Ask what support they can offer', 'Share the confirmed terms with interested volunteers'] },
@@ -56,21 +57,39 @@
   function saveButton(record, inSheet = false) {
     return `<button class="${inSheet ? 'button' : 'icon-button'} opp-save ${saved(record.id) ? 'saved' : ''}" data-opp-save="${e(record.id)}" aria-label="${saved(record.id) ? 'Remove saved' : 'Save'} ${e(record.title)}" aria-pressed="${saved(record.id)}">${api.icon('bookmark')}${inSheet ? `<span>${saved(record.id) ? 'Saved' : record.type === 'Project' ? 'Save plan' : 'Save opportunity'}</span>` : ''}</button>`;
   }
+  function reviewRecords(force = false) {
+    const records = allRecords();
+    review = window.RootsJournal?.review('opportunities', records.map(record => ({ id: record.id, content: record })), { force }) || null;
+    return records;
+  }
+  function dateMarkup(record) {
+    const entry = review?.entries?.[record.id];
+    const changed = entry?.updatedAt && entry.updatedAt !== entry.notedAt;
+    const stamp = changed ? entry.updatedAt : entry?.notedAt;
+    if (!stamp) return '<span class="opp-entry-date"><span>From the</span><span>sample brief</span></span>';
+    const formatted = window.RootsJournal?.formatDate(stamp) || new Date(stamp).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    return `<span class="opp-entry-date"><span>${changed ? 'Updated' : 'Noted'}</span><time datetime="${e(stamp)}">${e(formatted)}</time></span>`;
+  }
   function row(record) {
     const project = record.type === 'Project';
     const matchLabel = project ? `${record.team.length} suggested people` : `${record.matchCount} interest ${record.matchCount === 1 ? 'match' : 'matches'}`;
-    return `<article class="opp-row"><button class="opp-row-open" data-opp-open="${e(record.id)}" aria-label="Open ${e(record.title)}"><span class="opp-row-icon">${api.icon(project ? 'sprout' : record.type === 'Grant' ? 'funding' : record.type === 'In-kind benefit' ? 'leaf' : 'graduation')}</span><span class="opp-row-copy"><strong>${e(record.title)}</strong><span>${e(record.benefit)}</span><small>${e(record.type)}<span aria-hidden="true"> · </span>${e(record.status)}</small></span><span class="opp-row-meta"><strong>${project ? money(record.total) + ' draft budget' : e(matchLabel)}</strong><small>${project ? e(matchLabel) : 'Based on stated interests'}</small></span><span class="opp-row-arrow">${api.icon('chevron-right')}</span></button>${saveButton(record)}</article>`;
+    const relevance = project ? `${record.benefit} The suggested roles draw on the interests recorded in their profiles.` : record.matchCount ? `${record.matchCount} ${record.matchCount === 1 ? 'person has interests that overlap' : 'people have interests that overlap'} with this lead’s themes: ${(record.interests || []).join(', ').toLowerCase()}. This is a starting point for a conversation, rather than a confirmed offer.` : 'No stated interests match yet. This lead may become more useful as people share what they want to learn or contribute.';
+    const check = project ? record.checks[0] : (record.requirements || [])[0];
+    return `<article class="opp-finding" data-opp-entry="${e(record.id)}">${dateMarkup(record)}<div class="opp-finding-body"><details class="opp-finding-notes"${view.expanded.has(record.id) ? ' open' : ''}><summary><span class="opp-finding-title">${e(record.title)}</span><span class="opp-finding-description">${e(record.benefit)}</span><span class="opp-finding-meta">${e(project ? 'Project idea' : record.type)}<span aria-hidden="true"> · </span>${e(matchLabel)}</span><span class="opp-finding-caret">${api.icon('chevron-down')}</span></summary><div class="opp-finding-expanded"><p><strong>Why it connects</strong>${e(relevance)}</p>${check ? `<p><strong>Worth checking</strong>${e(check)}${/[.!?]$/.test(check) ? '' : '.'}</p>` : ''}<div class="opp-finding-actions"><button class="text-button" data-opp-open="${e(record.id)}">${project ? 'Explore the plan' : 'Explore this lead'} ${api.icon('arrow')}</button><span>${e(project ? money(record.total) + ' illustrative budget' : record.status)}</span></div></div></details>${saveButton(record)}</div></article>`;
   }
   function results() {
     const records = filtered();
     const shown = records.slice(0, view.limit);
     const noResults = view.query ? `<h3>No matches for “${e(view.query)}”</h3><p>Try a skill, benefit, or project name.</p><button class="button" data-opp-clear>Clear search</button>` : view.tab === 'saved' ? '<h3>A place for promising leads.</h3><p>Save an opportunity or project plan to find it here.</p><button class="button primary" data-opp-tab="volunteers">Explore opportunities</button>' : '<h3>No opportunities in this view</h3><p>Try another category to explore the current leads.</p>';
-    return `${records.length ? `<div class="opp-rows">${shown.map(row).join('')}</div>` : `<div class="empty opp-empty">${noResults}</div>`}<div class="opp-list-footer"><span role="status">${records.length ? `Showing ${shown.length} of ${records.length} ${view.tab === 'projects' ? 'project plans' : 'results'}` : 'No results'}</span>${shown.length < records.length ? `<button class="text-button" data-opp-more>Show ${Math.min(records.length - shown.length, 6)} more ${api.icon('chevron-down')}</button>` : '<span>Illustrative leads and draft plans</span>'}</div>`;
+    return `${records.length ? `<div class="opp-findings">${shown.map(row).join('')}</div>` : `<div class="empty opp-empty">${noResults}</div>`}<div class="opp-list-footer"><span role="status">${records.length ? `Showing ${shown.length} of ${records.length} ${view.tab === 'projects' ? 'project ideas' : 'leads'}` : 'No results'}</span>${shown.length < records.length ? `<button class="text-button" data-opp-more>Show ${Math.min(records.length - shown.length, 4)} more ${api.icon('chevron-down')}</button>` : ''}</div>`;
   }
   function render() {
-    const descriptions = { volunteers: 'Benefits, learning, and reasons to keep coming back.', organization: 'Funding and partnerships to support the work.', projects: 'Start with your people, then shape a practical plan.', saved: 'The leads and plans you want to return to.' };
-    const savedCount = allRecords().filter(record => saved(record.id)).length;
-    return `${api.head('Good opportunities. The right people.', 'Find a useful benefit, a promising partner, or a project your community could make happen.')}<div class="opp-tabs" role="tablist" aria-label="Opportunity views">${tabs.map(([id, label]) => `<button id="opp-tab-${id}" class="opp-tab ${view.tab === id ? 'active' : ''}" role="tab" aria-selected="${view.tab === id}" aria-controls="opp-panel" tabindex="${view.tab === id ? '0' : '-1'}" data-opp-tab="${id}">${label}${id === 'saved' ? `<span>${savedCount}</span>` : ''}</button>`).join('')}</div><section id="opp-panel" role="tabpanel" aria-labelledby="opp-tab-${view.tab}"><div class="opp-toolbar"><p>${descriptions[view.tab]}</p><label class="search-field opp-search">${api.icon('search')}<input id="opp-search" type="search" aria-label="Search opportunities and projects" placeholder="Search opportunities…" value="${e(view.query)}"></label></div><div id="opp-results">${results()}</div></section><p class="opp-discovery-note">${api.icon('info')}These are leads to explore. A match reflects stated interests; benefits, eligibility, and availability still need confirmation.</p>`;
+    const records = reviewRecords();
+    const descriptions = { volunteers: 'Benefits and learning that connect with your people.', organization: 'Funding and partnerships worth exploring.', projects: 'Ideas that bring your people and opportunities together.', saved: 'The leads and ideas you want to return to.' };
+    const savedCount = records.filter(record => saved(record.id)).length;
+    const checked = review?.checkedAt;
+    const stamp = checked && (window.RootsJournal?.formatStamp(checked) || new Date(checked).toLocaleString());
+    return `<div class="opp-intelligence">${api.head('Opportunities', 'Promising directions from your people and projects.')}<div class="opp-review"><p role="status">${stamp ? `Record matches checked <time datetime="${e(checked)}">${e(stamp)}</time>` : 'Matches from the current illustrative records'}</p><button class="text-button" data-opp-review>Check matches ${api.icon('refresh')}</button></div><div class="opp-tabs" role="tablist" aria-label="Opportunity views">${tabs.map(([id, label]) => `<button id="opp-tab-${id}" class="opp-tab ${view.tab === id ? 'active' : ''}" role="tab" aria-selected="${view.tab === id}" aria-controls="opp-panel" tabindex="${view.tab === id ? '0' : '-1'}" data-opp-tab="${id}">${label}${id === 'saved' ? `<span>${savedCount}</span>` : ''}</button>`).join('')}</div><section id="opp-panel" role="tabpanel" aria-labelledby="opp-tab-${view.tab}"><div class="opp-toolbar"><p>${descriptions[view.tab]}</p><label class="search-field opp-search">${api.icon('search')}<input id="opp-search" type="search" aria-label="Search opportunities and projects" placeholder="Search leads…" value="${e(view.query)}"></label></div><div id="opp-results">${results()}</div></section><details class="opp-provenance"><summary>About these findings ${api.icon('chevron-down')}</summary><p>These leads and project ideas come from the illustrative brief. Dates show when this browser first noted a lead or its details and record matches changed. Checking matches reviews the current records; it does not search the web. External terms, benefits, and availability still need confirmation.</p></details></div>`;
   }
   function accordion(title, content, count) {
     return `<details class="opp-details"><summary><span>${e(title)}</span>${count != null ? `<small>${count}</small>` : ''}${api.icon('chevron-down')}</summary><div>${content}</div></details>`;
@@ -99,7 +118,7 @@
   }
   function changeTab(id) {
     if (!tabs.some(tab => tab[0] === id)) return;
-    view.tab = id; view.query = ''; view.limit = 6;
+    view.tab = id; view.query = ''; view.limit = 4;
     api.render();
     document.querySelector(`#opp-tab-${id}`)?.focus();
   }
@@ -131,18 +150,26 @@
     if (bound) return;
     bound = true;
     document.addEventListener('click', event => {
-      const button = event.target.closest('[data-opp-tab],[data-opp-open],[data-opp-save],[data-opp-person],[data-opp-clear],[data-opp-more]');
+      const button = event.target.closest('[data-opp-tab],[data-opp-open],[data-opp-save],[data-opp-person],[data-opp-clear],[data-opp-more],[data-opp-review]');
       if (!button || !api) return;
-      if (button.hasAttribute('data-opp-tab')) changeTab(button.dataset.oppTab);
+      if (button.hasAttribute('data-opp-review')) { reviewRecords(true); api.render(); document.querySelector('[data-opp-review]')?.focus(); api.toast('Record matches checked. External program terms still need review.'); }
+      else if (button.hasAttribute('data-opp-tab')) changeTab(button.dataset.oppTab);
       else if (button.hasAttribute('data-opp-open')) open(button.dataset.oppOpen);
       else if (button.hasAttribute('data-opp-save')) toggleSave(button.dataset.oppSave);
       else if (button.hasAttribute('data-opp-person')) api.showPerson(button.dataset.oppPerson);
-      else if (button.hasAttribute('data-opp-clear')) { view.query = ''; view.limit = 6; const input = document.getElementById('opp-search'); if (input) { input.value = ''; input.focus(); } updateResults(); }
-      else if (button.hasAttribute('data-opp-more')) { view.limit += 6; updateResults(); document.querySelectorAll('#opp-results [data-opp-open]')[view.limit - 6]?.focus(); }
+      else if (button.hasAttribute('data-opp-clear')) { view.query = ''; view.limit = 4; const input = document.getElementById('opp-search'); if (input) { input.value = ''; input.focus(); } updateResults(); }
+      else if (button.hasAttribute('data-opp-more')) { view.limit += 4; updateResults(); document.querySelectorAll('#opp-results .opp-finding-notes > summary')[view.limit - 4]?.focus(); }
     });
+    document.addEventListener('toggle', event => {
+      const details = event.target;
+      if (!details.isConnected || !details.matches?.('.opp-finding-notes')) return;
+      const id = details.closest('[data-opp-entry]')?.dataset.oppEntry;
+      if (!id) return;
+      if (details.open) view.expanded.add(id); else view.expanded.delete(id);
+    }, true);
     document.addEventListener('input', event => {
       if (event.target.id !== 'opp-search') return;
-      view.query = event.target.value; view.limit = 6; updateResults();
+      view.query = event.target.value; view.limit = 4; updateResults();
     });
     document.addEventListener('keydown', event => {
       const button = event.target.closest('.opp-tab');

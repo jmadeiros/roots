@@ -9,7 +9,7 @@ function persist(){window.RootsBridge?.sync();try{localStorage.setItem('roots-de
 function logActivity(text){state.activity.unshift({text,time:'Just now'});persist()}
 function avatar(p,cls=''){return `<span class="avatar ${esc(p.color)} ${cls}">${esc(p.initials)}</span>`}
 function toast(text){const el=$('#toast');el.textContent=text;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),3500)}
-const navs=[['briefing','Overview','overview'],['people','People','users'],['opportunities','Opportunities','leaf'],['notices','Outreach','message']];
+const navs=[['briefing','Overview','overview'],['people','People','users'],['opportunities','Opportunities','leaf'],['notices','Notices','message']];
 const viewLabel=()=>navs.find(n=>n[0]===state.view)?.[1]||({chat:'Ask Roots',events:'Calendar'}[state.view]||'Overview');
 function renderNav(){$('#navigation').innerHTML=navs.map(([id,label,i])=>`<a href="#${id}" aria-label="${label}" title="${label}" class="nav-item ${state.view===id?'active':''}" ${state.view===id?'aria-current="page"':''}>${icon(i)}<span>${label}</span></a>`).join('');$('#page-label').textContent=viewLabel()}
 function head(title,subtitle,action=''){return `<div class="page-heading"><div><h1>${title}</h1><p>${subtitle}</p></div>${action}</div>`}
