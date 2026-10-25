@@ -615,8 +615,21 @@ def demo_send_intent(message):
     if not isinstance(message, str):
         return False
     value = message.casefold().replace("’", "'")
-    # Ambiguous or negated send instructions remain review-only.
-    if re.search(r"\b(?:don't|do not|never|not yet|without|before|should (?:i|we)|how (?:do|can|would))\b", value):
+    # Keep the broad review-only veto. The sole exception is a negation
+    # directly attached to a known wording constraint, not a delivery action.
+    content_constraint = r"\s+(?:(?:actually|really|ever|even|please|just)\s+)*(?:promise|promising|claim|claiming|invent|inventing|mention|mentioning|imply|implying|guarantee|guaranteeing|exaggerate|exaggerating|assume|assuming)\b"
+    for restriction in re.finditer(r"\b(?:don't|do not|never|without|before)\b", value):
+        if not re.match(content_constraint, value[restriction.end():]):
+            return False
+    object_phrase = r"(?:(?:it|this|that|these|them)|(?:the|an?|this|that|these|those)\s+(?:[\w-]+\s+){0,3}(?:invitation|message|example|email|sms|text)s?)"
+    prohibitions = (
+        r"\b(?:not yet|should (?:i|we)|how (?:do|can|would))\b",
+        r"(?:^|[.!?;,\n]\s*|\b(?:but|and)\s+)(?:please\s+)?(?:cancel|stop|pause|wait|hold off|delay|postpone)\b",
+        r"\b(?:send|deliver|text|email)\s+(?:" + object_phrase + r"\s+)?(?:only\s+)?(?:after|once|when|until|tomorrow|later)\b",
+        r"\b(?:but|only)\s+(?:after|once|when|until)\s+(?:i|we|you|approved|approval|review|confirmation)\b",
+        r"\b(?:before|after|once|when|until)\s+(?:(?:i|we|you)\s+(?:have\s+)?)?(?:approve|approved|approval|review|confirm|confirmation)\b",
+    )
+    if any(re.search(pattern, value) for pattern in prohibitions):
         return False
     prefix = r"(?:(?:can|could|would|will)\s+you\s+|(?:i want|i'd like)\s+you\s+to\s+)?(?:(?:please|yes|okay|ok|now|just|simply)\s*[,!:]?\s*)*"
     verb = r"(?:send|deliver|text|email)\b"

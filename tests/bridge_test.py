@@ -753,6 +753,60 @@ class BridgeTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertFalse(bridge.demo_send_intent(value))
 
+    def test_demo_send_content_constraints_do_not_disable_explicit_delivery(self):
+        requests = (
+            "For the two-chat demo, create a short SMS invitation for Sofia Patel to volunteer again and send the example to my separate demo inbox. Do not promise any unconfirmed benefits.",
+            "Send the example to my demo inbox. Never invent facts about school approval.",
+            "Draft an invitation without promising service credit, and send it to my inbox.",
+            "Do not mention any grant funding. Send Maya a friendly invitation.",
+            "Send Maya an invitation, but do not claim that she is eligible for benefits.",
+        )
+        for value in requests:
+            with self.subTest(value=value):
+                self.assertTrue(bridge.demo_send_intent(value))
+        bot, calls = self.dedicated_bot()
+        fake, captured = self.demo_model()
+        result = bridge.Assistant(self.store, "fake-test-key", request=fake).chat(requests[0], demo_sender=bot.send_preview)
+        self.assertIn("send_demo_messages", [tool["name"] for tool in captured[0]["tools"][0]["functionDeclarations"]])
+        self.assertEqual(result["testPreviews"][0]["status"], "sent")
+        self.assertEqual(len(calls), 1)
+
+    def test_demo_send_delivery_negation_retraction_and_deferral_stay_review_only(self):
+        requests = (
+            "Send the example, but do not actually send it yet.",
+            "Send it, but don't really send anything.",
+            "Send the example. Don't deliver it.",
+            "Send it. Never contact Maya.",
+            "Draft and send it without sending anything yet.",
+            "Before sending, show the text and then send it.",
+            "Should we send it? Please send it.",
+            "How can we send it? Send it.",
+            "Send it, but not yet.",
+            "Send it. Actually, don't.",
+            "Send it, but do not do that.",
+            "Send it, but don't go ahead.",
+            "Send it. Cancel that request.",
+            "Send it, but stop before delivery.",
+            "Send it. Wait for my approval.",
+            "Send it, but hold off until I approve.",
+            "Send it only after I approve.",
+            "Send it tomorrow.",
+            "Send it later.",
+            "Send the example, but only after I approve it.",
+            "Send Maya a message after I approve it.",
+            "Send Maya a message before I approve it.",
+            "Send the invitation, but do not do anything yet.",
+            "Send the invitation. Before you send it, let me check the wording.",
+            "Send the invitation tomorrow.",
+            "Send the message later.",
+            "Send a short SMS invitation tomorrow.",
+            "Send the invitation. Do not promise benefits, but don't send anything yet.",
+            "Send the invitation without my approval.",
+        )
+        for value in requests:
+            with self.subTest(value=value):
+                self.assertFalse(bridge.demo_send_intent(value))
+
     def test_demo_instructions_distinguish_owner_delivery_from_volunteer_readiness(self):
         self.assertIn("readiness blockers apply only to real volunteer delivery", bridge.SYSTEM)
         self.assertIn("DO NOT block this owner-only demo", bridge.DEMO_SEND_TOOL["description"])
