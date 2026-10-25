@@ -1,59 +1,149 @@
 /* Today: the front-page briefing. Loaded after dark.css so it settles the layout.
-   One screen of information, the conversation docked at the bottom, and one spacing scale. */
-:root { --t1: 4px; --t2: 8px; --t3: 12px; --t4: 16px; --t5: 24px; --t6: 32px; --t7: 48px; --t-radius: 12px; }
+   A simple surface; detail opens in drop-downs. The conversation stays docked at the bottom. */
+:root { --t1: 4px; --t2: 8px; --t3: 12px; --t4: 16px; --t5: 24px; --t6: 32px; --t7: 48px; --t-radius: 12px; --t-rail: 320px; }
 body[data-view="briefing"] .page-footer { display: none; }
 body[data-view="briefing"] main { padding-bottom: 0; }
 .today-page { max-width: 860px; margin: 0 auto; padding-top: var(--t2); }
+/* On a desktop the page fills the window, so the chat sits at the bottom even when everything is folded. */
+@media (min-width: 981px) {
+  .today-page { display: flex; flex-direction: column; min-height: calc(100dvh - 52px - 30px); }
+  .today-dock { margin-top: auto; }
+}
+.today-page[data-layout="a"] { max-width: 640px; }
+.today-page summary { list-style: none; cursor: pointer; }
+.today-page summary::-webkit-details-marker { display: none; }
+.today-chev { flex: none; width: 16px; height: 16px; color: var(--muted); transition: transform .2s ease; }
+details[open] > summary .today-chev, .today-card[aria-expanded="true"] .today-chev { transform: rotate(180deg); }
 
 /* Header. */
 .today-head { margin-bottom: var(--t6); }
+.today-head-top { display: flex; justify-content: space-between; align-items: center; gap: var(--t4); flex-wrap: wrap; }
 .today-head h1 { display: flex; align-items: baseline; gap: var(--t3); margin: 0; font-size: 32px; font-weight: 500; letter-spacing: -.02em; line-height: 1.1; }
 .today-date { font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--muted); }
 .today-summary { margin: var(--t3) 0 0; font-size: 16px; line-height: 1.6; color: var(--muted); }
 .today-inline { padding: 0; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 500; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); cursor: pointer; }
 .today-inline:hover { text-decoration-color: var(--accent); }
 
+/* Layout switcher, for comparing the three layouts. */
+.today-layouts { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; }
+.today-layouts button { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 var(--t3); border: 0; border-radius: 999px; background: none; color: var(--muted); font: inherit; font-size: 12px; cursor: pointer; }
+.today-layouts button b { font-weight: 600; }
+.today-layouts button:hover { color: var(--ink); }
+.today-layouts button[aria-pressed="true"] { background: var(--hover-surface); color: var(--ink); }
+
 /* Section headings share one height so neighbouring columns line up. */
+.today-section + .today-section { margin-top: var(--t6); }
 .today-section-head { display: flex; justify-content: space-between; align-items: center; gap: var(--t4); height: 32px; margin-bottom: var(--t3); }
 .today-section-head h2 { margin: 0; font-size: 15px; font-weight: 500; letter-spacing: -.01em; }
 .today-section-head > span { font-size: 12px; color: var(--muted); }
-.today-section-head .overview-chart-tabs { margin: 0; }
+.today-section-head .overview-chart-tabs, .today-fold-tabs .overview-chart-tabs { margin: 0; }
 
-/* What Roots noticed: four cards, one shared detail panel. */
+.today-kind { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.today-kind.is-benefit { color: var(--positive); }
+.today-kind.is-funding { color: var(--warning); }
+.today-stack { display: flex; }
+.today-stack .avatar { width: 22px; height: 22px; margin-left: -6px; border: 2px solid var(--paper); font-size: 8.5px; }
+.today-stack .avatar:first-child { margin-left: 0; }
+
+/* Layout A: small tiles; one opens its detail underneath. */
 .today-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--t3); }
-.today-card { display: flex; flex-direction: column; align-items: flex-start; gap: var(--t2); padding: var(--t4); border: 1px solid var(--line); border-radius: var(--t-radius); background: var(--soft-surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: background .15s ease, border-color .15s ease; }
+.today-card { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: var(--t2); padding: var(--t3) var(--t4) var(--t4); border: 1px solid var(--line); border-radius: var(--t-radius); background: var(--soft-surface); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: background .15s ease, border-color .15s ease; }
 .today-card:hover { background: var(--hover-surface); }
 .today-card[aria-expanded="true"] { border-color: color-mix(in srgb, var(--accent) 70%, transparent); background: var(--hover-surface); }
 .today-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.today-card-top { display: flex; justify-content: space-between; align-items: center; align-self: stretch; gap: var(--t2); margin-bottom: var(--t1); }
-.today-card-count { font-size: 30px; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
-.today-card-text { font-size: 13.5px; line-height: 1.4; }
-.today-card-meta { margin-top: auto; padding-top: var(--t1); font-size: 12px; line-height: 1.4; color: var(--muted); }
-.today-tag { padding: 2px var(--t2); border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--muted); font-size: 11px; letter-spacing: .02em; white-space: nowrap; }
-.today-tag.is-benefit { border-color: color-mix(in srgb, var(--positive) 45%, transparent); background: color-mix(in srgb, var(--positive) 12%, transparent); color: var(--positive); }
-.today-tag.is-funding { border-color: color-mix(in srgb, var(--warning) 45%, transparent); background: color-mix(in srgb, var(--warning) 10%, transparent); color: var(--warning); }
-.today-stack { display: flex; }
-.today-stack .avatar { width: 22px; height: 22px; margin-left: -6px; border: 2px solid var(--soft-surface); font-size: 8.5px; }
-.today-stack .avatar:first-child { margin-left: 0; }
+.today-card-top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--t2); }
+.today-card-count { font-size: 26px; font-weight: 500; line-height: 1.1; letter-spacing: -.02em; }
+.today-card-text { padding-right: var(--t4); font-size: 13px; line-height: 1.4; }
+.today-card .today-chev { position: absolute; right: 10px; bottom: 12px; }
 .today-detail { margin-top: var(--t3); padding: var(--t4); border: 1px solid var(--line); border-radius: var(--t-radius); }
 .today-detail[hidden] { display: none; }
-.today-detail-head { display: flex; align-items: center; gap: var(--t3); margin-bottom: var(--t4); }
+.today-detail-head { display: flex; align-items: baseline; gap: var(--t3); margin-bottom: var(--t4); }
 .today-detail-head strong { font-size: 15px; font-weight: 500; }
-.today-detail-body { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--t5); }
+
+/* Detail body, shared by the tiles and the drop-downs. */
 .today-detail-body dl { display: grid; gap: var(--t3); margin: 0; }
 .today-detail-body dt { margin-bottom: var(--t1); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .today-detail-body dd { margin: 0; font-size: 13.5px; line-height: 1.5; }
 .today-detail-body dd a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent); }
-.today-notice-actions { display: flex; flex-direction: column; align-items: flex-start; gap: var(--t2); min-width: 190px; }
+.today-notice-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--t2) var(--t4); margin-top: var(--t4); }
 .today-btn { display: inline-flex; align-items: center; gap: var(--t2); height: 32px; padding: 0 var(--t3); border: 1px solid var(--accent); border-radius: var(--t2); background: var(--accent); color: var(--on-accent); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
 .today-btn:hover { background: var(--accent-hover); }
-.today-btn svg, .today-link svg { width: 14px; height: 14px; }
-.today-link { display: inline-flex; align-items: center; gap: var(--t2); padding: 0; border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; cursor: pointer; }
+.today-btn svg, .today-link > svg { width: 14px; height: 14px; }
+.today-link { display: inline-flex; align-items: center; gap: var(--t2); padding: 0; border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; text-decoration: none; cursor: pointer; }
 .today-link:hover { color: var(--ink); }
 .today-empty { margin: 0; color: var(--muted); font-size: 13.5px; }
 
-/* Coming back (left) and today's feed (right). */
-.today-columns { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--t7); margin-top: var(--t6); }
+/* Layouts B and C: a stack of drop-downs, one open at a time. */
+.today-notices-list { display: grid; gap: var(--t2); }
+.today-notice { border: 1px solid var(--line); border-radius: var(--t-radius); background: var(--soft-surface); transition: background .15s ease, border-color .15s ease; }
+.today-notice:hover, .today-notice[open] { background: var(--hover-surface); }
+.today-notice[open] { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.today-notice > summary { display: grid; grid-template-columns: 44px minmax(0, 1fr) 16px; align-items: center; gap: var(--t3); padding: var(--t2) var(--t4) var(--t2) var(--t2); }
+.today-notice-count { display: grid; place-items: center; height: 40px; border-radius: var(--t2); background: var(--paper); font-size: 18px; font-weight: 500; }
+.today-notice-count.is-benefit { background: color-mix(in srgb, var(--positive) 14%, transparent); color: var(--positive); }
+.today-notice-count.is-funding { background: color-mix(in srgb, var(--warning) 12%, transparent); color: var(--warning); }
+.today-notice-text { display: grid; gap: 2px; min-width: 0; }
+.today-notice-text > span { font-size: 13.5px; line-height: 1.35; }
+.today-notice-text small { overflow: hidden; font-size: 11.5px; color: var(--muted); white-space: nowrap; text-overflow: ellipsis; }
+.today-notice-more { padding: var(--t1) var(--t4) var(--t4) calc(44px + var(--t2) + var(--t3)); }
+
+/* Today's feed: each item opens to show who and what next. */
+.today-live { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.today-live i { width: 7px; height: 7px; border-radius: 50%; background: var(--positive); animation: today-pulse 2.4s ease-out infinite; }
+.today-feed { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.feed-item > summary { display: grid; grid-template-columns: 16px minmax(0, 1fr) 16px; align-items: start; gap: var(--t3); padding: var(--t2); border-radius: var(--t2); }
+.feed-item > summary:hover, .feed-item[open] > summary { background: var(--hover-surface); }
+.feed-item > summary .today-chev { margin-top: 2px; }
+.today-feed-icon { color: var(--accent); }
+.today-feed-icon svg { width: 15px; height: 15px; margin-top: 2px; }
+.feed-text { font-size: 13px; line-height: 1.45; }
+.feed-text time { display: block; margin-top: 2px; font-size: 11.5px; color: var(--muted); }
+.feed-more { padding: var(--t2) var(--t2) var(--t3) calc(16px + var(--t3) + var(--t2)); font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.feed-more p { margin: 0 0 var(--t2); }
+.feed-people { display: flex; flex-wrap: wrap; gap: 6px; }
+.feed-people button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px 0 3px; border: 1px solid var(--line); border-radius: 999px; background: none; color: var(--ink); font: inherit; font-size: 12px; cursor: pointer; }
+.feed-people button:hover { background: var(--hover-surface); }
+.feed-people .avatar { width: 22px; height: 22px; font-size: 8.5px; }
+.feed-actions { display: flex; flex-wrap: wrap; gap: var(--t2) var(--t4); margin-top: var(--t2); }
+.feed-actions .today-link { font-size: 12.5px; color: var(--accent); }
+.feed-track { display: block; height: 6px; margin-bottom: var(--t2); border-radius: 999px; background: var(--soft-surface); overflow: hidden; }
+.feed-track i { display: block; height: 100%; border-radius: inherit; background: var(--lime); }
+.feed-item.is-new > summary { animation: today-arrive 1.6s ease-out both; }
+@keyframes today-arrive { 0% { opacity: 0; transform: translateY(-8px); background: color-mix(in srgb, var(--accent) 22%, transparent); } 25% { opacity: 1; transform: none; } 100% { background: transparent; } }
+@keyframes today-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--positive) 55%, transparent); } 70%, 100% { box-shadow: 0 0 0 7px transparent; } }
+
+/* Layout A: the feed lives in a panel on the right edge, beside everything. */
+main:has(.today-page[data-layout="a"]) { max-width: none; margin: 0; padding-right: calc(var(--t-rail) + 32px); }
+.today-rail { position: fixed; top: 52px; right: 0; bottom: 0; z-index: 4; width: var(--t-rail); padding: calc(30px + var(--t2)) var(--t4) var(--t5); border-left: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 55%, var(--paper)); overflow-y: auto; }
+.today-rail .today-section-head { padding: 0 var(--t2); }
+.today-rail-note { margin: var(--t4) var(--t2) 0; font-size: 12px; color: var(--muted); }
+.today-page[data-layout="a"] .today-chips button:nth-child(n+3) { display: none; }
+
+/* Layout B: what Roots noticed and the feed side by side, the trend underneath. */
+.today-page[data-layout="b"] .today-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--t6); margin-bottom: var(--t6); }
+
+/* Layout C: three folded sections, each showing a one-line preview. */
+.today-folds { display: grid; gap: var(--t3); }
+.today-fold { border: 1px solid var(--line); border-radius: 14px; background: var(--soft-surface); }
+.today-fold > summary { display: grid; grid-template-columns: 160px minmax(0, 1fr) 16px; align-items: center; gap: var(--t4); min-height: 64px; padding: var(--t3) var(--t4) var(--t3) var(--t5); border-radius: 14px; }
+.today-fold > summary:hover { background: var(--hover-surface); }
+.today-fold-title { font-size: 15px; font-weight: 500; }
+.today-fold-preview { display: flex; align-items: center; gap: var(--t2); min-width: 0; font-size: 13px; color: var(--muted); }
+.today-fold-preview b { color: var(--ink); font-weight: 600; }
+.today-fold[open] > summary .today-fold-preview { visibility: hidden; }
+.today-fold-body { padding: 0 var(--t5) var(--t5); }
+.today-fold-tabs { display: flex; justify-content: flex-end; margin-bottom: var(--t3); }
+.today-fold .today-notice { background: var(--paper); }
+.today-fold .today-notice:hover, .today-fold .today-notice[open] { background: var(--hover-surface); }
+.today-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 var(--t3); border: 1px solid var(--line); border-radius: 999px; background: var(--paper); font-size: 12px; white-space: nowrap; }
+.today-chip.is-benefit b { color: var(--positive); }
+.today-chip.is-funding b { color: var(--warning); }
+.today-spark { flex: none; width: 66px; height: 22px; fill: var(--lime); }
+.today-latest { display: flex; align-items: center; gap: var(--t2); min-width: 0; }
+.today-latest-text { overflow: hidden; color: var(--ink); white-space: nowrap; text-overflow: ellipsis; }
+.today-latest-time { flex: none; font-size: 12px; }
+
+/* Coming back. */
 .trend-head { display: flex; align-items: center; gap: var(--t3); margin-bottom: var(--t2); }
 .trend-head strong { font-size: 30px; font-weight: 500; line-height: 1; letter-spacing: -.02em; }
 .trend-head span { font-size: 13.5px; }
@@ -74,16 +164,10 @@ body[data-view="briefing"] main { padding-bottom: 0; }
 .trend-interest-value small { margin-left: var(--t1); font-size: 11px; color: var(--muted); }
 .trend-interests button:hover .trend-interest-name { text-decoration: underline; text-underline-offset: 3px; }
 .trend-note { margin: var(--t3) 0 0; font-size: 12px; color: var(--muted); }
-.today-feed { display: grid; gap: var(--t4); margin: 0; padding: 0; list-style: none; }
-.today-feed li { display: grid; grid-template-columns: 56px 16px minmax(0, 1fr); gap: var(--t2); align-items: start; }
-.today-feed time { padding-top: 1px; font-size: 12px; color: var(--muted); white-space: nowrap; }
-.today-feed-icon { color: var(--accent); }
-.today-feed-icon svg { width: 14px; height: 14px; margin-top: 3px; }
-.today-feed p { margin: 0; font-size: 13px; line-height: 1.5; }
-.today-feed p a, .today-feed p button { padding: 0; border: 0; background: none; color: var(--accent); font: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent); cursor: pointer; }
+.today-fold .trend-interest-track { background: var(--paper); }
 
 /* The conversation stays docked at the bottom of the window. */
-.today-dock { position: sticky; bottom: 0; z-index: 5; margin-top: 0; padding: var(--t6) 0 var(--t4); background: linear-gradient(to bottom, color-mix(in srgb, var(--paper) 0%, transparent), var(--paper) var(--t6)); }
+.today-dock { position: sticky; bottom: 0; z-index: 5; padding: var(--t6) 0 var(--t4); background: linear-gradient(to bottom, color-mix(in srgb, var(--paper) 0%, transparent), var(--paper) var(--t6)); }
 .today-composer.briefing-composer { margin: 0; padding: var(--t3) var(--t3) var(--t3) var(--t4); border-radius: 14px; box-shadow: 0 10px 30px rgb(0 0 0 / .28); }
 .today-composer textarea { min-height: 26px; font-size: 14.5px; resize: none; }
 .today-composer-bottom { display: flex; align-items: center; justify-content: space-between; gap: var(--t3); margin-top: var(--t2); }
@@ -94,15 +178,30 @@ body[data-view="briefing"] main { padding-bottom: 0; }
 .today-send:hover { background: var(--accent-hover); }
 .today-send svg { width: 16px; height: 16px; transform: rotate(-90deg); }
 
+@media (prefers-reduced-motion: reduce) {
+  .today-live i, .feed-item.is-new > summary { animation: none; }
+  .today-chev { transition: none; }
+}
+@media (max-width: 1180px) {
+  .today-page[data-layout="a"] .today-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 980px) {
+  main:has(.today-page[data-layout="a"]) { max-width: 1184px; margin-inline: auto; padding-right: 25px; }
+  .today-rail { position: static; width: auto; margin-top: var(--t6); padding: 0; border: 0; background: none; }
+  .today-rail .today-section-head { padding: 0; }
   .today-dock { bottom: calc(67px + env(safe-area-inset-bottom, 0px)); }
   .today-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
+  main:has(.today-page[data-layout="a"]) { padding-right: 20px; }
   .today-head h1 { flex-direction: column; gap: var(--t1); }
-  .today-detail-body { grid-template-columns: 1fr; gap: var(--t4); }
-  .today-columns { grid-template-columns: 1fr; gap: var(--t6); }
+  .today-page[data-layout="b"] .today-columns { grid-template-columns: 1fr; }
+  .today-fold > summary { grid-template-columns: minmax(0, 1fr) 16px; padding-left: var(--t4); }
+  .today-fold-title { grid-column: 1; }
+  .today-fold-preview { grid-row: 2; grid-column: 1 / -1; flex-wrap: wrap; }
+  .today-fold[open] > summary .today-fold-preview { display: none; }
+  .today-fold-body { padding: 0 var(--t4) var(--t4); }
+  .today-notice-more { padding-left: var(--t4); }
   .today-chips button:nth-child(n+3) { display: none; }
-  .today-card .today-stack { display: none; }
   .trend-interests button { grid-template-columns: 110px minmax(0, 1fr) 64px; }
 }

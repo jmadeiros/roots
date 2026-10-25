@@ -39,6 +39,8 @@
       insight: {
         noun: ['agriculture student', 'agriculture students'],
         could: 'could log FFA placement hours here',
+        short: 'students could log FFA hours',
+        chip: 'FFA hours',
         meta: '10 to 50 hours a year · advisor-approved',
         gets: 'Garden shifts count as an unpaid placement toward their FFA awards and degrees, so every visit moves them forward.',
         todo: 'Ask their agriculture teacher to approve the garden as a placement, then confirm their hours each month.',
@@ -84,6 +86,8 @@
       insight: {
         noun: ['volunteer', 'volunteers'],
         could: 'could count their hours toward keeping CalFresh',
+        short: 'volunteers could keep CalFresh',
+        chip: 'CalFresh hours',
         meta: '80 hours a month · in force since 1 June',
         gets: 'Their hours here count toward the 80 hours a month that keeps their CalFresh food benefits.',
         todo: 'Offer regular shifts and sign form CF 888 each month to confirm their hours.',
@@ -128,6 +132,8 @@
       insight: {
         noun: ['college student', 'college students'],
         could: 'could earn course credit for their hours here',
+        short: 'students could earn college credit',
+        chip: 'college credit',
         meta: '1 unit per 60 hours · up to 4 a semester',
         gets: 'Up to 4 units of college credit a semester for supervised volunteer work.',
         todo: 'Agree learning objectives with their college and confirm hours at the end of term.',
@@ -172,6 +178,8 @@
       insight: {
         noun: ['high-school student', 'high-school students'],
         could: 'could earn a diploma seal through a project here',
+        short: 'students could earn a diploma seal',
+        chip: 'diploma seal',
         meta: 'Hours plus a civic project',
         gets: 'A gold seal on their diploma for service and a project that tackles a real problem, such as food access.',
         todo: 'Offer a small food-access project they can own and write each of them a reference.',

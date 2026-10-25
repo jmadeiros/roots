@@ -17,12 +17,12 @@
     // Benefits that give volunteers a reason to come back lead the briefing; funding follows.
     for(const benefit of programmes.filter(p=>p.category==='benefits'&&p.matchCount>0&&p.insight).slice(0,2)) {
       const ids=benefit.matches.map(m=>m.personId), copy=benefit.insight;
-      localInsights.push({id:`local-benefit-${benefit.id}`,kind:'benefit',count:benefit.matchCount,rest:`${copy.noun[benefit.matchCount===1?0:1]} ${copy.could}`,title:`${benefit.matchCount} ${copy.noun[benefit.matchCount===1?0:1]} ${copy.could}`,meta:copy.meta,gets:copy.gets,todo:copy.todo,source:{label:benefit.provider,url:benefit.sourceUrl,checked:benefit.sourceCheckedAt},sourceIds:{people:ids,opportunities:[benefit.id]},action:{kind:'draft',label:copy.actionLabel||'Tell them about it',personIds:ids},suggestedPrompt:`Draft a short SMS telling ${ids.length} volunteers about ${benefit.title}: ${copy.gets} Keep it friendly and unsent so I can review it.`});
+      localInsights.push({id:`local-benefit-${benefit.id}`,kind:'benefit',count:benefit.matchCount,rest:`${copy.noun[benefit.matchCount===1?0:1]} ${copy.could}`,title:`${benefit.matchCount} ${copy.noun[benefit.matchCount===1?0:1]} ${copy.could}`,short:copy.short,chip:copy.chip,meta:copy.meta,gets:copy.gets,todo:copy.todo,source:{label:benefit.provider,url:benefit.sourceUrl,checked:benefit.sourceCheckedAt},sourceIds:{people:ids,opportunities:[benefit.id]},action:{kind:'draft',label:copy.actionLabel||'Tell them about it',personIds:ids},suggestedPrompt:`Draft a short SMS telling ${ids.length} volunteers about ${benefit.title}: ${copy.gets} Keep it friendly and unsent so I can review it.`});
     }
     const grant=programmes.find(p=>p.stage==='open'&&p.matchKind==='education'&&p.matchCount>0);
-    if(grant)localInsights.push({id:'local-funded-education',kind:'funding',count:grant.matchCount,rest:`students fit a ${money(grant)} education grant`,title:`${grant.matchCount} students fit a ${money(grant)} education grant`,meta:`${grant.title} · closes in ${daysUntil(grant.deadlineAt)} days`,gets:`${grant.headlineBenefit} for the garden, built around the students you already have.`,todo:grant.action,source:{label:grant.provider,url:grant.sourceUrl,checked:grant.sourceCheckedAt},sourceIds:{people:grant.matches.map(m=>m.personId),opportunities:[grant.id]},action:{kind:'opportunity',recordId:grant.id,label:'Open the grant'},suggestedPrompt:`Help build a practical proposal for ${grant.title}. Use its current requirements and our recorded students. Explain the gaps before applying.`});
+    if(grant)localInsights.push({id:'local-funded-education',kind:'funding',count:grant.matchCount,rest:`students fit a ${money(grant)} education grant`,title:`${grant.matchCount} students fit a ${money(grant)} education grant`,short:`students fit a ${money(grant)} grant`,chip:'grant fit',meta:`${grant.title} · closes in ${daysUntil(grant.deadlineAt)} days`,gets:`${grant.headlineBenefit} for the garden, built around the students you already have.`,todo:grant.action,source:{label:grant.provider,url:grant.sourceUrl,checked:grant.sourceCheckedAt},sourceIds:{people:grant.matches.map(m=>m.personId),opportunities:[grant.id]},action:{kind:'opportunity',recordId:grant.id,label:'Open the grant'},suggestedPrompt:`Help build a practical proposal for ${grant.title}. Use its current requirements and our recorded students. Explain the gaps before applying.`});
     const first=people.filter(p=>p.visits===1), saturday=state.events.find(event=>event.id==='e01');
-    if(first.length)localInsights.push({id:'local-first-visits',kind:'return',count:first.length,rest:'first-timers haven’t been back yet',title:`${first.length} first-timers haven’t been back yet`,meta:saturday?`${saturday.title} has ${saturday.capacity-saturday.attendees} places left`:'One recorded visit each',gets:'A personal invitation to a shift that suits their interests and availability.',todo:'Send a short SMS from someone they met. Roots drafts it; nothing goes out until you approve.',sourceIds:{people:first.map(p=>p.id),events:saturday?[saturday.id]:[]},action:{kind:'draft',label:'Draft the invitations',personIds:first.map(p=>p.id)},suggestedPrompt:'Prepare SMS invitation drafts for people with one recorded visit and recorded SMS permission. Ask what would make another visit worthwhile. Do not imply we know when they last attended. Keep every message unsent.'});
+    if(first.length)localInsights.push({id:'local-first-visits',kind:'return',count:first.length,rest:'first-timers haven’t been back yet',title:`${first.length} first-timers haven’t been back yet`,short:'first-timers not back yet',chip:'not back yet',meta:saturday?`${saturday.title} has ${saturday.capacity-saturday.attendees} places left`:'One recorded visit each',gets:'A personal invitation to a shift that suits their interests and availability.',todo:'Send a short SMS from someone they met. Roots drafts it; nothing goes out until you approve.',sourceIds:{people:first.map(p=>p.id),events:saturday?[saturday.id]:[]},action:{kind:'draft',label:'Draft the invitations',personIds:first.map(p=>p.id)},suggestedPrompt:'Prepare SMS invitation drafts for people with one recorded visit and recorded SMS permission. Ask what would make another visit worthwhile. Do not imply we know when they last attended. Keep every message unsent.'});
   }
 
   function sourceButtons(item) {
@@ -84,7 +84,14 @@
   const short=value=>value>=1000?`$${(value/1000).toLocaleString(undefined,{maximumFractionDigits:1})}k`:`$${value}`;
   const money=p=>p.amountMin&&p.amountMax?`${short(p.amountMin)}–${short(p.amountMax)}`:p.amountMax?`up to ${short(p.amountMax)}`:'funded';
   const person=id=>api.getState().people.find(p=>p.id===id);
-  const ago=mins=>mins<60?`${mins} min ago`:`${Math.round(mins/60)} h ago`;
+  const LOADED=Date.now();
+  const ago=at=>{const mins=Math.floor((Date.now()-at)/60000);return mins<1?'just now':mins<60?`${mins} min ago`:`${Math.round(mins/60)} h ago`;};
+  const CHEV='<svg class="today-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+  // Three layouts to compare; the switcher goes once one is chosen.
+  const LAYOUTS=[['a','Side panel'],['b','Side by side'],['c','Folded']];
+  let layout=(()=>{try{const asked=new URLSearchParams(location.search).get('layout')||localStorage.getItem('roots-today-layout');return LAYOUTS.some(([key])=>key===asked)?asked:'a';}catch{return 'a';}})();
+  // Drop-downs the viewer has opened stay open when the page refreshes its numbers.
+  const opened=new Set(['fold-noticed']);
   function peopleStack(ids) {
     const people=ids.map(person).filter(Boolean), shown=people.slice(0,5);
     return `<span class="today-stack" aria-label="${people.length} people">${shown.map(p=>api.avatar(p)).join('')}${people.length>5?`<span class="avatar today-more">+${people.length-5}</span>`:''}</span>`;
@@ -94,21 +101,28 @@
     const checked=source.checked?` · checked ${new Date(`${source.checked}T12:00:00`).toLocaleDateString(undefined,{day:'numeric',month:'short'})}`:'';
     return `<div><dt>Source</dt><dd><a href="${e(source.url)}" target="_blank" rel="noopener">${e(source.label)}</a>${e(checked)}</dd></div>`;
   }
-  function insightDetail(item,index) {
+  const kindTag=item=>`<span class="today-kind is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span>`;
+  function insightBody(item,index) {
     const action=actionFor(item), ids=item.sourceIds?.people||[];
-    return `<div class="today-detail-head"><span class="today-tag is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span><strong>${e(item.title)}</strong></div>
-      <div class="today-detail-body"><dl><div><dt>What they get</dt><dd>${e(item.gets)}</dd></div><div><dt>What you’d do</dt><dd>${e(item.todo)}</dd></div>${sourceLine(item.source)}</dl>
-      <div class="today-notice-actions"><button class="today-btn" data-briefing="action" data-index="${index}">${e(action.label)} ${api.icon('arrow')}</button>${ids.length?`<button class="today-link" data-briefing="people" data-index="${index}">${api.icon('users')}See the ${ids.length} people</button>`:''}<button class="today-link" data-briefing="discuss" data-index="${index}">${api.icon('message')}Ask Roots about this</button></div></div>`;
+    return `<div class="today-detail-body"><dl><div><dt>What they get</dt><dd>${e(item.gets)}</dd></div><div><dt>What you’d do</dt><dd>${e(item.todo)}</dd></div>${sourceLine(item.source)}</dl>
+      <div class="today-notice-actions"><button class="today-btn" data-briefing="action" data-index="${index}">${e(action.label)} ${api.icon('arrow')}</button>${ids.length?`<button class="today-link" data-briefing="people" data-index="${index}">${peopleStack(ids.slice(0,3))}See the ${ids.length} people</button>`:''}<button class="today-link" data-briefing="discuss" data-index="${index}">${api.icon('message')}Ask Roots</button></div></div>`;
   }
-  function insightCard(item,index) {
-    const ids=item.sourceIds?.people||[];
-    return `<button class="today-card" data-today-card="${index}" aria-expanded="${openCard===index}" aria-controls="today-detail"><span class="today-card-top"><span class="today-tag is-${e(item.kind||'return')}">${e(TAGS[item.kind]||'Insight')}</span>${ids.length?peopleStack(ids.slice(0,3)):''}</span><strong class="today-card-count">${e(item.count??'')}</strong><span class="today-card-text">${e(item.rest||item.title)}</span>${item.meta?`<small class="today-card-meta">${e(item.meta)}</small>`:''}</button>`;
+  // Layout A: four small tiles; one opens its detail underneath.
+  function insightTile(item,index) {
+    return `<button class="today-card" data-today-card="${index}" aria-expanded="${openCard===index}" aria-controls="today-detail"><span class="today-card-top"><strong class="today-card-count">${e(item.count??'')}</strong>${kindTag(item)}</span><span class="today-card-text">${e(item.short||item.rest)}</span>${CHEV}</button>`;
+  }
+  // Layouts B and C: a stack of drop-downs, one open at a time.
+  function insightFold(item,index) {
+    const key=`n-${item.id}`;
+    return `<details class="today-notice" name="today-notices" data-open-key="${e(key)}"${opened.has(key)?' open':''}><summary><strong class="today-notice-count is-${e(item.kind||'return')}">${e(item.count??'')}</strong><span class="today-notice-text"><span>${e(item.short||item.rest)}</span><small>${e(TAGS[item.kind]||'Insight')}${item.meta?` · ${e(item.meta)}`:''}</small></span>${CHEV}</summary><div class="today-notice-more">${insightBody(item,index)}</div></details>`;
   }
   function insightsMarkup() {
     const items=(current().insights||[]).slice(0,4);
     if(openCard>=items.length)openCard=-1;
     if(!items.length)return `<p class="today-empty">Add people and opportunities, then Roots can look for useful connections.</p>`;
-    return `<div class="today-cards">${items.map(insightCard).join('')}</div><div id="today-detail" class="today-detail"${openCard<0?' hidden':''}>${openCard<0?'':insightDetail(items[openCard],openCard)}</div>`;
+    if(layout!=='a')return `<div class="today-notices-list">${items.map(insightFold).join('')}</div>`;
+    const open=items[openCard];
+    return `<div class="today-cards">${items.map(insightTile).join('')}</div><div id="today-detail" class="today-detail"${open?'':' hidden'}>${open?`<div class="today-detail-head">${kindTag(open)}<strong>${e(open.title)}</strong></div>${insightBody(open,openCard)}`:''}</div>`;
   }
   const number=value=>typeof value==='number'?value.toLocaleString(undefined,{maximumFractionDigits:1}):'—';
   const stats=()=>window.RootsAnalytics.compute(api.getState(),window.RootsPeople.profileData);
@@ -117,8 +131,12 @@
   }
   // Demo history (month, first visits, came back) so the trend has a shape; current totals come from the records.
   const HISTORY=[['May',6,8],['Jun',7,10],['Jul',7,12],['Aug',7,15],['Sep',6,19],['Oct',6,23]];
+  function trendHeadline() {
+    const [,lastFirst,lastBack]=HISTORY.at(-1), [,,firstBack]=HISTORY[0];
+    return {lastBack,firstBack,share:Math.round(100*lastBack/(lastBack+lastFirst))};
+  }
   function trendMarkup() {
-    const W=460,H=150,top=10,base=H-22,right=78,bw=30,step=(W-right-bw)/(HISTORY.length-1);
+    const wide=layout!=='a', W=wide?820:600, H=layout==='b'?108:wide?128:150, top=10, base=H-22, right=78, bw=wide?44:32, step=(W-right-bw)/(HISTORY.length-1);
     const max=Math.max(...HISTORY.map(([,first,back])=>first+back)), scale=v=>v/max*(base-top-14);
     const bars=HISTORY.map(([month,first,back],i)=>{
       const x=i*step, hb=scale(back), hf=scale(first);
@@ -126,8 +144,12 @@
     }).join('');
     const [,lastFirst,lastBack]=HISTORY.at(-1), lx=(HISTORY.length-1)*step+bw+8;
     const labels=`<text class="trend-label is-back" x="${lx}" y="${base-scale(lastBack)/2+4}">came back</text><text class="trend-label" x="${lx}" y="${base-scale(lastBack)-scale(lastFirst)/2+2}">first visit</text>`;
-    const [,,firstBack]=HISTORY[0];
-    return `<div class="trend-head"><strong>${lastBack}</strong><span>came back in October<small>up from ${firstBack} in May · ${Math.round(100*lastBack/(lastBack+lastFirst))}% of this month’s volunteers</small></span></div><svg class="trend-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Volunteers who came back each month, May to October">${bars}${labels}</svg>`;
+    const t=trendHeadline();
+    return `<div class="trend-head"><strong>${t.lastBack}</strong><span>came back in October<small>up from ${t.firstBack} in May · ${t.share}% of this month’s volunteers</small></span></div><svg class="trend-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Volunteers who came back each month, May to October">${bars}${labels}</svg>`;
+  }
+  function sparkMarkup() {
+    const max=Math.max(...HISTORY.map(([,,back])=>back));
+    return `<svg class="today-spark" viewBox="0 0 66 22" aria-hidden="true">${HISTORY.map(([,,back],i)=>{const h=Math.max(2,back/max*20);return `<rect x="${i*11}" y="${22-h}" width="7" height="${h}" rx="1.5"/>`;}).join('')}</svg>`;
   }
   function interestReturnMarkup(a) {
     const people=api.getState().people, rows=a.interests.top.slice(0,5).map(item=>{
@@ -150,7 +172,23 @@
     if(remote && bridge()?.status?.connected){snapshot.drafts=remote.drafts||[];snapshot.activity=remote.activity||[];}
     return window.RootsDaily.observe(snapshot);
   }
-  // A seeded morning for the demo, so the briefing has a story; times are relative to now.
+  const personLinks=ids=>`<div class="feed-people">${ids.map(person).filter(Boolean).map(p=>`<button data-briefing="source" data-kind="person" data-id="${e(p.id)}">${api.avatar(p)}<span>${e(p.name)}</span></button>`).join('')}</div>`;
+  const recordLink=(kind,id,label)=>`<button class="today-link" data-briefing="source" data-kind="${kind}" data-id="${e(id)}">${e(label)} ${api.icon('arrow')}</button>`;
+  const firstName=p=>p.name.split(' ')[0];
+  // Demo arrivals, so the feed visibly updates while the page is open.
+  const ARRIVALS=[
+    {after:8000,id:'l-chloe',icon:'calendar',build(){const p=person('p20');return p&&{text:`${p.name} signed up for Saturday in the garden`,more:`<p>${e(firstName(p))} joined this morning, so Saturday will be a second visit.</p><div class="feed-actions">${recordLink('person',p.id,`Open ${firstName(p)}`)}${recordLink('event','e01','Open the event')}</div>`};}},
+    {after:45000,id:'l-micah',icon:'clock',build(){const p=person('p35');return p&&{text:`${p.name} logged 3 hours in the garden`,more:`<p>That makes 41 of the 80 hours a month that keep CalFresh. Sign form CF 888 at the end of the month.</p><div class="feed-actions">${recordLink('person',p.id,`Open ${firstName(p)}`)}${recordLink('opportunity','b02','CalFresh work rule')}</div>`};}},
+    {after:110000,id:'l-rafael',icon:'heart',build(){const p=person('p27'),event=api.getState().events.find(item=>item.id==='e02');return p&&event&&{text:`${p.name} offered to lead ${event.title}`,more:`<p>${e(firstName(p))} has ${p.visits} visits. ${e(event.title)} is on ${e(event.day)} November with ${event.capacity-event.attendees} places open.</p><div class="feed-actions">${recordLink('person',p.id,`Open ${firstName(p)}`)}${recordLink('event',event.id,'Open the event')}</div>`};}}
+  ];
+  const arrived=[];
+  let liveStarted=false;
+  function startLive() {
+    if(liveStarted)return;liveStarted=true;
+    for(const item of ARRIVALS)setTimeout(()=>{const built=item.build();if(!built)return;arrived.push({id:item.id,icon:item.icon,at:Date.now(),...built});refreshFeed();},item.after);
+    setInterval(()=>{if(!document.hidden)refreshFeed();},30000);
+  }
+  // A seeded morning for the demo, so the briefing has a story; times are relative to page load.
   function todayModel() {
     const programmes=window.RootsOpportunities.list();
     const benefits=programmes.filter(p=>p.category==='benefits'&&p.matchCount>0);
@@ -160,39 +198,57 @@
     const first=api.getState().people.filter(p=>p.visits===1);
     const saturday=api.getState().events.find(event=>event.id==='e01');
     const joined=TODAY_JOINED.map(person).filter(Boolean);
-    const feed=[];
-    if(benefits[0])feed.push({mins:25,icon:'sparkles',text:`Roots matched ${benefits[0].matchCount} people to ${benefits[0].title}`,kind:'opportunity',id:benefits[0].id,cta:'Open'});
-    feed.push({mins:70,icon:'users',text:`${joined.length} people joined from the sign-up form`,ids:joined.map(p=>p.id),cta:'See who'});
-    feed.push({mins:130,icon:'message',text:`SMS invitation drafted for ${first.length} first-timers · waiting for your review`,href:'#notices',cta:'Review'});
-    if(saturday)feed.push({mins:190,icon:'calendar',text:`${saturday.title}: 2 new sign-ups, ${saturday.capacity-saturday.attendees} places left`,kind:'event',id:saturday.id,cta:'Open'});
+    const at=mins=>LOADED-mins*60000, feed=[];
+    if(benefits[0])feed.push({id:'f-match',at:at(25),icon:'sprout',text:`Roots matched ${benefits[0].matchCount} people to ${benefits[0].title}`,more:`${personLinks(benefits[0].matches.map(m=>m.personId))}<div class="feed-actions">${recordLink('opportunity',benefits[0].id,`Open ${benefits[0].title}`)}</div>`});
+    feed.push({id:'f-joined',at:at(70),icon:'users',text:`${joined.length} people joined from the sign-up form`,more:personLinks(joined.map(p=>p.id))});
+    feed.push({id:'f-sms',at:at(130),icon:'message',text:`SMS invitation drafted for ${first.length} first-timers`,more:`<p>Waiting for your review. Nothing is sent until you approve it.</p><div class="feed-actions"><a class="today-link" href="#notices">Review the drafts ${api.icon('arrow')}</a></div>`});
+    if(saturday)feed.push({id:'f-sat',at:at(190),icon:'calendar',text:`${saturday.title}: 2 new sign-ups`,more:`<p>${saturday.attendees} of ${saturday.capacity} places taken, ${saturday.capacity-saturday.attendees} left.</p><span class="feed-track" aria-hidden="true"><i style="width:${100*saturday.attendees/saturday.capacity}%"></i></span><div class="feed-actions">${recordLink('event',saturday.id,'Open the event')}</div>`});
     const link=(attrs,text)=>`<button class="today-inline" ${attrs}>${text}</button>`;
     const drafts=link('data-today-go="notices"','2 drafts');
     const summary=`Since yesterday, ${link(`data-briefing="daily-people" data-ids="${e(joined.map(p=>p.id).join(','))}"`,`${joined.length} people joined`)} and Roots found ${link('data-today-go="opportunities"',`${benefitPeople.size} volunteers who could gain a benefit`)} by coming back. ${nextGrant?`${link(`data-briefing="source" data-kind="opportunity" data-id="${e(nextGrant.id)}"`,e(nextGrant.title))} closes in ${daysUntil(nextGrant.deadlineAt)} days, and ${drafts} are`:`There are ${drafts}`} waiting for your review.`;
     return {benefits,grants,joined,first,feed,summary};
   }
-  function feedMarkup(model=todayModel()) {
-    const day=dailySnapshot(), real=(day?.entries||[]).slice(0,3).map(item=>({at:item.at,icon:'check',text:item.title,ids:item.personIds,cta:item.personIds?.length?'See who':''}));
-    const items=[...real,...model.feed];
-    return items.map(item=>{
-      const when=item.at?new Date(item.at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):ago(item.mins);
-      const cta=!item.cta?'':item.href?`<a href="${item.href}">${e(item.cta)}</a>`:item.ids?`<button data-briefing="daily-people" data-ids="${e(item.ids.join(','))}">${e(item.cta)}</button>`:`<button data-briefing="source" data-kind="${item.kind}" data-id="${e(item.id)}">${e(item.cta)}</button>`;
-      return `<li><time>${e(when)}</time><span class="today-feed-icon" aria-hidden="true">${api.icon(item.icon)}</span><p>${e(item.text)}${cta?` ${cta}`:''}</p></li>`;
-    }).join('');
+  function feedItems(model=todayModel()) {
+    const day=dailySnapshot(), real=(day?.entries||[]).slice(0,3).map((item,i)=>({id:`d-${item.at}-${i}`,at:Date.parse(item.at),icon:'check',text:item.title,more:item.personIds?.length?personLinks(item.personIds):'<p>Recorded in this browser.</p>'}));
+    return [...real,...arrived,...model.feed].sort((x,y)=>y.at-x.at);
   }
+  function feedMarkup(model) {
+    return feedItems(model).map(item=>`<li><details class="feed-item${Date.now()-item.at<4000?' is-new':''}" data-open-key="${e(item.id)}"${opened.has(item.id)?' open':''}><summary><span class="today-feed-icon" aria-hidden="true">${api.icon(item.icon)}</span><span class="feed-text">${e(item.text)}<time>${e(ago(item.at))}</time></span>${CHEV}</summary><div class="feed-more">${item.more}</div></details></li>`).join('');
+  }
+  function latestMarkup(model) {
+    const items=feedItems(model), latest=items[0];
+    return latest?`<span class="today-live" aria-hidden="true"><i></i></span><span class="today-latest-text">${e(latest.text)}</span><span class="today-latest-time">${e(ago(latest.at))} · ${items.length} today</span>`:'Nothing yet today';
+  }
+  function refreshFeed() {
+    if(!api||!visible())return;
+    const model=todayModel();
+    const feed=document.getElementById('today-feed');if(feed)feed.innerHTML=feedMarkup(model);
+    const latest=document.getElementById('today-feed-latest');if(latest)latest.innerHTML=latestMarkup(model);
+  }
+  const fold=(key,title,preview,body)=>`<details class="today-fold" data-open-key="${key}"${opened.has(key)?' open':''}><summary><span class="today-fold-title">${title}</span><span class="today-fold-preview">${preview}</span>${CHEV}</summary><div class="today-fold-body">${body}</div></details>`;
   function render() {
-    checkLocalRecords();lastRendered='';lastAnalytics='';
+    checkLocalRecords();lastRendered='';lastAnalytics='';startLive();
     const a=stats(), model=todayModel(), date=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
-    const benefit=model.benefits[0];
+    const benefit=model.benefits[0], items=(current().insights||[]).slice(0,4), t=trendHeadline();
     const chips=[benefit&&[`Message the ${benefit.insight?.noun?.[1]||'people'}`,`Draft a short SMS telling the matched volunteers about ${benefit.title} and what they get. Keep every message unsent for my review.`],
       ['Invite first-timers back','Prepare SMS invitation drafts for first-time volunteers with recorded SMS permission. Build a short friendly invitation, and let me review each message before any sending.'],
       ['Start the CalAgPlate proposal','Help build a practical proposal for the CalAgPlate education grant. Use its current requirements and our recorded students. Explain the gaps before applying.']].filter(Boolean);
-    return `<div class="today-page">
-      <header class="today-head"><h1 id="today-title">Today <span class="today-date">${e(date)}</span></h1><p class="today-summary" id="today-summary">${model.summary}</p></header>
-      <section class="today-section" aria-labelledby="today-noticed"><div class="today-section-head"><h2 id="today-noticed">What Roots noticed</h2><span id="today-checked">Checked ${e(time(checkedLocally))}</span></div><div id="briefing-insights" class="today-notices">${insightsMarkup()}</div></section>
-      <div class="today-columns">
-        <section aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Coming back</h2><div class="overview-chart-tabs" role="group" aria-label="Coming back chart"><button data-dashboard-tab="trend" aria-pressed="${analyticsTab==='trend'}">By month</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">By interest</button></div></div><div id="overview-patterns" class="today-patterns" data-chart="${analyticsTab}">${patternsMarkup(a)}</div></section>
-        <section aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today’s feed</h2></div><ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol></section>
-      </div>
+    const switcher=`<div class="today-layouts" role="group" aria-label="Try a layout">${LAYOUTS.map(([key,label])=>`<button data-today-layout="${key}" aria-pressed="${layout===key}"><b>${key.toUpperCase()}</b>${e(label)}</button>`).join('')}</div>`;
+    const head=`<header class="today-head"><div class="today-head-top"><h1 id="today-title">Today <span class="today-date">${e(date)}</span></h1>${switcher}</div><p class="today-summary" id="today-summary">${model.summary}</p></header>`;
+    const tabs=`<div class="overview-chart-tabs" role="group" aria-label="Coming back chart"><button data-dashboard-tab="trend" aria-pressed="${analyticsTab==='trend'}">By month</button><button data-dashboard-tab="interests" aria-pressed="${analyticsTab==='interests'}">By interest</button></div>`;
+    const patterns=`<div id="overview-patterns" class="today-patterns" data-chart="${analyticsTab}">${patternsMarkup(a)}</div>`;
+    const noticed=`<section class="today-section" aria-labelledby="today-noticed"><div class="today-section-head"><h2 id="today-noticed">What Roots noticed</h2><span id="today-checked">Checked ${e(time(checkedLocally))}</span></div><div id="briefing-insights">${insightsMarkup()}</div></section>`;
+    const coming=`<section class="today-section" aria-labelledby="today-patterns-title"><div class="today-section-head"><h2 id="today-patterns-title">Coming back</h2>${tabs}</div>${patterns}</section>`;
+    const feed=`<section class="today-feed-panel" aria-labelledby="today-feed-title"><div class="today-section-head"><h2 id="today-feed-title">Today’s feed</h2><span class="today-live"><i></i>Live</span></div><ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol></section>`;
+    let body;
+    if(layout==='b')body=`<div class="today-columns">${noticed}${feed}</div>${coming}`;
+    else if(layout==='c')body=`<div class="today-folds">
+        ${fold('fold-noticed','What Roots noticed',items.map(item=>`<span class="today-chip is-${e(item.kind||'return')}"><b>${e(item.count??'')}</b>${e(item.chip||TAGS[item.kind]||'')}</span>`).join(''),`<div id="briefing-insights">${insightsMarkup()}</div>`)}
+        ${fold('fold-coming','Coming back',`${sparkMarkup()}<span><b>${t.lastBack}</b> came back in October · up from ${t.firstBack} in May</span>`,`<div class="today-fold-tabs">${tabs}</div>${patterns}`)}
+        ${fold('fold-feed','Today’s feed',`<span id="today-feed-latest" class="today-latest">${latestMarkup(model)}</span>`,`<ol class="today-feed" id="today-feed">${feedMarkup(model)}</ol>`)}
+      </div>`;
+    else body=`${noticed}${coming}<aside class="today-rail" aria-label="Today’s feed">${feed}<p class="today-rail-note">New activity appears here as it happens.</p></aside>`;
+    return `<div class="today-page" data-layout="${layout}">${head}${body}
       <div class="today-dock"><form id="briefing-chat-form" class="briefing-composer today-composer"><label for="briefing-prompt" class="sr-only">Ask Roots about your community</label><textarea id="briefing-prompt" rows="1" maxlength="2000" placeholder="Ask Roots, or turn an idea into an SMS…" required>${e(prompt)}</textarea><div class="today-composer-bottom"><div class="today-chips">${chips.map(([label,ask])=>`<button type="button" data-briefing="suggestion" data-prompt="${e(ask)}">${e(label)}</button>`).join('')}</div><button class="today-send" type="submit" aria-label="Ask Roots">${api.icon('arrow')}</button></div></form></div>
     </div>`;
   }
@@ -227,7 +283,7 @@
     const coverage=document.getElementById('briefing-coverage');
     if(coverage&&!coverage.querySelector('details[open]'))coverage.innerHTML=coverageMarkup();
     updateAnalytics();
-    const feed=document.getElementById('today-feed');if(feed)feed.innerHTML=feedMarkup();
+    refreshFeed();
     const stamp=document.getElementById('today-checked');if(stamp)stamp.textContent=`Checked ${time(checkedLocally)}`;
     const rendered=JSON.stringify(current().insights);
     if(rendered!==lastRendered){
@@ -238,6 +294,7 @@
   }
   document.addEventListener('click',event=>{
     const go=event.target.closest('[data-today-go]');if(go)location.hash=go.dataset.todayGo;
+    const pick=event.target.closest('[data-today-layout]');if(pick){layout=pick.dataset.todayLayout;openCard=-1;try{localStorage.setItem('roots-today-layout',layout);}catch{}api.render();return;}
     const card=event.target.closest('[data-today-card]');if(!card)return;
     openCard=openCard===Number(card.dataset.todayCard)?-1:Number(card.dataset.todayCard);
     const target=document.getElementById('briefing-insights');if(target)target.innerHTML=insightsMarkup();
@@ -290,6 +347,7 @@
       if(kind==='action')openAction(item);else window.RootsChat.setPrompt(item.suggestedPrompt||`Help me explore this suggestion: ${item.title}`);
     }
   });
+  document.addEventListener('toggle',event=>{const key=event.target.dataset?.openKey;if(!key)return;if(event.target.open)opened.add(key);else opened.delete(key);},true);
   document.addEventListener('input',event=>{if(event.target.id==='briefing-prompt')prompt=event.target.value;});
   document.addEventListener('submit',event=>{if(event.target.id==='briefing-chat-form'){event.preventDefault();const text=prompt.trim();if(text){prompt='';window.RootsChat.ask(text);}}});
   document.addEventListener('keydown',event=>{if(event.target.id==='briefing-prompt'&&event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();event.target.form.requestSubmit();}});
