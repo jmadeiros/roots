@@ -429,7 +429,8 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(result["source"], "snapshot-rules")
         self.assertTrue(result["illustrative"])
         self.assertEqual(result["asOf"], "2026-10-24")
-        self.assertEqual([i["type"] for i in result["insights"][:3]], ["event_capacity", "service_hours_pathway", "project_team_coordination"])
+        self.assertEqual([i["type"] for i in result["insights"][:3]], ["event_capacity", "service_hours_pathway", "project_possibility"])
+        self.assertFalse(any(i["type"] == "project_team_coordination" for i in result["insights"]))
         event = result["insights"][0]
         self.assertEqual(event["title"], "A garden invitation for 2 new volunteers.")
         self.assertEqual(event["summary"], "Maya and Priya share an interest in community gardening. Saturday garden has 6 open places.")
@@ -449,6 +450,87 @@ class BridgeTests(unittest.TestCase):
             for fact in insight["evidence"]:
                 self.assertTrue(set(fact["sourceIds"]).issubset(known))
         self.assertEqual(bridge.execute_tool(self.store, "get_insights", {})["checkedAt"], result["checkedAt"])
+
+    def test_service_hours_connects_to_existing_school_lead_without_changing_counts(self):
+        self.state.update({
+            "people": [{"id": "p01", "visits": 1, "interests": ["Service hours"]}, {"id": "p02", "visits": 2, "interests": ["Service hours"]}, {"id": "p03", "visits": 1, "interests": ["Youth mentoring"]}],
+            "opportunities": [{"id": "o05", "title": "School service-hour partnership", "interests": ["Service hours", "Youth mentoring"], "candidate": True}],
+        })
+        fact = next(item for item in bridge.insight_catalog(self.state) if item["type"] == "service_hours_pathway")
+        self.assertEqual(fact["summary"], "2 people list service hours, including 1 who has visited once. School service-hour partnership is a possible pathway; school approval still needs checking.")
+        self.assertEqual(fact["sourceIds"]["people"], ["p01", "p02"])
+        self.assertEqual(fact["sourceIds"]["opportunities"], ["o05"])
+        self.assertEqual([entry["value"] for entry in fact["evidence"][:2]], [2, 1])
+        self.assertEqual(fact["evidence"][2], {"label": "School service-hour lead", "value": "School service-hour partnership", "sourceIds": ["o05"]})
+        self.state["opportunities"] = []
+        fallback = next(item for item in bridge.insight_catalog(self.state) if item["type"] == "service_hours_pathway")
+        self.assertEqual(fallback["sourceIds"]["opportunities"], [])
+        self.assertNotIn("partnership", fallback["summary"])
+        self.assertEqual(fallback["evidence"][:2], fact["evidence"][:2])
+
+    def test_project_possibility_connects_actual_interests_roles_and_support_source(self):
+        self.state.update({
+            "people": [
+                {"id": "p08", "name": "Isabel Moreno", "interests": ["Environmental education", "Youth mentoring"], "availability": "Weekday mornings"},
+                {"id": "p03", "name": "Priya Shah", "interests": ["Data analysis", "GIS mapping"], "availability": "Tuesday evenings"},
+                {"id": "p05", "name": "Jordan Lee", "interests": ["Community outreach", "Photography"], "availability": "Weekend afternoons"},
+            ],
+            "opportunities": [{"id": "o04", "title": "CalAgPlate education program", "candidate": True}],
+            "projects": [{"id": "project-garden", "title": "Garden signs and learning walks", "status": "Draft plan", "sourceOpportunityId": "o04", "team": [
+                {"personId": "p08", "role": "Learning walks"},
+                {"personId": "p03", "role": "Garden map"},
+                {"personId": "p05", "role": "Outreach and photographs"},
+                {"personId": "p03", "role": "Duplicate should not replace the recorded role"},
+                {"personId": "missing-person", "role": "Not a current profile"},
+            ]}],
+        })
+        self.store.save(self.state)
+        catalog = bridge.insight_catalog(self.state)
+        fact = next(item for item in catalog if item["type"] == "project_possibility")
+        self.assertFalse(any(item["type"] == "project_team_coordination" for item in catalog))
+        self.assertEqual(fact["sourceIds"], {"people": ["p08", "p03", "p05"], "events": [], "opportunities": ["o04"], "projects": ["project-garden"]})
+        self.assertIn("Priya Shah lists data analysis and gis mapping", fact["summary"])
+        self.assertIn("Jordan Lee lists community outreach and photography", fact["summary"])
+        self.assertIn("CalAgPlate education program as a support lead to explore", fact["summary"])
+        priya = [item for item in fact["evidence"] if item["label"].startswith("Priya Shah")]
+        self.assertEqual([item["value"] for item in priya], ["Data analysis, GIS mapping", "Garden map", "Tuesday evenings"])
+        self.assertIn("not verified skills or agreed participation", fact["evidence"][-1]["value"])
+        self.assertNotIn("missing-person", json.dumps(fact))
+        self.assertNotIn("Duplicate", json.dumps(fact))
+        # The model can select the new connection without supplying its own
+        # names, role assignments, quantities, or claims of approved support.
+        result = bridge.validate_briefing({"insights": [{"factIds": [fact["id"]], "title": "A learning project worth exploring", "suggestion": "Ask the suggested team about their interest and check the support lead's current terms.", "priority": "medium"}]}, catalog)[0]
+        self.assertEqual(result["summary"], fact["summary"])
+        self.assertEqual(result["sourceIds"], fact["sourceIds"])
+        self.assertEqual([item["value"] for item in result["evidence"]], [item["value"] for item in fact["evidence"]])
+        # Keep the time-check observation when the richer connection lacks
+        # enough interest evidence; differing availability remains recorded.
+        self.state["people"][1].pop("interests")
+        self.state["people"][2].pop("interests")
+        fallback = bridge.insight_catalog(self.state)
+        self.assertFalse(any(item["type"] == "project_possibility" for item in fallback))
+        coordination = next(item for item in fallback if item["type"] == "project_team_coordination")
+        self.assertEqual(coordination["sourceIds"]["projects"], ["project-garden"])
+
+    def test_project_possibility_requires_recorded_team_interests_and_omits_missing_support(self):
+        self.state.update({
+            "people": [{"id": "p01", "name": "Maya", "interests": ["Gardening"]}, {"id": "p02", "name": "Priya", "interests": ["GIS mapping"]}],
+            "opportunities": [],
+            "projects": [{"id": "project-1", "title": "Learning garden", "status": "Draft plan", "sourceOpportunityId": "deleted-lead", "team": [{"personId": "p01"}, {"personId": "p02"}]}],
+        })
+        fact = next(item for item in bridge.insight_catalog(self.state) if item["type"] == "project_possibility")
+        self.assertEqual(fact["sourceIds"]["opportunities"], [])
+        self.assertNotIn("support lead", fact["summary"])
+        self.assertFalse(any("proposed role" in item["label"] for item in fact["evidence"]))
+        for interests in (None, [], [None, ""], "GIS mapping"):
+            with self.subTest(interests=interests):
+                self.state["people"][1]["interests"] = interests
+                self.assertFalse(any(item["type"] == "project_possibility" for item in bridge.insight_catalog(self.state)))
+        self.state["people"][1]["interests"] = ["GIS mapping"]
+        self.state["projects"][0]["team"] = [{"personId": "p01"}, {"personId": "p01"}, {"personId": "deleted-person"}]
+        self.assertFalse(any(item["type"] == "project_possibility" for item in bridge.insight_catalog(self.state)))
+        self.state["projects"][0].pop("team")
+        self.assertFalse(any(item["type"] == "project_possibility" for item in bridge.insight_catalog(self.state)))
 
     def test_insights_cache_ignores_version_and_activity_but_refreshes_changed_evidence(self):
         first = self.store.insights()

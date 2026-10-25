@@ -1,0 +1,51 @@
+/* A single reading column for shared interests and possible next steps. */
+.people-intelligence { max-width:680px; margin-inline:auto; }
+.people-intelligence .page-heading { margin-bottom:22px; }
+.people-intelligence .page-heading h1 { font-size:28px; letter-spacing:-.6px; }
+.people-intelligence .page-heading p { max-width:72ch; font-size:14px; line-height:1.8; }
+.people-view-tabs { display:flex; gap:26px; margin-bottom:22px; border-bottom:1px solid var(--line); }
+.people-view-tabs button { min-height:44px; padding:0 1px 12px; border-bottom:2px solid transparent; border-radius:0; color:var(--muted); font-size:13px; }
+.people-view-tabs button[aria-selected=true] { border-bottom-color:var(--accent); color:var(--accent); }
+.people-view-tabs button:hover, .people-grouping-controls button:hover { color:var(--accent); }
+.people-view-tabs button:focus-visible { outline-offset:-3px; }
+.people-grouping-controls { display:flex; flex-wrap:wrap; gap:22px; margin-bottom:23px; }
+.people-grouping-controls button { min-height:36px; font-size:12px; color:var(--muted); }
+.people-grouping-controls button[aria-pressed=true] { color:var(--ink); text-decoration:underline; text-underline-offset:5px; }
+.people-group + .people-group { margin-top:32px; }
+.people-group h2 { font-size:18px; line-height:1.45; font-weight:500; letter-spacing:-.2px; text-wrap:balance; overflow-wrap:anywhere; }
+.people-group-thought { margin-top:8px; max-width:72ch; font-size:14px; line-height:1.8; color:var(--muted); }
+.people-group-thought > span { color:var(--ink); font-variant-numeric:tabular-nums; }
+.people-group-details { margin-top:8px; }
+.people-group-details > summary { display:flex; align-items:center; gap:7px; min-height:36px; width:max-content; max-width:100%; list-style:none; color:var(--muted); font-size:12px; cursor:pointer; }
+.people-group-details > summary::-webkit-details-marker { display:none; }
+.people-group-details > summary:hover { color:var(--accent); }
+.people-group-details > summary svg { width:13px; height:13px; flex:none; transition:transform .15s ease-out; }
+.people-group-details[open] > summary svg { transform:rotate(180deg); }
+.people-group-details > summary:focus-visible { outline:2px solid var(--accent); outline-offset:4px; border-radius:2px; }
+.people-group-expanded { margin-top:9px; padding-bottom:2px; }
+.people-group-members, .people-group-leads ul { padding:0; margin:0; list-style:none; }
+.people-group-members button, .people-group-leads button { width:100%; display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:44px; padding:9px 0; text-align:left; color:var(--ink); font-size:13px; line-height:1.7; border-bottom:1px solid var(--line); border-radius:0; }
+.people-group-members button > span, .people-group-leads button > span { overflow-wrap:anywhere; }
+.people-group-members button:hover, .people-group-leads button:hover { color:var(--accent); }
+.people-group-members svg, .people-group-leads svg { width:14px; height:14px; flex:none; color:var(--muted); }
+.people-group-leads { margin-top:22px; }
+.people-group-leads h3 { font-size:13px; font-weight:500; }
+.people-group-leads p { font-size:12px; line-height:1.8; color:var(--muted); margin:5px 0 4px; }
+.people-groups-more { display:flex; align-items:center; min-height:44px; margin-top:20px; font-size:13px; color:var(--accent); }
+.people-groups-note { margin-top:26px; padding-top:15px; border-top:1px solid var(--line); font-size:12px; line-height:1.8; color:var(--muted); max-width:75ch; }
+.people-groups-empty { font-size:14px; line-height:1.8; color:var(--muted); padding:9px 0 20px; max-width:70ch; }
+.people-everyone { max-width:1080px; }
+.people-everyone-actions { display:flex; justify-content:flex-end; margin:0 0 12px; }
+.people-everyone-actions .button { min-height:40px; }
+.people-everyone .list-toolbar { margin-bottom:16px; }
+#people-view-panel:focus-visible { outline:2px solid var(--accent); outline-offset:7px; border-radius:2px; }
+@media(max-width:760px) {
+  .people-intelligence .page-heading h1 { font-size:26px; }
+  .people-view-tabs { gap:24px; }
+  .people-grouping-controls { gap:22px; margin-bottom:23px; }
+  .people-grouping-controls button, .people-group-details > summary { min-height:44px; }
+  .people-group + .people-group { margin-top:32px; }
+  .people-everyone-actions { justify-content:flex-start; }
+  .people-everyone-actions .button { min-height:44px; }
+}
+@media(prefers-reduced-motion:reduce) { .people-group-details > summary svg { transition:none; } }

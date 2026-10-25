@@ -77,3 +77,56 @@
 @media(prefers-reduced-motion:reduce) {
   .opp-finding-caret svg, .opp-provenance > summary svg { transition:none; }
 }
+
+/* Possibilities lead; the general catalogue stays available in All leads. */
+.opp-intelligence { max-width:680px; }
+.opp-intelligence .page-heading { margin-bottom:12px; }
+.opp-intelligence .page-heading h1 { font-size:28px; letter-spacing:-.6px; }
+.opp-intelligence .page-heading p { font-size:14px; line-height:1.8; }
+.opp-review { margin-bottom:22px; }
+.opp-review p, .opp-review .text-button { font-size:12px; }
+.opp-tabs { gap:26px; margin-bottom:28px; }
+.opp-tab { font-size:13px; }
+.opp-connection { padding-bottom:30px; }
+.opp-connection h2 { font-size:18px; line-height:1.45; font-weight:500; letter-spacing:-.2px; }
+.opp-connection-summary { margin-top:8px; font-size:14px; line-height:1.8; color:var(--muted); max-width:72ch; }
+.opp-connection .briefing-evidence strong { font-weight:500; color:var(--ink); }
+.opp-connection .briefing-evidence p + p { margin-top:8px; }
+.opp-finding { display:block; padding:17px 0; }
+.opp-toolbar { padding-top:0; }
+.opp-audiences { display:flex; gap:16px; margin:0 0 8px; flex-wrap:wrap; }
+.opp-audiences button { font-size:12px; color:var(--muted); min-height:32px; }
+.opp-audiences button[aria-pressed=true] { color:var(--ink); text-decoration:underline; text-underline-offset:5px; }
+.opp-provenance { margin-top:0; border-top:1px solid var(--line); padding-top:12px; }
+.opp-priority-controls { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.opp-priority-controls label { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; }
+.opp-priority-controls select { font:inherit; font-size:12px; color:var(--ink); background:var(--surface); border:1px solid var(--field-line); border-radius:7px; padding:8px 28px 8px 10px; min-height:36px; max-width:220px; }
+.opp-priority-controls > button { display:flex; align-items:center; gap:8px; min-height:36px; font-size:12px; color:var(--muted); text-decoration:underline; text-underline-offset:5px; }
+.opp-priority-controls > button[aria-pressed=true] { color:var(--ink); }
+.opp-priority-controls > button svg { width:13px; height:13px; }
+.opp-priority-note { color:var(--muted); font-size:12px; line-height:1.7; margin:10px 0 28px; }
+.opp-people-line { display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; margin-top:10px; }
+.opp-people-line button { display:inline-flex; align-items:center; gap:7px; font-size:12px; line-height:1.5; min-height:30px; color:var(--ink); }
+.opp-people-line button:hover > span:last-child, .opp-people-line .opp-more-people:hover { text-decoration:underline; text-underline-offset:4px; }
+.opp-people-line .avatar { width:24px; height:24px; min-width:24px; font-size:9px; }
+.opp-people-line .opp-more-people { color:var(--muted); }
+.opp-more-connections { display:flex; justify-content:space-between; align-items:center; gap:16px; margin:-5px 0 22px; }
+.opp-more-connections > span { font-size:12px; color:var(--muted); }
+.opp-more-connections button { font-size:12px; min-height:36px; }
+.opp-connection .finding-sources > span { font-size:12px; }
+@media(max-width:760px) {
+  .opp-intelligence .page-heading h1 { font-size:26px; }
+  .opp-tabs { gap:22px; margin-bottom:28px; }
+  .opp-tab { font-size:12px; }
+  .opp-review p { max-width:26ch; }
+  .opp-connection { padding-bottom:28px; }
+  .opp-connection h2 { font-size:18px; }
+  .opp-audiences { gap:14px; }
+  .opp-audiences button { min-height:44px; }
+  .opp-priority-controls { gap:8px; }
+  .opp-priority-controls label > span { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+  .opp-priority-controls select { min-height:44px; width:178px; max-width:100%; font-size:16px; }
+  .opp-priority-controls > button, .opp-more-connections button { min-height:44px; }
+  .opp-people-line { gap:2px 12px; }
+  .opp-people-line button { min-height:40px; }
+}

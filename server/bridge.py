@@ -251,7 +251,7 @@ class Store:
         state = snapshot["state"]
         # Activity and repeated UI flushes do not make the underlying evidence new.
         relevant = {key: state.get(key) for key in ("people", "events", "opportunities", "projects", "metadata", "organization")}
-        fingerprint = hashlib.sha256(("insights-v2:" + json.dumps(relevant, sort_keys=True, separators=(",", ":"))).encode()).hexdigest()
+        fingerprint = hashlib.sha256(("insights-v4:" + json.dumps(relevant, sort_keys=True, separators=(",", ":"))).encode()).hexdigest()
         current = dt.datetime.now(dt.timezone.utc)
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -375,9 +375,17 @@ def derive_insights(state):
         ids = [p["id"] for p in service_people]
         first_ids = [p["id"] for p in service_people if type(p.get("visits")) in (int, float) and p["visits"] == 1]
         relevant_opportunities = [o["id"] for o in opportunities if isinstance(o.get("interests"), list) and any(isinstance(v, str) and v.casefold() == "service hours" for v in o["interests"])]
+        school = next((o for o in opportunities if o["id"] == "o05"), None)
+        if school and school["id"] not in relevant_opportunities:
+            relevant_opportunities.append(school["id"])
         first_visits = f", including {len(first_ids)} who {'has' if len(first_ids) == 1 else 'have'} visited once" if first_ids else ""
-        summary = f"{len(ids)} {'person lists' if len(ids) == 1 else 'people list'} service hours{first_visits}. A clearer pathway could help them choose their next step."
-        insight("service-hours-pathway", "service_hours_pathway", "Service hours could give people a reason to return.", summary, "medium", [{"label": "Service-hours interest recorded", "value": len(ids), "sourceIds": ids}, {"label": "One recorded visit", "value": len(first_ids), "sourceIds": first_ids}, {"label": "What to confirm", "value": "School approval, eligible activities, and verified hour records before promising credit.", "sourceIds": ids + relevant_opportunities}], sources(people=ids, opportunities=relevant_opportunities), "Which people want service hours, and what would a useful next step look like without promising unverified credit?")
+        summary = f"{len(ids)} {'person lists' if len(ids) == 1 else 'people list'} service hours{first_visits}. "
+        summary += f"{title(school, 'The school service-hour partnership')} is a possible pathway; school approval still needs checking." if school else "A clearer pathway could help them choose their next step."
+        evidence = [{"label": "Service-hours interest recorded", "value": len(ids), "sourceIds": ids}, {"label": "One recorded visit", "value": len(first_ids), "sourceIds": first_ids}]
+        if school:
+            evidence.append({"label": "School service-hour lead", "value": title(school, "School service-hour partnership"), "sourceIds": [school["id"]]})
+        evidence.append({"label": "What to confirm", "value": "School approval, eligible activities, and verified hour records before promising credit.", "sourceIds": ids + relevant_opportunities})
+        insight("service-hours-pathway", "service_hours_pathway", "Service hours could give people a reason to return.", summary, "medium", evidence, sources(people=ids, opportunities=relevant_opportunities), "Which people want service hours, and what would a useful next step look like without promising unverified credit?")
 
     pending = []
     for person in people:
@@ -396,7 +404,55 @@ def derive_insights(state):
 
     drafts = [p for p in projects if p.get("candidate") is True or str(p.get("status", "")).casefold().startswith("draft")]
     people_by_id = {p["id"]: p for p in people}
+    opportunities_by_id = {o["id"]: o for o in opportunities}
+    connected_projects = set()
     for project in drafts:
+        team = project.get("team")
+        if not isinstance(team, list):
+            continue
+        members, seen = [], set()
+        for entry in team:
+            identifier = entry.get("personId") if isinstance(entry, dict) else None
+            if not isinstance(identifier, str) or identifier in seen or identifier not in people_by_id:
+                continue
+            person = people_by_id[identifier]
+            interests = person.get("interests")
+            interests = list(dict.fromkeys(value.strip() for value in interests if isinstance(value, str) and value.strip())) if isinstance(interests, list) else []
+            if interests:
+                members.append((person, entry, interests))
+                seen.add(identifier)
+        if len(members) < 2:
+            continue
+        project_name = title(project, "A draft project")
+        member_ids = [person["id"] for person, _, _ in members]
+        connections, evidence = [], []
+        for person, entry, interests in members:
+            name = title(person, "Volunteer")
+            if len(connections) < 3:
+                connections.append(f"{name} lists {' and '.join(interests[:2]).lower()}")
+            evidence.append({"label": f"{name} · recorded interests", "value": ", ".join(interests), "sourceIds": [person["id"]]})
+            role = entry.get("role")
+            if isinstance(role, str) and role.strip():
+                evidence.append({"label": f"{name} · proposed role", "value": role.strip(), "sourceIds": [person["id"], project["id"]]})
+            availability = person.get("availability")
+            if isinstance(availability, str) and availability.strip():
+                evidence.append({"label": f"{name} · recorded availability", "value": availability.strip(), "sourceIds": [person["id"]]})
+        summary = "; ".join(connections) + ". These interests are a starting point for the draft's suggested team."
+        source_id = project.get("sourceOpportunityId")
+        opportunity = opportunities_by_id.get(source_id) if isinstance(source_id, str) else None
+        opportunity_ids = [opportunity["id"]] if opportunity else []
+        if opportunity:
+            opportunity_name = title(opportunity, "A linked opportunity")
+            summary += f" The draft names {opportunity_name} as a support lead to explore."
+            evidence.append({"label": "Support lead linked in the draft", "value": opportunity_name + "; current terms and suitability are unverified.", "sourceIds": [project["id"], opportunity["id"]]})
+        evidence.append({"label": "What to confirm", "value": "These are recorded interests and proposed roles, not verified skills or agreed participation. Ask about interest, skills, and a shared time; verify any support terms before planning around them.", "sourceIds": member_ids + [project["id"]] + opportunity_ids})
+        insight("project-possibility-" + project["id"], "project_possibility", f"{project_name} could draw on your community's interests.", summary, "medium", evidence, sources(people=member_ids, projects=[project["id"]], opportunities=opportunity_ids), f"Explore {project_name} using the suggested team's recorded interests and any linked support lead. Separate possibilities from verified skills, participation, and funding, then suggest a useful first conversation.")
+        connected_projects.add(project["id"])
+        break
+    for project in drafts:
+        # Coordination is already evidence within a connected project story.
+        if project["id"] in connected_projects:
+            continue
         team = project.get("team", [])
         member_ids = list(dict.fromkeys(entry.get("personId") for entry in team if isinstance(entry, dict) and entry.get("personId") in people_by_id)) if isinstance(team, list) else []
         members = [people_by_id[identifier] for identifier in member_ids]
@@ -412,7 +468,7 @@ def derive_insights(state):
         ids = [p["id"] for p in drafts]
         checks = sum(len(p.get("checks", [])) for p in drafts if isinstance(p.get("checks"), list))
         insight("project-plans-to-review", "project_review", f"{len(drafts)} draft {'project is' if len(drafts) == 1 else 'projects are'} ready to review", "Suggested teams and funding routes are proposals. Review the recorded checks before treating a plan as agreed or funded.", "low", [{"label": "Draft project plans", "value": len(drafts), "sourceIds": ids}, {"label": "Recorded checklist items", "value": checks, "sourceIds": ids}], sources(projects=ids), "Compare the draft projects and show what needs checking before we choose one.")
-    priority = {"event_capacity": 0, "service_hours_pathway": 1, "project_team_coordination": 2, "people_followup": 3, "opportunity_match": 4, "contact_readiness": 5, "hours_review": 6, "project_review": 7}
+    priority = {"event_capacity": 0, "service_hours_pathway": 1, "project_possibility": 2, "project_team_coordination": 3, "people_followup": 4, "opportunity_match": 5, "contact_readiness": 6, "hours_review": 7, "project_review": 8}
     return sorted(output, key=lambda item: priority.get(item["type"], 99))
 
 
@@ -542,7 +598,7 @@ def remote_json(url, payload, headers=None, timeout=35):
 
 def insight_fingerprint(state):
     relevant = {key: state.get(key) for key in (*INSIGHT_COLLECTIONS, "metadata", "organization")}
-    return hashlib.sha256(("briefing-v1:" + json.dumps(relevant, sort_keys=True, separators=(",", ":"))).encode()).hexdigest()
+    return hashlib.sha256(("briefing-v3:" + json.dumps(relevant, sort_keys=True, separators=(",", ":"))).encode()).hexdigest()
 
 
 def insight_catalog(state):
