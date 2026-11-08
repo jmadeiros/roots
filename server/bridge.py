@@ -266,7 +266,7 @@ class Store:
         state = snapshot["state"]
         # Activity and repeated UI flushes do not make the underlying evidence new.
         relevant = {key: state.get(key) for key in ("people", "events", "opportunities", "projects", "metadata", "organization")}
-        fingerprint = hashlib.sha256(("insights-v5:" + json.dumps(relevant, sort_keys=True, separators=(",", ":"))).encode()).hexdigest()
+        fingerprint = hashlib.sha256(("insights-v6:" + json.dumps(relevant, sort_keys=True, separators=(",", ":"))).encode()).hexdigest()
         current = dt.datetime.now(dt.timezone.utc)
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -423,13 +423,13 @@ def derive_insights(state):
         beneficiary = opportunity.get("beneficiary") or "Confirm who receives the support."
         status = opportunity.get("statusLabel") or opportunity.get("status") or "Check the current application window."
         gaps = [gap for gap in readiness.get("gaps", []) if isinstance(gap, str)] if isinstance(readiness.get("gaps"), list) else []
-        summary = f"{benefit} {beneficiary} {status} The recorded cohort supports a capacity review, not confirmed eligibility or an award."
+        summary = ". ".join(str(value).rstrip(". ") for value in (benefit, beneficiary, status)) + ". The linked profiles are a starting point for planning, not confirmed eligibility or an award."
         evidence = [{"label": "People linked by programme criteria", "value": len(ids), "sourceIds": ids}, {"label": "Recorded programme support", "value": str(benefit), "sourceIds": [opportunity["id"]]}, {"label": "Support recipient", "value": str(beneficiary), "sourceIds": [opportunity["id"]]}]
         for gap in gaps[:3]:
             evidence.append({"label": "Still to establish", "value": gap, "sourceIds": [opportunity["id"]]})
         if opportunity.get("sourceCheckedAt"):
             evidence.append({"label": "External source last checked", "value": str(opportunity["sourceCheckedAt"]), "sourceIds": [opportunity["id"]]})
-        insight("programme-fit-" + opportunity["id"], "opportunity_match", f"{opportunity_name}: {len(ids)} people in the capacity review", summary, "high", evidence, sources(people=ids, opportunities=[opportunity["id"]]), f"Help me pursue {opportunity_name}. Use the recorded programme criteria, the people in its capacity review, the benefit recipient, and the gaps to create an application plan. Do not assume funding or eligibility is confirmed.")
+        insight("programme-fit-" + opportunity["id"], "opportunity_match", opportunity_name, summary, "high", evidence, sources(people=ids, opportunities=[opportunity["id"]]), f"Help me pursue {opportunity_name}. Use the recorded programme criteria, the people in its capacity review, the benefit recipient, and the gaps to create an application plan. Do not assume funding or eligibility is confirmed.")
 
     service_people = [p for p in people if str(p.get("studentStatus", "")).casefold() == "student" and str(p.get("educationLevel", "")).casefold() == "secondary" and type(p.get("serviceRequirementHours")) in (int, float) and p["serviceRequirementHours"] > 0]
     if service_people:
@@ -439,12 +439,12 @@ def derive_insights(state):
         school = next((o for o in opportunities if o.get("matchKind") == "school-service" or o["id"] == "o05"), None)
         opportunity_ids = [school["id"]] if school else []
         summary = f"{len(ids)} secondary-school students have {total:g} hours of service goals recorded. These are full recorded targets, not verified remaining hours. "
-        summary += f"{title(school, 'The school service-hour partnership')} offers a proposed route; school approval and eligible activities still need checking." if school else "Agree a school-approved pathway before promising service credit."
+        summary += f"The proposed route is {title(school, 'the school service-hour partnership')}; school approval and eligible activities still need checking." if school else "Agree a school-approved pathway before promising service credit."
         evidence = [{"label": "Students with recorded school-service needs", "value": len(ids), "sourceIds": ids}, {"label": "Recorded service-hour targets", "value": total, "sourceIds": ids}, {"label": "One recorded visit", "value": len(first_ids), "sourceIds": first_ids}]
         if school:
             evidence.append({"label": "School service-hour lead", "value": title(school, "School service-hour partnership"), "sourceIds": [school["id"]]})
         evidence.append({"label": "What to confirm", "value": "School approval, eligible activities, target dates, and verified hour records before promising credit. Fictional demo circumstances remain illustrative.", "sourceIds": ids + opportunity_ids})
-        insight("service-hours-pathway", "service_hours_pathway", f"A school-service pathway for {len(ids)} students", summary, "high", evidence, sources(people=ids, opportunities=opportunity_ids), "Which students have recorded school-service requirements? Help plan an approved partnership, separating their full targets from verified hours still needed.")
+        insight("service-hours-pathway", "service_hours_pathway", f"{len(ids)} students have service-hour goals", summary, "high", evidence, sources(people=ids, opportunities=opportunity_ids), "Which students have recorded school-service requirements? Help plan an approved partnership, separating their full targets from verified hours still needed.")
 
     pending = []
     for person in people:
@@ -571,7 +571,7 @@ Respond briefly. Do not include secrets or credentials. No arbitrary URLs or cod
 
 def execute_tool(store, name, args):
     definitions = {item["name"]: item for item in TOOLS}
-    if name not in definitions or not isinstance(args, dict):
+    if not isinstance(name, str) or name not in definitions or not isinstance(args, dict):
         raise Invalid("Unsupported assistant tool.")
     definition = definitions[name]["parameters"]
     if set(args) - set(definition["properties"]) or set(definition["required"]) - set(args):
@@ -657,7 +657,7 @@ def remote_json(url, payload, headers=None, timeout=35):
 
 def insight_fingerprint(state):
     relevant = {key: state.get(key) for key in (*INSIGHT_COLLECTIONS, "metadata", "organization")}
-    return hashlib.sha256(("briefing-v4:" + json.dumps(relevant, sort_keys=True, separators=(",", ":"))).encode()).hexdigest()
+    return hashlib.sha256(("briefing-v5:" + json.dumps(relevant, sort_keys=True, separators=(",", ":"))).encode()).hexdigest()
 
 
 def insight_catalog(state):
@@ -718,11 +718,14 @@ def validate_briefing(value, catalog):
         if item["priority"] not in ("high", "medium", "low"):
             raise Invalid("Invalid briefing priority.")
         selected = [facts[identifier] for identifier in ids]
-        refs = {key: list(dict.fromkeys(identifier for fact in selected for identifier in fact["sourceIds"].get(key, []))) for key in INSIGHT_COLLECTIONS}
+        # The card's count, linked cohort, and action all describe the primary
+        # observation. Other cited facts can add context without enlarging it.
+        refs = {key: list(selected[0]["sourceIds"].get(key, [])) for key in INSIGHT_COLLECTIONS}
+        evidence_refs = {key: list(dict.fromkeys(identifier for fact in selected for identifier in fact["sourceIds"].get(key, []))) for key in INSIGHT_COLLECTIONS}
         evidence = [{**evidence, "factId": fact["id"]} for fact in selected for evidence in fact["evidence"]]
-        # Model copy is explicitly a suggestion. Factual summaries and all counts
-        # are copied from the exact catalog the model reviewed.
-        insight = {"id": "briefing-" + hashlib.sha256("|".join(ids).encode()).hexdigest()[:16], "type": selected[0]["type"], "title": heading, "summary": selected[0]["summary"], "suggestion": suggestion, "suggestionLabel": "Suggested next step", "priority": item["priority"], "evidence": evidence, "factIds": ids, "sourceIds": refs, "suggestedPrompt": selected[0]["suggestedPrompt"]}
+        # Gemini selects priorities and proposes a next step. The visible title,
+        # summary, cohort, and quantities come from the same recorded observation.
+        insight = {"id": "briefing-" + hashlib.sha256("|".join(ids).encode()).hexdigest()[:16], "type": selected[0]["type"], "title": selected[0]["title"], "summary": selected[0]["summary"], "suggestion": suggestion, "suggestionLabel": "Suggested next step", "priority": item["priority"], "evidence": evidence, "factIds": ids, "sourceIds": refs, "evidenceSourceIds": evidence_refs, "suggestedPrompt": selected[0]["suggestedPrompt"]}
         action = insight_action(refs)
         if action:
             insight["action"] = action
@@ -738,8 +741,10 @@ recorded criteria-based capacity review, school-service needs, and first-visit f
 those facts exist. Interest overlaps are supporting detail and must not displace these needs.
 Then consider calendar capacity and project coordination over generic warnings.
 Each item must cite one to three exact catalog IDs in factIds. Do not reuse a fact in another item.
-Put the main observation first; its factual summary appears on the card, with all cited evidence
-available in the details. Prefer distinct useful cards; combine observations only for a clear connection.
+Put the main observation first; its factual title, summary, and linked cohort appear on the card,
+with all cited evidence available in the details. Keep observations about different groups on
+separate cards, especially school-service needs and first-visit follow-up. Combine observations
+only when they describe the same people and a clear connection.
 Write a short, inviting title of four to eight words, aiming for at most 60 characters.
 Name a concrete possibility, such as 'A garden invitation to bring people back' or
 'A service-hours pathway worth exploring'. Avoid procedural checklists or long instructions
@@ -898,7 +903,7 @@ class Assistant:
                 self.active_contexts.add(active_key)
             # Reload after taking ownership so concurrent completions cannot be lost.
             _, history = self.store.conversation(owner, identifier)
-            result = self._chat(message, history)
+            result = self._chat(message, history, plain_text=owner.startswith("telegram:"))
             remembered_reply = result["reply"]
             if result.get("drafts"):
                 draft_context = [{key: draft.get(key) for key in ("id", "personId", "personName", "channel", "body", "subject", "status")} for draft in result["drafts"]]
@@ -911,37 +916,71 @@ class Assistant:
                     self.active_contexts.discard(active_key)
             self.lock.release()
 
-    def _chat(self, message, history=None):
+    def _chat(self, message, history=None, plain_text=False):
         contents = list(history or []) + [{"role": "user", "parts": [{"text": message}]}]
         drafts, actions, seen_drafts = [], [], {}
-        for _ in range(5):
-            response = self.request(f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent", {"systemInstruction": {"parts": [{"text": SYSTEM}]}, "contents": contents, "tools": [{"functionDeclarations": TOOLS}], "generationConfig": {"maxOutputTokens": 1800, "temperature": 0.2}}, {"x-goog-api-key": self.key})
+        ambiguous_people = set()
+        system = SYSTEM + ("\nThis reply is for a plain-text Telegram chat. Use short paragraphs and plain text; do not use Markdown markers, tables, or HTML." if plain_text else "")
+        # Five bounded tool rounds, followed by one text-only completion. A draft
+        # created in the last tool round still deserves a normal review response.
+        for turn in range(6):
+            payload = {"systemInstruction": {"parts": [{"text": system}]}, "contents": contents, "tools": [{"functionDeclarations": TOOLS}], "generationConfig": {"maxOutputTokens": 1800, "temperature": 0.2}}
+            if turn == 5:
+                payload["toolConfig"] = {"functionCallingConfig": {"mode": "NONE"}}
+            try:
+                response = self.request(f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent", payload, {"x-goog-api-key": self.key})
+            except Unavailable:
+                if turn == 5 and drafts:
+                    break
+                raise
             candidates = response.get("candidates", [])
             content = candidates[0].get("content", {}) if candidates else {}
             parts = content.get("parts", [])
             if not isinstance(parts, list):
+                if turn == 5 and drafts:
+                    break
                 raise Unavailable("Gemini returned an invalid response.")
             calls = [p["functionCall"] for p in parts if isinstance(p, dict) and "functionCall" in p]
+            if turn == 5 and calls:
+                # Do not execute a provider response that disregards NONE.
+                break
             if not calls:
                 reply = "\n".join(p["text"] for p in parts if isinstance(p, dict) and isinstance(p.get("text"), str) and not p.get("thought"))
                 if not reply:
+                    if turn == 5 and drafts:
+                        break
                     raise Unavailable("Gemini returned no text. Try a different request.")
                 if drafts:
                     reply += "\n\nDraft saved, not sent. Email and SMS delivery are not connected."
-                self.store.log("assistant_reply", {"toolCount": len(actions), "draftCount": len(drafts)})
+                self.store.log("assistant_reply", {"toolCount": len(actions), "draftCount": len(drafts), "tools": [{key: action[key] for key in ("tool", "status")} for action in actions]})
                 return {"reply": reply[:12000], "drafts": drafts, "actions": actions}
             if len(calls) > 8:
                 raise Unavailable("The assistant requested too many actions.")
             contents.append({"role": "model", "parts": parts})
             results = []
             for call in calls:
+                if not isinstance(call, dict):
+                    raise Unavailable("Gemini returned an invalid tool request.")
                 name, args = call.get("name"), call.get("args", {})
                 try:
+                    if name == "draft_message" and isinstance(args, dict) and isinstance(args.get("person_id"), str) and args["person_id"] in ambiguous_people:
+                        person_id = args["person_id"]
+                        current = self.store.snapshot()["state"].get("people", [])
+                        person = next((p for p in current if p.get("id") == person_id), {})
+                        person_name = person.get("name", "")
+                        unique_name = isinstance(person_name, str) and person_name.strip() and sum(str(p.get("name", "")).casefold() == person_name.casefold() for p in current) == 1
+                        explicit_id = re.search(r"(?<!\w)" + re.escape(person_id) + r"(?!\w)", message, re.I)
+                        explicit_name = unique_name and re.search(r"(?<!\w)" + re.escape(person_name) + r"(?!\w)", message, re.I)
+                        if not explicit_id and not explicit_name:
+                            raise Invalid("More than one person matched that name. Ask the user to choose a full name or person ID before saving a draft; do not select a candidate yourself.")
                     fingerprint = json.dumps(args, sort_keys=True)
                     if name == "draft_message" and fingerprint in seen_drafts:
                         result = seen_drafts[fingerprint]
                     else:
                         result = execute_tool(self.store, name, args)
+                        if name == "find_person" and result.get("totalMatches", 0) > 1:
+                            query = args["query"].casefold().strip()
+                            ambiguous_people.update(p["id"] for p in self.store.snapshot()["state"].get("people", []) if query == str(p.get("id", "")).casefold() or query in str(p.get("name", "")).casefold())
                         if "draft" in result:
                             drafts.append(result["draft"])
                             seen_drafts[fingerprint] = result
@@ -955,8 +994,29 @@ class Assistant:
                 results.append({"functionResponse": {"name": str(name)[:100], "response": result}})
             contents.append({"role": "user", "parts": results})
         if drafts:
-            return {"reply": "Draft saved, not sent. I reached the tool limit while completing the rest of your request. Email and SMS delivery are not connected.", "drafts": drafts, "actions": actions}
+            self.store.log("assistant_reply", {"toolCount": len(actions), "draftCount": len(drafts), "completion": "saved-draft-review", "tools": [{key: action[key] for key in ("tool", "status")} for action in actions]})
+            label = "Your draft is ready to review." if len(drafts) == 1 else f"Your {len(drafts)} drafts are ready to review."
+            return {"reply": label + " Draft saved, not sent. Email and SMS delivery are not connected.", "drafts": drafts, "actions": actions}
         raise Unavailable("The assistant reached its tool limit. Please ask a narrower question.")
+
+
+def telegram_plain_text(value):
+    """Render common Markdown as plain text; never enable Telegram HTML parsing."""
+    value = re.sub(r"^\s*#{1,6}\s+", "", value, flags=re.M)
+    value = re.sub(r"^\s*[-*]\s+", "• ", value, flags=re.M)
+    value = re.sub(r"\*\*([^*\n]+)\*\*", r"\1", value)
+    value = re.sub(r"__([^_\n]+)__", r"\1", value)
+    value = re.sub(r"`([^`\n]+)`", r"\1", value)
+    value = re.sub(r"\[([^\]\n]+)\]\((https?://[^)\s]+)\)", r"\1 (\2)", value)
+    # Telegram limits are UTF-16 units; retain complete Unicode characters.
+    output, units = [], 0
+    for character in value:
+        size = 2 if ord(character) > 0xFFFF else 1
+        if units + size > 4000:
+            break
+        output.append(character)
+        units += size
+    return "".join(output)
 
 
 class Telegram:
@@ -1077,7 +1137,7 @@ class Telegram:
             except (Invalid, Unavailable) as error:
                 reply = str(error)
         # Only respond to the allowlisted user's own incoming private message.
-        self.call("sendMessage", {"chat_id": self.allowed_user, "text": reply[:4000]})
+        self.call("sendMessage", {"chat_id": self.allowed_user, "text": telegram_plain_text(reply)})
         return True
 
     def run(self):

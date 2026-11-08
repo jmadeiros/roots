@@ -31,7 +31,8 @@
     state.step = ['people','message','review'].includes(state.step) ? state.step : 'people';
     state.selected = Array.isArray(state.selected) ? state.selected.filter(id=>drafts.some(d=>d.id===id)) : drafts.map(d=>d.id);
     if (!state.selected.includes(state.activeId)) state.activeId=state.selected[0]||null;
-    if(state.testPreview?.id){const receipt=bridge()?.activity?.activity?.find(item=>item.kind==='telegram_test_preview'&&item.id===state.testPreview.id);if(receipt)state.testPreview={...receipt,duplicate:state.testPreview.duplicate===true};}
+    const previewId=state.testPreview?.id||state.requestId;
+    if(previewId){const receipt=bridge()?.activity?.activity?.find(item=>item.kind==='telegram_test_preview'&&item.id===previewId);if(receipt)state.testPreview={...receipt,duplicate:state.testPreview?.duplicate===true};}
     message.workbench=state;
     return {state,drafts,selected:drafts.filter(d=>state.selected.includes(d.id)),demo:drafts.some(d=>d.localPreview===true)};
   }
@@ -40,6 +41,19 @@
   function blockersFor(draft) {
     const supplied = draft.readiness?.blockers;
     return Array.isArray(supplied)&&supplied.length ? supplied.map(b=>typeof b==='string'?b:b.message).filter(Boolean) : ['SMS and email delivery are not connected.'];
+  }
+  function previewBlockedReason(flow) {
+    const status=bridge()?.status, preview=status?.testPreview;
+    if(flow.demo)return 'Connect the local assistant to test delivery.';
+    if(!flow.selected.length)return 'Select at least one person to preview.';
+    if(flow.selected.length>10)return 'Select 10 or fewer drafts for a Telegram preview.';
+    if(flow.selected.some(d=>edits.has(d.id)))return 'Save every selected message before previewing.';
+    if(flow.selected.some(d=>d.sent!==false||d.status!=='draft'))return 'Only unsent drafts can be previewed. Review the selected messages.';
+    if(!status?.connected)return 'Connect the local assistant to test delivery.';
+    if(status.syncError)return 'Resolve the workspace sync issue before sending a preview.';
+    if(preview?.available!==true)return preview?.reason||'A dedicated Roots bot needs to be connected first.';
+    if(typeof preview.csrfToken!=='string'||!preview.csrfToken)return 'Reconnect the assistant to refresh your test session.';
+    return '';
   }
   function deliveryNote() {
     const status=bridge()?.status;
@@ -65,8 +79,9 @@
     const {state,selected,demo}=flow;
     const blockers=[...new Set(selected.flatMap(blockersFor))];
     const preview=bridge()?.status?.testPreview;
-    const canTest=!demo&&preview?.available===true&&selected.length>0&&selected.length<=10&&!state.testPreview&&!busy.has(state.id)&&!selected.some(d=>edits.has(d.id));
-    return `<div class="chat-flow-section"><div class="chat-flow-section-heading"><h3>Review before anything goes out</h3><span>${selected.length} ${selected.length===1?'recipient':'recipients'}</span></div><div class="chat-review-messages">${selected.map((d,index)=>`<details ${index===0?'open':''}><summary><span>${e(nameOf(d))}</span><span>${e(String(d.channel||'sms').toUpperCase())} · Not sent</span>${api.icon('chevron-down')}</summary>${d.subject?`<p class="chat-draft-subject">${e(d.subject)}</p>`:''}<p class="chat-draft-body">${e(d.body)}</p><button class="text-button" data-chat="copy" data-id="${e(d.id)}">Copy message</button></details>`).join('')}</div><div class="chat-send-checks"><h4>Before sending ${selected.every(d=>d.channel==='email')?'email':'SMS'}</h4><ul>${blockers.map(b=>`<li>${e(b)}</li>`).join('')}</ul><button class="button" disabled>Send ${selected.length===1?'message':`${selected.length} messages`}</button></div><div class="chat-telegram-test"><h4>See it arrive in Telegram</h4><p>${demo?'This is a browser-only sample. Create a draft with the connected assistant to send a test preview.':'Send these drafts to your own Telegram chat to check the flow. This does not deliver the messages to the selected people.'}</p>${state.testPreview?testReceiptMarkup(state.testPreview)+(state.testPreview.status==='sending'?`<button class="text-button" data-chat="check-receipt" data-id="${e(state.id)}">Check delivery receipt</button>`:''):`<button class="button primary" data-chat="test-preview" data-id="${e(state.id)}" ${canTest?'':'disabled'}>${busy.has(state.id)?'Sending test preview…':'Send preview to my Telegram'}</button>${!canTest&&!busy.has(state.id)?`<small>${demo?'Connect the local assistant to test delivery.':selected.length>10?'Select 10 or fewer drafts for a Telegram preview.':e(preview?.reason||'A dedicated Roots bot needs to be connected first.')}</small>`:''}`}<p class="chat-edit-error" role="alert">${e(flowErrors.get(state.id)||'')}</p></div></div>`;
+    const blockedReason=previewBlockedReason(flow);
+    const canTest=!blockedReason&&!state.testPreview&&!busy.has(state.id);
+    return `<div class="chat-flow-section"><div class="chat-flow-section-heading"><h3>Review before anything goes out</h3><span>${selected.length} ${selected.length===1?'recipient':'recipients'}</span></div><div class="chat-review-messages">${selected.map((d,index)=>`<details ${index===0?'open':''}><summary><span>${e(nameOf(d))}</span><span>${e(String(d.channel||'sms').toUpperCase())} · Not sent</span>${api.icon('chevron-down')}</summary>${d.subject?`<p class="chat-draft-subject">${e(d.subject)}</p>`:''}<p class="chat-draft-body">${e(d.body)}</p><button class="text-button" data-chat="copy" data-id="${e(d.id)}">Copy message</button></details>`).join('')}</div><div class="chat-send-checks"><h4>Before sending ${selected.every(d=>d.channel==='email')?'email':'SMS'}</h4><ul>${blockers.map(b=>`<li>${e(b)}</li>`).join('')}</ul><button class="button" disabled>Send ${selected.length===1?'message':`${selected.length} messages`}</button></div><div class="chat-telegram-test"><h4>See it arrive in Telegram</h4><p>${demo?'This is a browser-only sample. Create a draft with the connected assistant to send a test preview.':'Send these drafts to your own Telegram chat to check the flow. This does not deliver the messages to the selected people.'}</p>${state.testPreview?testReceiptMarkup(state.testPreview)+(state.testPreview.status==='sending'?`<button class="text-button" data-chat="check-receipt" data-id="${e(state.id)}">Check delivery receipt</button>`:''):`<button class="button primary" data-chat="test-preview" data-id="${e(state.id)}" ${canTest?'':'disabled'}>${busy.has(state.id)?'Sending test preview…':'Send preview to my Telegram'}</button>${!canTest&&!busy.has(state.id)?`<small>${e(blockedReason)}</small>`:''}`}<p class="chat-edit-error" role="alert">${e(flowErrors.get(state.id)||'')}</p></div></div>`;
   }
   function workbenchMarkup(message) {
     const flow=flowFor(message), {state,drafts,selected,demo}=flow;
@@ -164,13 +179,26 @@
   }
   async function sendTest(message) {
     const flow=flowFor(message), {state,selected,demo}=flow, preview=bridge()?.status?.testPreview;
-    if(demo||!preview?.available||busy.has(state.id)||state.testPreview||!selected.length||selected.length>10||selected.some(d=>edits.has(d.id)))return;
-    state.requestId=state.requestId||requestId();busy.add(state.id);flowErrors.delete(state.id);save();refreshMessages();
+    if(state.step!=='review'||previewBlockedReason(flow)||busy.has(state.id)||state.testPreview)return;
+    state.requestId=state.requestId||requestId();
+    // Persist the in-flight identity before dispatch, so a reload cannot offer another send.
+    state.testPreview={id:state.requestId,status:'sending',channel:'telegram',deliveredToVolunteers:false};
+    busy.add(state.id);flowErrors.delete(state.id);save();refreshMessages();
     try {
       const result=await bridge().request('/api/outreach/test',{method:'POST',headers:{'X-Roots-Test-Token':preview.csrfToken},body:JSON.stringify({draftIds:selected.map(d=>d.id),requestId:state.requestId})});
-      state.testPreview=result.testPreview||{status:'failed'};
+      state.testPreview=result.testPreview||{id:state.requestId,status:'failed'};
       await bridge().loadActivity().catch(()=>{});
-    }catch(err){state.testPreview={status:'failed'};flowErrors.set(state.id,err.message||'The Telegram preview could not be confirmed.');if(err.status===403)await bridge().init().catch(()=>{});}
+    }catch(err){
+      if(err.status===403){
+        // The server rejects authorization before dispatch. Refresh once; another click is required.
+        delete state.testPreview;
+        await bridge().init().catch(()=>{});
+        flowErrors.set(state.id,`${err.message||'The test session expired.'} Review the messages and try again after reconnecting.`);
+      }else{
+        state.testPreview={id:state.requestId,status:'failed'};
+        flowErrors.set(state.id,err.message||'The Telegram preview could not be confirmed.');
+      }
+    }
     finally{busy.delete(state.id);save();refreshMessages();}
   }
   document.addEventListener('input',event=>{

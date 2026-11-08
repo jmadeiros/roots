@@ -325,6 +325,7 @@ body[data-view=briefing] main { padding-top:30px; }
 .daily-overview .briefing-insight { padding:0 0 26px; }
 .daily-overview .briefing-insight + .briefing-insight { border-top:1px solid var(--line); padding-top:24px; }
 .daily-overview .briefing-insight h3 { font-size:19px; line-height:1.45; }
+.daily-overview .finding-observed { color:var(--muted); font-size:11px; margin-top:6px; }
 .daily-overview .briefing-insight-summary { font-size:14px; line-height:1.75; }
 .daily-overview .finding-next { grid-template-columns:auto minmax(0,1fr); gap:14px; margin-top:12px; }
 .daily-overview .finding-next > .briefing-action { max-width:220px; }
